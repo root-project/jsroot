@@ -59,7 +59,7 @@ class TGraphPolargramPainter extends TooltipHandler {
          polar.fRwtmax = tmax;
       }
       this.t0 = tmin;
-      this.mult = 2*Math.PI/(tmax - tmin);
+      this.mult = 2 * Math.PI / (tmax - tmin);
    }
 
    /** @summary Translate coordinates */
@@ -67,7 +67,7 @@ class TGraphPolargramPainter extends TooltipHandler {
       // recalculate angle
       const angle = (input_angle - this.t0) * this.mult;
       let rx = this.r(radius),
-          ry = rx/this.szx*this.szy,
+          ry = rx / this.szx * this.szy,
           grx = rx * Math.cos(-angle),
           gry = ry * Math.sin(-angle);
 
@@ -96,10 +96,10 @@ class TGraphPolargramPainter extends TooltipHandler {
             return value.toString();
          if (this.ndig > 10)
             return value.toExponential(4);
-         return value.toFixed(this.ndig+2);
+         return value.toFixed(this.ndig + 2);
       }
 
-      value *= 180/Math.PI;
+      value *= 180 / Math.PI;
       return (value === Math.round(value)) ? value.toString() : value.toFixed(1);
    }
 
@@ -112,11 +112,11 @@ class TGraphPolargramPainter extends TooltipHandler {
             rect = {};
 
       if (pad) {
-         rect.szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w);
-         rect.szy = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h);
+         rect.szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin)) * w);
+         rect.szy = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin)) * h);
       } else {
-         rect.szx = Math.round(0.5*w);
-         rect.szy = Math.round(0.5*h);
+         rect.szx = Math.round(0.5 * w);
+         rect.szy = Math.round(0.5 * h);
       }
 
       rect.width = 2 * rect.szx;
@@ -163,7 +163,7 @@ class TGraphPolargramPainter extends TooltipHandler {
       const range = rmax - rmin;
 
       // rmin -= delta*range;
-      rmax += delta*range;
+      rmax += delta * range;
 
       if ((rmin < polar.fRwrmin) || (rmax > polar.fRwrmax))
          rmin = rmax = 0;
@@ -193,28 +193,28 @@ class TGraphPolargramPainter extends TooltipHandler {
                aligns = [12, 11, 21, 31, 32, 33, 23, 13];
 
          for (let n = 0; n < nmajor; ++n) {
-            const angle = -n*2*Math.PI/nmajor;
+            const angle = -n * 2 * Math.PI / nmajor;
             this.getG().append('svg:path')
-               .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
+               .attr('d', `M0,0L${Math.round(this.szx * Math.cos(angle))},${Math.round(this.szy * Math.sin(angle))}`)
                .call(this.lineatt.func);
 
             let align = 12, rotate = 0;
 
             if (o.OrthoLabels) {
-               rotate = -n/nmajor*360;
+               rotate = -n / nmajor * 360;
                if ((rotate > -271) && (rotate < -91)) {
                   align = 32;
                   rotate += 180;
                }
             } else {
-               const aindx = Math.round(16 - angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
+               const aindx = Math.round(16 - angle / Math.PI * 4) % 8; // index in align table, here absolute angle is important
                align = aligns[aindx];
             }
 
             this.drawText({
                align, rotate,
-               x: Math.round((this.szx + fontsize)*Math.cos(angle)),
-               y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
+               x: Math.round((this.szx + fontsize) * Math.cos(angle)),
+               y: Math.round((this.szy + fontsize / this.szx * this.szy) * (Math.sin(angle))),
                text: lbls[n],
                color: this.getColor(polar.fPolarLabelColor), latex: 1
             });
@@ -234,7 +234,7 @@ class TGraphPolargramPainter extends TooltipHandler {
             rect = this.getPadPainter().getFrameRect(),
             g = this.createG();
 
-      makeTranslate(g, Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
+      makeTranslate(g, Math.round(rect.x + rect.width / 2), Math.round(rect.y + rect.height / 2));
       this.szx = rect.szx;
       this.szy = rect.szy;
 
@@ -249,7 +249,7 @@ class TGraphPolargramPainter extends TooltipHandler {
 
       if (polar.fRadian) {
          polar.fRwtmin = 0;
-         polar.fRwtmax = 2*Math.PI;
+         polar.fRwtmax = 2 * Math.PI;
       } else if (polar.fDegree) {
          polar.fRwtmin = 0;
          polar.fRwtmax = 360;
@@ -317,8 +317,8 @@ class TGraphPolargramPainter extends TooltipHandler {
                      valign = Math.abs(ca) < 0.7 ? 1 : 3;
                this.drawText({
                   align: 10 * halign + valign,
-                  x: Math.round(rx*ca),
-                  y: Math.round(ry*sa),
+                  x: Math.round(rx * ca),
+                  y: Math.round(ry * sa),
                   text: this.format(ticks[n]),
                   color: this.getColor(polar.fRadialLabelColor), latex: 0
                });
@@ -335,7 +335,7 @@ class TGraphPolargramPainter extends TooltipHandler {
             if ((nminor > 1) && ((n < ticks.length - 1) || !exclude_last)) {
                const dr = (ticks[1] - ticks[0]) / nminor;
                for (let nn = 1; nn < nminor; ++nn) {
-                  const gridr = ticks[n] + dr*nn;
+                  const gridr = ticks[n] + dr * nn;
                   if (gridr > this.scale_rmax)
                      break;
                   rx = this.r(gridr);
@@ -354,7 +354,7 @@ class TGraphPolargramPainter extends TooltipHandler {
 
          if (ca < 0.999) {
             g.append('path')
-             .attr('d', `M0,0L${Math.round(this.szx*ca)},${Math.round(this.szy*sa)}`)
+             .attr('d', `M0,0L${Math.round(this.szx * ca)},${Math.round(this.szy * sa)}`)
              .style('pointer-events', pointer_events)
              .call(this.lineatt.func);
          }
@@ -369,9 +369,9 @@ class TGraphPolargramPainter extends TooltipHandler {
             for (let n = 0; n < nmajor * nminor; ++n) {
                if (n % nminor === 0)
                   continue;
-               const angle = -n*2*Math.PI/nmajor/nminor;
+               const angle = -n * 2 * Math.PI / nmajor / nminor;
                g.append('svg:path')
-                .attr('d', `M0,0L${Math.round(this.szx*Math.cos(angle))},${Math.round(this.szy*Math.sin(angle))}`)
+                .attr('d', `M0,0L${Math.round(this.szx * Math.cos(angle))},${Math.round(this.szy * Math.sin(angle))}`)
                 .call(this.gridatt.func);
             }
          }
@@ -626,8 +626,8 @@ class TGraphPolarPainter extends ObjectPainter {
          rmax = Math.max(rmax, gr.fY[n] + (has_err ? gr.fEY[n] : 0));
       }
 
-      gr.fPolargram.fRwrmin = rmin - (rmax-rmin)*0.1;
-      gr.fPolargram.fRwrmax = rmax + (rmax-rmin)*0.1;
+      gr.fPolargram.fRwrmin = rmin - (rmax - rmin) * 0.1;
+      gr.fPolargram.fRwrmax = rmax + (rmax - rmin) * 0.1;
 
       return gr.fPolargram;
    }
@@ -643,7 +643,7 @@ class TGraphPolarPainter extends ObjectPainter {
 
       for (let n = 0; n < graph.fNpoints; ++n) {
          const pos = main.translate(graph.fX[n], graph.fY[n]),
-               dist2 = (pos.grx - pnt.x)**2 + (pos.gry - pnt.y)**2;
+               dist2 = (pos.grx - pnt.x) ** 2 + (pos.gry - pnt.y) ** 2;
          if (dist2 < best_dist2) {
             best_dist2 = dist2;
             bestindx = n;

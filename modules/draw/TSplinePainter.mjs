@@ -37,10 +37,10 @@ class TSplinePainter extends ObjectPainter {
       const dx = x - knot.fX;
 
       if (knot._typename === 'TSplinePoly3')
-         return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*knot.fD));
+         return knot.fY + dx * (knot.fB + dx * (knot.fC + dx * knot.fD));
 
       if (knot._typename === 'TSplinePoly5')
-         return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*(knot.fD + dx*(knot.fE + dx*knot.fF))));
+         return knot.fY + dx * (knot.fB + dx * (knot.fC + dx * (knot.fD + dx * (knot.fE + dx * knot.fF))));
 
       return knot.fY + dx;
    }
@@ -58,16 +58,16 @@ class TSplinePainter extends ObjectPainter {
 
       if (spline.fKstep) {
          // Equidistant knots, use histogram
-         klow = Math.round((x - spline.fXmin)/spline.fDelta);
+         klow = Math.round((x - spline.fXmin) / spline.fDelta);
          // Correction for rounding errors
          if (x < spline.fPoly[klow].fX)
-            klow = Math.max(klow-1, 0);
-         else if ((klow < khig) && (x > spline.fPoly[klow+1].fX))
+            klow = Math.max(klow - 1, 0);
+         else if ((klow < khig) && (x > spline.fPoly[klow + 1].fX))
             ++klow;
       } else {
          // Non equidistant knots, binary search
          while (khig - klow > 1) {
-            const khalf = Math.round((klow + khig)/2);
+            const khalf = Math.round((klow + khig) / 2);
             if (x > spline.fPoly[khalf].fX)
                klow = khalf;
             else
@@ -132,10 +132,10 @@ class TSplinePainter extends ObjectPainter {
          knot = spline.fPoly[indx];
          yy = this.eval(knot, xx);
 
-         if ((indx < spline.fN-1) && (Math.abs(spline.fPoly[indx+1].fX-xx) < Math.abs(xx-knot.fX)))
+         if ((indx < spline.fN - 1) && (Math.abs(spline.fPoly[indx + 1].fX - xx) < Math.abs(xx - knot.fX)))
             knot = spline.fPoly[++indx];
 
-         if (Math.abs(funcs.grx(knot.fX) - pnt.x) < 0.5*this.#knot_size) {
+         if (Math.abs(funcs.grx(knot.fX) - pnt.x) < 0.5 * this.#knot_size) {
             xx = knot.fX;
             yy = knot.fY;
          } else {
@@ -174,7 +174,7 @@ class TSplinePainter extends ObjectPainter {
 
       res.changed = gbin.property('current_xx') !== xx;
       res.menu = res.exact;
-      res.menu_dist = Math.sqrt((res.x-pnt.x)**2 + (res.y-pnt.y)**2);
+      res.menu_dist = Math.sqrt((res.x - pnt.x) ** 2 + (res.y - pnt.y) ** 2);
 
       if (res.changed) {
          gbin.attr('cx', Math.round(res.x))
@@ -227,11 +227,11 @@ class TSplinePainter extends ObjectPainter {
          }
 
          for (let n = 0; n < npx; ++n) {
-            let x = xmin + (xmax-xmin)/npx*(n-1);
+            let x = xmin + (xmax - xmin) / npx * (n - 1);
             if (funcs.logx)
                x = Math.exp(x);
 
-            while ((indx < spline.fNp-1) && (x > spline.fPoly[indx+1].fX))
+            while ((indx < spline.fNp - 1) && (x > spline.fPoly[indx + 1].fX))
                ++indx;
 
             const y = this.eval(spline.fPoly[indx], x);

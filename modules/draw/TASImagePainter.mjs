@@ -34,20 +34,20 @@ class TASImagePainter extends ObjectPainter {
       if (!pal)
          return null;
 
-      const rgba = new Array((nlevels+1) * 4).fill(0); // precalculated colors
+      const rgba = new Array((nlevels + 1) * 4).fill(0); // precalculated colors
 
       for (let lvl = 0, indx = 1; lvl <= nlevels; ++lvl) {
-         const l = lvl/nlevels;
+         const l = lvl / nlevels;
          while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length - 1))
             indx++;
 
-         const r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]),
-               r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
+         const r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx - 1]),
+               r2 = (l - pal.fPoints[indx - 1]) / (pal.fPoints[indx] - pal.fPoints[indx - 1]);
 
-         rgba[lvl*4] = Math.min(255, Math.round((pal.fColorRed[indx-1] * r1 + pal.fColorRed[indx] * r2) / 256));
-         rgba[lvl*4+1] = Math.min(255, Math.round((pal.fColorGreen[indx-1] * r1 + pal.fColorGreen[indx] * r2) / 256));
-         rgba[lvl*4+2] = Math.min(255, Math.round((pal.fColorBlue[indx-1] * r1 + pal.fColorBlue[indx] * r2) / 256));
-         rgba[lvl*4+3] = Math.min(255, Math.round((pal.fColorAlpha[indx-1] * r1 + pal.fColorAlpha[indx] * r2) / 256));
+         rgba[lvl * 4] = Math.min(255, Math.round((pal.fColorRed[indx - 1] * r1 + pal.fColorRed[indx] * r2) / 256));
+         rgba[lvl * 4 + 1] = Math.min(255, Math.round((pal.fColorGreen[indx - 1] * r1 + pal.fColorGreen[indx] * r2) / 256));
+         rgba[lvl * 4 + 2] = Math.min(255, Math.round((pal.fColorBlue[indx - 1] * r1 + pal.fColorBlue[indx] * r2) / 256));
+         rgba[lvl * 4 + 3] = Math.min(255, Math.round((pal.fColorAlpha[indx - 1] * r1 + pal.fColorAlpha[indx] * r2) / 256));
       }
 
       return rgba;
@@ -89,12 +89,12 @@ class TASImagePainter extends ObjectPainter {
          getPaletteColor(pal, zval) {
             if (!this.arr || !this.rgba)
                return 'white';
-            const indx = Math.round((zval - this.arr[0]) / (this.arr.at(-1) - this.arr.at(0)) * (this.rgba.length - 4)/4) * 4;
-            return toColor(this.rgba[indx]/255, this.rgba[indx+1]/255, this.rgba[indx+2]/255, this.rgba[indx+3]/255);
+            const indx = Math.round((zval - this.arr[0]) / (this.arr.at(-1) - this.arr.at(0)) * (this.rgba.length - 4) / 4) * 4;
+            return toColor(this.rgba[indx] / 255, this.rgba[indx + 1] / 255, this.rgba[indx + 2] / 255, this.rgba[indx + 3] / 255);
          }
       };
       for (let k = 0; k < 200; k++)
-         this.#contour.arr[k] = min + (max-min)/(200-1)*k;
+         this.#contour.arr[k] = min + (max - min) / (200 - 1) * k;
 
       if (min >= max)
          max = min + 1;
@@ -141,16 +141,16 @@ class TASImagePainter extends ObjectPainter {
       let offx = 0, offy = 0, sizex = width, sizey = height;
 
       if (constRatio) {
-         const image_ratio = height/width,
+         const image_ratio = height / width,
                frame_ratio = fp.getFrameHeight() / fp.getFrameWidth();
 
          if (image_ratio > frame_ratio) {
             const w2 = height / frame_ratio;
-            offx = Math.round((w2 - width)/2);
+            offx = Math.round((w2 - width) / 2);
             sizex = Math.round(w2);
          } else {
             const h2 = frame_ratio * width;
-            offy = Math.round((h2 - height)/2);
+            offy = Math.round((h2 - height) / 2);
             sizey = Math.round(h2);
          }
       }

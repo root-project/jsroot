@@ -370,7 +370,7 @@ class RTreeMapPainter extends ObjectPainter {
             obj.fNodes[this.rootIndex],
             { bottomLeft: { x: mainArea.LEFT, y: mainArea.BOTTOM }, topRight: { x: mainArea.RIGHT, y: mainArea.TOP } });
          this.drawLegend();
-         this.appendText(this.getDirectory(), { x: RTreeMapPainter.CONSTANTS.MAIN_TREEMAP.LEFT, y: RTreeMapPainter.CONSTANTS.MAIN_TREEMAP.TOP+0.01 },
+         this.appendText(this.getDirectory(), { x: RTreeMapPainter.CONSTANTS.MAIN_TREEMAP.LEFT, y: RTreeMapPainter.CONSTANTS.MAIN_TREEMAP.TOP + 0.01 },
                          RTreeMapPainter.CONSTANTS.TEXT.SIZE_VW, 'black');
       }
       return this;

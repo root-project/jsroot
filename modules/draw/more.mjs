@@ -20,7 +20,7 @@ function drawEllipse() {
          y = funcs.y(ellipse.fY1),
          rx = is_crown && (ellipse.fR1 <= 0) ? (funcs.x(ellipse.fX1 + ellipse.fR2) - x) : (funcs.x(ellipse.fX1 + ellipse.fR1) - x),
          ry = y - funcs.y(ellipse.fY1 + ellipse.fR2),
-         dr = Math.PI/180;
+         dr = Math.PI / 180;
 
    let path = '';
 
@@ -34,12 +34,12 @@ function drawEllipse() {
          path = `M${-rx1},0A${rx1},${ry1},0,1,0,${rx1},0A${rx1},${ry1},0,1,0,${-rx1},0` +
                 `M${-rx2},0A${rx2},${ry2},0,1,0,${rx2},0A${rx2},${ry2},0,1,0,${-rx2},0`;
       } else {
-         const large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0,
-               a1 = ellipse.fPhimin*dr, a2 = ellipse.fPhimax*dr,
-               dx1 = Math.round(rx1*Math.cos(a1)), dy1 = Math.round(ry1*Math.sin(a1)),
-               dx2 = Math.round(rx1*Math.cos(a2)), dy2 = Math.round(ry1*Math.sin(a2)),
-               dx3 = Math.round(rx2*Math.cos(a1)), dy3 = Math.round(ry2*Math.sin(a1)),
-               dx4 = Math.round(rx2*Math.cos(a2)), dy4 = Math.round(ry2*Math.sin(a2));
+         const large_arc = (ellipse.fPhimax - ellipse.fPhimin >= 180) ? 1 : 0,
+               a1 = ellipse.fPhimin * dr, a2 = ellipse.fPhimax * dr,
+               dx1 = Math.round(rx1 * Math.cos(a1)), dy1 = Math.round(ry1 * Math.sin(a1)),
+               dx2 = Math.round(rx1 * Math.cos(a2)), dy2 = Math.round(ry1 * Math.sin(a2)),
+               dx3 = Math.round(rx2 * Math.cos(a1)), dy3 = Math.round(ry2 * Math.sin(a1)),
+               dx4 = Math.round(rx2 * Math.cos(a2)), dy4 = Math.round(ry2 * Math.sin(a2));
 
          path = `M${dx2},${dy2}A${rx1},${ry1},0,${large_arc},0,${dx1},${dy1}` +
                 `L${dx3},${dy3}A${rx2},${ry2},0,${large_arc},1,${dx4},${dy4}Z`;
@@ -48,36 +48,36 @@ function drawEllipse() {
       if (closed_ellipse)
          path = `M${-rx},0A${rx},${ry},0,1,0,${rx},0A${rx},${ry},0,1,0,${-rx},0Z`;
       else {
-         const x1 = Math.round(rx * Math.cos(ellipse.fPhimin*dr)),
-               y1 = Math.round(ry * Math.sin(ellipse.fPhimin*dr)),
-               x2 = Math.round(rx * Math.cos(ellipse.fPhimax*dr)),
-               y2 = Math.round(ry * Math.sin(ellipse.fPhimax*dr));
+         const x1 = Math.round(rx * Math.cos(ellipse.fPhimin * dr)),
+               y1 = Math.round(ry * Math.sin(ellipse.fPhimin * dr)),
+               x2 = Math.round(rx * Math.cos(ellipse.fPhimax * dr)),
+               y2 = Math.round(ry * Math.sin(ellipse.fPhimax * dr));
          path = `M0,0L${x1},${y1}A${rx},${ry},0,1,1,${x2},${y2}Z`;
       }
    } else {
-      const ct = Math.cos(ellipse.fTheta*dr),
-            st = Math.sin(ellipse.fTheta*dr),
-            phi1 = ellipse.fPhimin*dr,
-            phi2 = ellipse.fPhimax*dr,
+      const ct = Math.cos(ellipse.fTheta * dr),
+            st = Math.sin(ellipse.fTheta * dr),
+            phi1 = ellipse.fPhimin * dr,
+            phi2 = ellipse.fPhimax * dr,
             np = 200,
-            dphi = (phi2-phi1) / (np - (closed_ellipse ? 0 : 1));
+            dphi = (phi2 - phi1) / (np - (closed_ellipse ? 0 : 1));
       let lastx = 0, lasty = 0;
       if (!closed_ellipse)
          path = 'M0,0';
       for (let n = 0; n < np; ++n) {
-         const angle = phi1 + n*dphi,
+         const angle = phi1 + n * dphi,
                dx = ellipse.fR1 * Math.cos(angle),
                dy = ellipse.fR2 * Math.sin(angle),
-               px = funcs.x(ellipse.fX1 + dx*ct - dy*st) - x,
-               py = funcs.y(ellipse.fY1 + dx*st + dy*ct) - y;
+               px = funcs.x(ellipse.fX1 + dx * ct - dy * st) - x,
+               py = funcs.y(ellipse.fY1 + dx * st + dy * ct) - y;
          if (!path)
             path = `M${px},${py}`;
          else if (lastx === px)
-            path += `v${py-lasty}`;
+            path += `v${py - lasty}`;
          else if (lasty === py)
-            path += `h${px-lastx}`;
+            path += `h${px - lastx}`;
          else
-            path += `l${px-lastx},${py-lasty}`;
+            path += `l${px - lastx},${py - lasty}`;
          lastx = px;
          lasty = py;
       }
@@ -127,9 +127,9 @@ function drawPie() {
 
    // Draw the slices
    let total = 0,
-       af = (pie.fAngularOffset*Math.PI)/180,
-       x1 = Math.round(rx*Math.cos(af)),
-       y1 = Math.round(ry*Math.sin(af));
+       af = (pie.fAngularOffset * Math.PI) / 180,
+       x1 = Math.round(rx * Math.cos(af)),
+       y1 = Math.round(ry * Math.sin(af));
 
    for (let n = 0; n < nb; n++)
       total += pie.fPieSlices[n].fValue;
@@ -140,9 +140,9 @@ function drawPie() {
       this.createAttLine({ attr: slice });
       this.createAttFill({ attr: slice });
 
-      af += slice.fValue/total*2*Math.PI;
-      const x2 = Math.round(rx*Math.cos(af)),
-            y2 = Math.round(ry*Math.sin(af));
+      af += slice.fValue / total * 2 * Math.PI;
+      const x2 = Math.round(rx * Math.cos(af)),
+            y2 = Math.round(ry * Math.sin(af));
 
       g.append('svg:path')
        .attr('d', `M0,0L${x1},${y1}A${rx},${ry},0,0,0,${x2},${y2}z`)

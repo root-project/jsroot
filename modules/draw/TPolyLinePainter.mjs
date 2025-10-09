@@ -79,7 +79,7 @@ class TPolyLinePainter extends ObjectPainter {
 
       let cmd = '';
       for (let n = 0; n <= polyline.fLastPoint; ++n)
-         cmd += `${n > 0?'L':'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
+         cmd += `${n > 0 ? 'L' : 'M'}${func.x(polyline.fX[n])},${func.y(polyline.fY[n])}`;
 
       g.append('svg:path')
        .attr('d', cmd + (dofill ? 'Z' : ''))

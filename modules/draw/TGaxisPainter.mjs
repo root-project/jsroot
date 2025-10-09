@@ -28,7 +28,7 @@ class TGaxisPainter extends TAxisPainter {
          gaxis.fX1 = x1 / pw;
          gaxis.fX2 = x2 / pw;
          gaxis.fY1 = (ph - y1) / ph;
-         gaxis.fY2 = (ph - y2)/ ph;
+         gaxis.fY2 = (ph - y2) / ph;
          this.use_ndc = true;
       } else if (opt === 'frame') {
          const rect = this.getFramePainter().getFrameRect();
@@ -189,13 +189,13 @@ class TGaxisPainter extends TAxisPainter {
       const vmin = res.eval(smin), vmax = res.eval(smax);
       if ((vmin < vmax) === (smin < smax)) {
          res._vmin = vmin;
-         res._vk = 1/(vmax - vmin);
+         res._vk = 1 / (vmax - vmin);
       } else if (vmin === vmax) {
          res._vmin = 0;
          res._vk = 1;
       } else {
          res._vmin = vmax;
-         res._vk = 1/(vmin - vmax);
+         res._vk = 1 / (vmin - vmax);
       }
       res._range = [0, 100];
       res.range = function(arr) {

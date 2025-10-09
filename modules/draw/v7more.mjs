@@ -185,8 +185,8 @@ class RPalettePainter extends RObjectPainter {
 
       for (let i = 0; i < contour.length - 1; ++i) {
          const z0 = Math.round(fp.z_handle.gr(contour[i])),
-               z1 = Math.round(fp.z_handle.gr(contour[i+1])),
-               col = palette.getContourColor((contour[i] + contour[i+1]) / 2),
+               z1 = Math.round(fp.z_handle.gr(contour[i + 1])),
+               col = palette.getContourColor((contour[i] + contour[i + 1]) / 2),
                r = g_btns.append('svg:path')
                          .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
                          .style('fill', col)
@@ -202,14 +202,14 @@ class RPalettePainter extends RObjectPainter {
                d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill1'));
             }).on('mouseout', function() {
                d3_select(this).transition().duration(100).style('fill', d3_select(this).property('fill0'));
-            }).append('svg:title').text(contour[i].toFixed(2) + ' - ' + contour[i+1].toFixed(2));
+            }).append('svg:title').text(contour[i].toFixed(2) + ' - ' + contour[i + 1].toFixed(2));
          }
 
          if (settings.Zooming)
             r.on('dblclick', () => fp.unzoom('z'));
       }
 
-      fp.z_handle.maxTickSize = Math.round(palette_width*0.3);
+      fp.z_handle.maxTickSize = Math.round(palette_width * 0.3);
 
       const promise = fp.z_handle.drawAxis(g, makeTranslate(vertical ? palette_width : 0, palette_height), vertical ? -1 : 1);
 
@@ -258,7 +258,7 @@ class RPalettePainter extends RObjectPainter {
             else
                sel2 = Math.min(Math.max(last_pos[0], 0), palette_width);
 
-            const sz = Math.abs(sel2-sel1);
+            const sz = Math.abs(sel2 - sel1);
 
             if (!zoom_rect_visible && (sz > 1)) {
                zoom_rect.style('display', null);

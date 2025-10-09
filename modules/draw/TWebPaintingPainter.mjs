@@ -92,7 +92,7 @@ class TWebPaintingPainter extends ObjectPainter {
          let lastp = 0;
          const obj2 = { _typename: 'any' };
          for (let k = 0; k < names.length; ++k) {
-            const p = str.indexOf(':', lastp+1);
+            const p = str.indexOf(':', lastp + 1);
             obj2[names[k]] = parseInt(str.slice(lastp + 1, p > lastp ? p : undefined));
             lastp = p;
          }
@@ -129,7 +129,7 @@ class TWebPaintingPainter extends ObjectPainter {
                         x2 = func.x(obj.fBuf[indx++]),
                         y2 = func.y(obj.fBuf[indx++]);
 
-                  d += `M${x1},${y1}h${x2-x1}v${y2-y1}h${x1-x2}z`;
+                  d += `M${x1},${y1}h${x2 - x1}v${y2 - y1}h${x1 - x2}z`;
                   continue;
                }
                case 'l':
@@ -139,7 +139,7 @@ class TWebPaintingPainter extends ObjectPainter {
                   npoints = parseInt(arr[k].slice(1));
 
                   for (n = 0; n < npoints; ++n)
-                     d += `${(n>0)?'L':'M'}${func.x(obj.fBuf[indx++])},${func.y(obj.fBuf[indx++])}`;
+                     d += `${(n > 0) ? 'L' : 'M'}${func.x(obj.fBuf[indx++])},${func.y(obj.fBuf[indx++])}`;
 
                   if (oper === 'f')
                      d += 'Z';
@@ -171,12 +171,12 @@ class TWebPaintingPainter extends ObjectPainter {
                         let text = arr[k].slice(1),
                             angle = attr.fTextAngle;
                         if (angle >= 360)
-                           angle -= Math.floor(angle/360) * 360;
+                           angle -= Math.floor(angle / 360) * 360;
 
                         if (oper === 'h') {
                            let res = '';
                            for (n = 0; n < text.length; n += 2)
-                              res += String.fromCharCode(parseInt(text.slice(n, n+2), 16));
+                              res += String.fromCharCode(parseInt(text.slice(n, n + 2), 16));
                            text = res;
                         }
 

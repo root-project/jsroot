@@ -7,7 +7,7 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 function getRotation(camera, mesh) {
    const dx = camera.position.x - mesh.position.x,
          dy = camera.position.y - mesh.position.y;
-   return Math.atan2(dy, dx) + Math.PI/2;
+   return Math.atan2(dy, dx) + Math.PI / 2;
 }
 
 class TAnnotation3DPainter extends TTextPainter {

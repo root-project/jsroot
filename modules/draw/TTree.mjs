@@ -153,10 +153,10 @@ function createTreePlayer(player) {
       main.select('.treedraw_more').remove(); // remove more button first
 
       main.select('.treedraw_buttons').node().innerHTML +=
-          'Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>'+
-          'Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>'+
-          `Num: <input class="treedraw_number" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>`+
-          `First: <input class="treedraw_first" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>`+
+          'Cut: <input class="treedraw_cut ui-corner-all ui-widget" style="width:8em;margin-left:5px" title="cut expression"></input>' +
+          'Opt: <input class="treedraw_opt ui-corner-all ui-widget" style="width:5em;margin-left:5px" title="histogram draw options"></input>' +
+          `Num: <input class="treedraw_number" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="number of entries to process (default all)"></input>` +
+          `First: <input class="treedraw_first" type='number' min="0" max="${numentries}" step="1000" style="width:7em;margin-left:5px" title="first entry to process (default first)"></input>` +
           '<button class="treedraw_clear" title="Clear drawing">Clear</button>';
 
       main.select('.treedraw_exe').on('click', () => this.performDraw());
@@ -174,10 +174,10 @@ function createTreePlayer(player) {
 
       const show_extra = args?.parse_cut || args?.numentries || args?.firstentry;
 
-      main.html('<div style="display:flex; flex-flow:column; height:100%; width:100%;">'+
+      main.html('<div style="display:flex; flex-flow:column; height:100%; width:100%;">' +
                    '<div class="treedraw_buttons" style="flex: 0 1 auto;margin-top:0.2em;">' +
                       '<button class="treedraw_exe" title="Execute draw expression" style="margin-left:0.5em">Draw</button>' +
-                      'Expr:<input class="treedraw_varexp treedraw_varexp_info" style="width:12em;margin-left:5px" title="draw expression"></input>'+
+                      'Expr:<input class="treedraw_varexp treedraw_varexp_info" style="width:12em;margin-left:5px" title="draw expression"></input>' +
                       '<label class="treedraw_varexp_info">\u24D8</label>' +
                      '<button class="treedraw_more">More</button>' +
                    '</div>' +
@@ -284,7 +284,7 @@ function createTreePlayer(player) {
       if (pos < 0)
          expr += `>>${hname}`;
       else {
-         hname = expr.slice(pos+2);
+         hname = expr.slice(pos + 2);
          if (hname[0] === '+')
             hname = hname.slice(1);
          const pos2 = hname.indexOf('(');
@@ -456,8 +456,8 @@ async function drawTree(dom, obj, opt) {
       } else if ((p >= 0) && (p === args.expr.length - 6)) {
          args.player = true;
          args.expr = args.expr.slice(0, p);
-         if ((p > 0) && (args.expr[p-1] === ';'))
-            args.expr = args.expr.slice(0, p-1);
+         if ((p > 0) && (args.expr[p - 1] === ';'))
+            args.expr = args.expr.slice(0, p - 1);
       }
    }
 
