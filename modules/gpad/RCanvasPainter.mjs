@@ -215,7 +215,7 @@ class RCanvasPainter extends RPadPainter {
    /** @summary Function called when canvas menu item Save is called */
    saveCanvasAsFile(fname) {
       const pnt = fname.indexOf('.');
-      this.createImage(fname.slice(pnt+1))
+      this.createImage(fname.slice(pnt + 1))
           .then(res => this.sendWebsocket(`SAVE:${fname}:${res}`));
    }
 
@@ -308,7 +308,7 @@ class RCanvasPainter extends RPadPainter {
          msg = msg.slice(5);
          const p1 = msg.indexOf(':'),
                snapid = msg.slice(0, p1),
-               snap = parse(msg.slice(p1+1));
+               snap = parse(msg.slice(p1 + 1));
          this.syncDraw(true)
              .then(() => {
                 if (!this.getSnapId() && snap?.fWinSize)
@@ -333,7 +333,7 @@ class RCanvasPainter extends RPadPainter {
          msg = msg.slice(4);
          const p1 = msg.indexOf(':'),
                cmdid = msg.slice(0, p1),
-               cmd = msg.slice(p1+1),
+               cmd = msg.slice(p1 + 1),
                reply = `REPLY:${cmdid}:`;
          if ((cmd === 'SVG') || (cmd === 'PNG') || (cmd === 'JPEG') || (cmd === 'WEBP') || (cmd === 'PDF')) {
             this.createImage(cmd.toLowerCase())
@@ -789,14 +789,14 @@ function drawRFrameTitle(reason, drag) {
 
    const g = this.createG();
 
-   makeTranslate(g, fx, Math.round(fy-title_margin-title_height));
+   makeTranslate(g, fx, Math.round(fy - title_margin - title_height));
 
    return this.startTextDrawingAsync(textFont, 'font').then(() => {
-      this.drawText({ x: title_width/2, y: title_height/2, text: title.fText, latex: 1 });
+      this.drawText({ x: title_width / 2, y: title_height / 2, text: title.fText, latex: 1 });
       return this.finishTextDrawing();
    }).then(() => {
       addDragHandler(this, {
-         x: fx, y: Math.round(fy-title_margin-title_height), width: title_width, height: title_height,
+         x: fx, y: Math.round(fy - title_margin - title_height), width: title_width, height: title_height,
          minwidth: 20, minheight: 20, no_change_x: true, redraw: d => this.redraw('drag', d)
       });
    });
@@ -826,7 +826,7 @@ registerMethods(`${nsREX}RPalette`, {
 
       if (this.fCustomContour) {
          while (l < r - 1) {
-            const mid = Math.round((l+r)/2);
+            const mid = Math.round((l + r) / 2);
             if (cntr[mid] > zc)
                r = mid;
             else
@@ -836,7 +836,7 @@ registerMethods(`${nsREX}RPalette`, {
       }
 
       // last color in palette starts from level cntr[r-1]
-      return Math.floor((zc-cntr[0]) / (cntr[r-1] - cntr[0]) * (r-1));
+      return Math.floor((zc - cntr[0]) / (cntr[r - 1] - cntr[0]) * (r - 1));
    },
 
    getContourColor(zc) {
@@ -863,9 +863,9 @@ registerMethods(`${nsREX}RPalette`, {
       // interpolate
       const col1 = d3_rgb(this.extractRColor(entry1.fColor)),
             col2 = d3_rgb(this.extractRColor(entry2.fColor)),
-            color = d3_rgb(Math.round((col1.r*r1 + col2.r*r2)/dist),
-                           Math.round((col1.g*r1 + col2.g*r2)/dist),
-                           Math.round((col1.b*r1 + col2.b*r2)/dist));
+            color = d3_rgb(Math.round((col1.r * r1 + col2.r * r2) / dist),
+                           Math.round((col1.g * r1 + col2.g * r2) / dist),
+                           Math.round((col1.b * r1 + col2.b * r2) / dist));
 
       return color.formatRgb();
    },
@@ -875,7 +875,7 @@ registerMethods(`${nsREX}RPalette`, {
       let indx = 0;
 
       while (arr.length < len) {
-         const value = arr.length / (len-1),
+         const value = arr.length / (len - 1),
                entry = this.fColors[indx];
 
          if ((Math.abs(entry.fOrdinal - value) < 0.0001) || (indx === this.fColors.length - 1)) {
@@ -883,7 +883,7 @@ registerMethods(`${nsREX}RPalette`, {
             continue;
          }
 
-         const next = this.fColors[indx+1];
+         const next = this.fColors[indx + 1];
          if (next.fOrdinal <= value)
             indx++;
          else
@@ -911,7 +911,7 @@ registerMethods(`${nsREX}RPalette`, {
          if (Math.abs(entry.fOrdinal - value) < 0.0001)
             return this.extractRColor(entry.fColor);
 
-         next = this.fColors[indx+1];
+         next = this.fColors[indx + 1];
          if (next.fOrdinal > value)
             return this.calcColor(value, entry, next);
       }
@@ -936,29 +936,29 @@ registerMethods(`${nsREX}RPalette`, {
             this.colzmax = 1.0;
          if (this.colzmin <= 0) {
             if ((zminpositive === undefined) || (zminpositive <= 0))
-               this.colzmin = 0.0001*this.colzmax;
+               this.colzmin = 0.0001 * this.colzmax;
             else
-               this.colzmin = ((zminpositive < 3) || (zminpositive>100)) ? 0.3*zminpositive : 1;
+               this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3 * zminpositive : 1;
          }
          if (this.colzmin >= this.colzmax)
-            this.colzmin = 0.0001*this.colzmax;
+            this.colzmin = 0.0001 * this.colzmax;
 
-         const logmin = Math.log(this.colzmin)/Math.log(10),
-               logmax = Math.log(this.colzmax)/Math.log(10),
-               dz = (logmax-logmin)/nlevels;
+         const logmin = Math.log(this.colzmin) / Math.log(10),
+               logmax = Math.log(this.colzmax) / Math.log(10),
+               dz = (logmax - logmin) / nlevels;
          this.fContour.push(this.colzmin);
          for (let level = 1; level < nlevels; level++)
-            this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
+            this.fContour.push(Math.exp((logmin + dz * level) * Math.log(10)));
          this.fContour.push(this.colzmax);
          this.fCustomContour = true;
       } else {
          if ((this.colzmin === this.colzmax) && this.colzmin) {
-            this.colzmax += 0.01*Math.abs(this.colzmax);
-            this.colzmin -= 0.01*Math.abs(this.colzmin);
+            this.colzmax += 0.01 * Math.abs(this.colzmax);
+            this.colzmin -= 0.01 * Math.abs(this.colzmin);
          }
-         const dz = (this.colzmax - this.colzmin)/nlevels;
+         const dz = (this.colzmax - this.colzmin) / nlevels;
          for (let level = 0; level <= nlevels; level++)
-            this.fContour.push(this.colzmin + dz*level);
+            this.fContour.push(this.colzmin + dz * level);
       }
 
       if (!this.palette || (this.palette.length !== nlevels))
@@ -972,7 +972,7 @@ registerMethods(`${nsREX}RPalette`, {
 function drawRFont() {
    const font = this.getObject(),
          svg = this.getCanvSvg(),
-         clname = 'custom_font_' + font.fFamily+font.fWeight+font.fStyle;
+         clname = 'custom_font_' + font.fFamily + font.fWeight + font.fStyle;
    let defs = svg.selectChild('.canvas_defs');
 
    if (defs.empty())

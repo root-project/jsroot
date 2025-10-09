@@ -101,7 +101,7 @@ class TMultiGraphPainter extends ObjectPainter {
    scanGraphsRange(graphs, histo, pad, reset_histo) {
       const mgraph = this.getObject(),
             rw = { xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true },
-            test = (v1, v2) => { return Math.abs(v2-v1) < 1e-6; };
+            test = (v1, v2) => { return Math.abs(v2 - v1) < 1e-6; };
       let maximum, minimum, logx = false, logy = false,
           src_hist, dummy_histo = false;
 
@@ -168,7 +168,7 @@ class TMultiGraphPainter extends ObjectPainter {
       if (uxmin < 0 && rw.xmin >= 0)
          uxmin = logx ? 0.9 * rw.xmin : 0;
       if (uxmax > 0 && rw.xmax <= 0)
-         uxmax = logx? 1.1 * rw.xmax : 0;
+         uxmax = logx ? 1.1 * rw.xmax : 0;
 
       if (mgraph.fMinimum !== kNoZoom)
          rw.ymin = minimum = mgraph.fMinimum;
@@ -181,7 +181,7 @@ class TMultiGraphPainter extends ObjectPainter {
          maximum = 1.1 * rw.ymax;
       if (minimum <= 0 && logy)
          minimum = 0.001 * maximum;
-      if (!logy && minimum > 0 && minimum < 0.05*maximum)
+      if (!logy && minimum > 0 && minimum < 0.05 * maximum)
          minimum = 0;
       if (uxmin <= 0 && logx)
          uxmin = (uxmax > 1000) ? 1 : 0.001 * uxmax;
@@ -267,7 +267,7 @@ class TMultiGraphPainter extends ObjectPainter {
 
       // handling of 'pads' draw option
       if (pad_painter) {
-         const subpad_painter = pad_painter.getSubPadPainter(indx+1);
+         const subpad_painter = pad_painter.getSubPadPainter(indx + 1);
          if (!subpad_painter)
             return this;
 
@@ -278,7 +278,7 @@ class TMultiGraphPainter extends ObjectPainter {
                subp.setSecondaryId(this, subid);
                this.#painters.push(subp);
             }
-            return this.drawNextGraph(indx+1, pad_painter);
+            return this.drawNextGraph(indx + 1, pad_painter);
          });
       }
 

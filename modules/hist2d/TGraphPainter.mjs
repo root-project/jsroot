@@ -319,7 +319,7 @@ class TGraphPainter extends ObjectPainter {
 
       this.#cutg = this.matchObjectType(clTCutG);
       this.#cutg_lastsame = this.#cutg && (graph.fNpoints > 3) &&
-                            (graph.fX[0] === graph.fX[graph.fNpoints-1]) && (graph.fY[0] === graph.fY[graph.fNpoints-1]);
+                            (graph.fX[0] === graph.fX[graph.fNpoints - 1]) && (graph.fY[0] === graph.fY[graph.fNpoints - 1]);
 
       if (!res.Axis) {
          // check if axis should be drawn
@@ -635,7 +635,7 @@ class TGraphPainter extends ObjectPainter {
       const extrabins = [];
       for (let n = drawbins.length - 1; n >= 0; --n) {
          const bin = drawbins[n],
-               dlen = Math.sqrt(bin.dgrx**2 + bin.dgry**2);
+               dlen = Math.sqrt(bin.dgrx ** 2 + bin.dgry ** 2);
          if (dlen > 1e-10) {
             // shift point
             bin.grx += excl_width * bin.dgry / dlen;
@@ -786,8 +786,8 @@ class TGraphPainter extends ObjectPainter {
             pnt.gry1 = Math.round(gry);
 
             if (this.#has_errors) {
-               pnt.grx0 = Math.round(funcs.grx(pnt.x - options.ScaleErrX*pnt.exlow) - grx);
-               pnt.grx2 = Math.round(funcs.grx(pnt.x + options.ScaleErrX*pnt.exhigh) - grx);
+               pnt.grx0 = Math.round(funcs.grx(pnt.x - options.ScaleErrX * pnt.exlow) - grx);
+               pnt.grx2 = Math.round(funcs.grx(pnt.x + options.ScaleErrX * pnt.exhigh) - grx);
                pnt.gry0 = Math.round(funcs.gry(pnt.y - pnt.eylow) - gry);
                pnt.gry2 = Math.round(funcs.gry(pnt.y + pnt.eyhigh) - gry);
 
@@ -844,9 +844,9 @@ class TGraphPainter extends ObjectPainter {
          nodes.append('svg:path')
               .attr('d', d => {
                  d.bar = true; // element drawn as bar
-                 const dx = bw > 1 ? Math.round(boff-bw/2) : 0,
+                 const dx = bw > 1 ? Math.round(boff - bw / 2) : 0,
                        dw = bw > 1 ? Math.round(bw) : 1,
-                       dy = (options.Bar !== 1) ? 0 : ((d.gry1 > yy0) ? yy0-d.gry1 : 0),
+                       dy = (options.Bar !== 1) ? 0 : ((d.gry1 > yy0) ? yy0 - d.gry1 : 0),
                        dh = (options.Bar !== 1) ? (h > d.gry1 ? h - d.gry1 : 0) : Math.abs(yy0 - d.gry1);
                  return `M${dx},${dy}h${dw}v${dh}h${-dw}z`;
               })
@@ -872,8 +872,8 @@ class TGraphPainter extends ObjectPainter {
       if (options.Errors) {
          // to show end of error markers, use line width attribute
          let lw = lineatt.width + gStyle.fEndErrorSize;
-         const vv = options.Ends ? `m0,${lw}v${-2*lw}` : '',
-               hh = options.Ends ? `m${lw},0h${-2*lw}` : '';
+         const vv = options.Ends ? `m0,${lw}v${-2 * lw}` : '',
+               hh = options.Ends ? `m${lw},0h${-2 * lw}` : '';
          let vleft = vv, vright = vv, htop = hh, hbottom = hh, bb;
 
          const mainLine = (dx, dy) => {
@@ -887,33 +887,33 @@ class TGraphPainter extends ObjectPainter {
 
          switch (options.Ends) {
             case 2:  // option []
-               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
-               vleft = `m${bb},${lw}h${-bb}v${-2*lw}h${bb}`;
-               vright = `m${-bb},${lw}h${bb}v${-2*lw}h${-bb}`;
-               htop = `m${-lw},${bb}v${-bb}h${2*lw}v${bb}`;
-               hbottom = `m${-lw},${-bb}v${bb}h${2*lw}v${-bb}`;
+               bb = Math.max(lineatt.width + 1, Math.round(lw * 0.66));
+               vleft = `m${bb},${lw}h${-bb}v${-2 * lw}h${bb}`;
+               vright = `m${-bb},${lw}h${bb}v${-2 * lw}h${-bb}`;
+               htop = `m${-lw},${bb}v${-bb}h${2 * lw}v${bb}`;
+               hbottom = `m${-lw},${-bb}v${bb}h${2 * lw}v${-bb}`;
                break;
             case 3: // option |>
-               lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
-               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
-               vleft = `l${bb},${lw}v${-2*lw}l${-bb},${lw}`;
-               vright = `l${-bb},${lw}v${-2*lw}l${bb},${lw}`;
-               htop = `l${-lw},${bb}h${2*lw}l${-lw},${-bb}`;
-               hbottom = `l${-lw},${-bb}h${2*lw}l${-lw},${bb}`;
+               lw = Math.max(lw, Math.round(graph.fMarkerSize * 8 * 0.66));
+               bb = Math.max(lineatt.width + 1, Math.round(lw * 0.66));
+               vleft = `l${bb},${lw}v${-2 * lw}l${-bb},${lw}`;
+               vright = `l${-bb},${lw}v${-2 * lw}l${bb},${lw}`;
+               htop = `l${-lw},${bb}h${2 * lw}l${-lw},${-bb}`;
+               hbottom = `l${-lw},${-bb}h${2 * lw}l${-lw},${bb}`;
                break;
             case 4: // option >
-               lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
-               bb = Math.max(lineatt.width+1, Math.round(lw*0.66));
-               vleft = `l${bb},${lw}m0,${-2*lw}l${-bb},${lw}`;
-               vright = `l${-bb},${lw}m0,${-2*lw}l${bb},${lw}`;
-               htop = `l${-lw},${bb}m${2*lw},0l${-lw},${-bb}`;
-               hbottom = `l${-lw},${-bb}m${2*lw},0l${-lw},${bb}`;
+               lw = Math.max(lw, Math.round(graph.fMarkerSize * 8 * 0.66));
+               bb = Math.max(lineatt.width + 1, Math.round(lw * 0.66));
+               vleft = `l${bb},${lw}m0,${-2 * lw}l${-bb},${lw}`;
+               vright = `l${-bb},${lw}m0,${-2 * lw}l${bb},${lw}`;
+               htop = `l${-lw},${bb}m${2 * lw},0l${-lw},${-bb}`;
+               hbottom = `l${-lw},${-bb}m${2 * lw},0l${-lw},${bb}`;
                break;
          }
 
          this.error_size = lw;
 
-         lw = Math.floor((lineatt.width-1)/2); // one should take into account half of end-cup line width
+         lw = Math.floor((lineatt.width - 1) / 2); // one should take into account half of end-cup line width
 
          let visible = nodes.filter(d => (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0));
          if (options.skip_errors_x0 || options.skip_errors_y0)
@@ -921,7 +921,7 @@ class TGraphPainter extends ObjectPainter {
 
          if (!this.isBatchMode() && settings.Tooltip && main_block) {
             visible.append('svg:path')
-                   .attr('d', d => `M${d.grx0},${d.gry0}h${d.grx2-d.grx0}v${d.gry2-d.gry0}h${d.grx0-d.grx2}z`)
+                   .attr('d', d => `M${d.grx0},${d.gry0}h${d.grx2 - d.grx0}v${d.gry2 - d.gry0}h${d.grx0 - d.grx2}z`)
                    .style('fill', 'none')
                    .style('pointer-events', 'visibleFill');
          }
@@ -929,10 +929,10 @@ class TGraphPainter extends ObjectPainter {
          visible.append('svg:path')
                 .attr('d', d => {
                    d.error = true;
-                   return ((d.exlow > 0) ? mainLine(d.grx0+lw, d.grdx0) + vleft : '') +
-                          ((d.exhigh > 0) ? mainLine(d.grx2-lw, d.grdx2) + vright : '') +
-                          ((d.eylow > 0) ? mainLine(d.grdy0, d.gry0-lw) + hbottom : '') +
-                          ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2+lw) + htop : '');
+                   return ((d.exlow > 0) ? mainLine(d.grx0 + lw, d.grdx0) + vleft : '') +
+                          ((d.exhigh > 0) ? mainLine(d.grx2 - lw, d.grdx2) + vright : '') +
+                          ((d.eylow > 0) ? mainLine(d.grdy0, d.gry0 - lw) + hbottom : '') +
+                          ((d.eyhigh > 0) ? mainLine(d.grdy2, d.gry2 + lw) + htop : '');
                 })
                 .style('fill', 'none')
                 .call(lineatt.func);
@@ -947,7 +947,7 @@ class TGraphPainter extends ObjectPainter {
          this.markeratt.resetPos();
 
          const want_tooltip = !this.isBatchMode() && settings.Tooltip && (!this.markeratt.fill || (this.#marker_size < 7)) && !nodes && main_block,
-               hsz = Math.max(5, Math.round(this.#marker_size*0.7)),
+               hsz = Math.max(5, Math.round(this.#marker_size * 0.7)),
                maxnummarker = 1000000 / (this.markeratt.getMarkerLength() + 7); // let produce SVG at maximum 1MB
 
          let path = '', pnt, grx, gry,
@@ -955,8 +955,8 @@ class TGraphPainter extends ObjectPainter {
 
          if (!drawbins)
             drawbins = this.optimizeBins(maxnummarker);
-         else if (this.canOptimize() && (drawbins.length > 1.5*maxnummarker))
-            step = Math.min(2, Math.round(drawbins.length/maxnummarker));
+         else if (this.canOptimize() && (drawbins.length > 1.5 * maxnummarker))
+            step = Math.min(2, Math.round(drawbins.length / maxnummarker));
 
          for (let n = 0; n < drawbins.length; n += step) {
             pnt = drawbins[n];
@@ -965,7 +965,7 @@ class TGraphPainter extends ObjectPainter {
                gry = funcs.gry(pnt.y);
                if ((gry > -this.#marker_size) && (gry < h + this.#marker_size)) {
                   path += this.markeratt.create(grx, gry);
-                  if (want_tooltip) hints_marker += `M${grx-hsz},${gry-hsz}h${2*hsz}v${2*hsz}h${-2*hsz}z`;
+                  if (want_tooltip) hints_marker += `M${grx - hsz},${gry - hsz}h${2 * hsz}v${2 * hsz}h${-2 * hsz}z`;
                }
             }
          }
@@ -993,18 +993,18 @@ class TGraphPainter extends ObjectPainter {
             yqmin = Math.max(funcs.scale_ymin, graph.fYq1),
             yqmax = Math.min(funcs.scale_ymax, graph.fYq2),
             makeLine = (x1, y1, x2, y2) => `M${funcs.grx(x1)},${funcs.gry(y1)}L${funcs.grx(x2)},${funcs.gry(y2)}`,
-            yxmin = (graph.fYq2 - graph.fYq1)*(funcs.scale_xmin-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1,
-            yxmax = (graph.fYq2-graph.fYq1)*(funcs.scale_xmax-graph.fXq1)/(graph.fXq2-graph.fXq1) + graph.fYq1;
+            yxmin = (graph.fYq2 - graph.fYq1) * (funcs.scale_xmin - graph.fXq1) / (graph.fXq2 - graph.fXq1) + graph.fYq1,
+            yxmax = (graph.fYq2 - graph.fYq1) * (funcs.scale_xmax - graph.fXq1) / (graph.fXq2 - graph.fXq1) + graph.fYq1;
 
       let path2;
       if (yxmin < funcs.scale_ymin) {
-         const xymin = (graph.fXq2 - graph.fXq1)*(funcs.scale_ymin-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
+         const xymin = (graph.fXq2 - graph.fXq1) * (funcs.scale_ymin - graph.fYq1) / (graph.fYq2 - graph.fYq1) + graph.fXq1;
          path2 = makeLine(xymin, funcs.scale_ymin, xqmin, yqmin);
       } else
          path2 = makeLine(funcs.scale_xmin, yxmin, xqmin, yqmin);
 
       if (yxmax > funcs.scale_ymax) {
-         const xymax = (graph.fXq2-graph.fXq1)*(funcs.scale_ymax-graph.fYq1)/(graph.fYq2-graph.fYq1) + graph.fXq1;
+         const xymax = (graph.fXq2 - graph.fXq1) * (funcs.scale_ymax - graph.fYq1) / (graph.fYq2 - graph.fYq1) + graph.fXq1;
          path2 += makeLine(xqmax, yqmax, xymax, funcs.scale_ymax);
       } else
          path2 += makeLine(xqmax, yqmax, funcs.scale_xmax, yxmax);
@@ -1274,7 +1274,7 @@ class TGraphPainter extends ObjectPainter {
          grx = funcs.grx(bin.x);
          gry = funcs.gry(bin.y);
 
-         dist = (pnt.x-grx)**2 + (pnt.y-gry)**2;
+         dist = (pnt.x - grx) ** 2 + (pnt.y - gry) ** 2;
 
          if (dist < bestdist) {
             bestdist = dist;
@@ -1290,7 +1290,7 @@ class TGraphPainter extends ObjectPainter {
       const radius = Math.max(this.lineatt.width + 3, 4, this.#marker_size);
 
       if (bestbin)
-         bestdist = Math.sqrt((pnt.x-funcs.grx(bestbin.x))**2 + (pnt.y-funcs.gry(bestbin.y))**2);
+         bestdist = Math.sqrt((pnt.x - funcs.grx(bestbin.x)) ** 2 + (pnt.y - funcs.gry(bestbin.y)) ** 2);
 
       if (!islines && (bestdist > radius))
          bestbin = null;
@@ -1318,7 +1318,7 @@ class TGraphPainter extends ObjectPainter {
                if (Math.abs(grx - grx0) < 1) {
                   // very close x - check only y
                   posy = pnt.y;
-                  dist = is_inside(pnt.y, gry0, gry) ? 0 : Math.min(Math.abs(pnt.y-gry0), Math.abs(pnt.y-gry));
+                  dist = is_inside(pnt.y, gry0, gry) ? 0 : Math.min(Math.abs(pnt.y - gry0), Math.abs(pnt.y - gry));
                } else {
                   posy = gry0 + (pnt.x - grx0) / (grx - grx0) * (gry - gry0);
                   dist = Math.abs(posy - pnt.y);
@@ -1335,7 +1335,7 @@ class TGraphPainter extends ObjectPainter {
             grx0 = grx;
          }
 
-         if (bestdist < radius*0.5) {
+         if (bestdist < radius * 0.5) {
             res.linedist = bestdist;
             res.closeline = true;
          }
@@ -1403,7 +1403,7 @@ class TGraphPainter extends ObjectPainter {
             ((Math.abs(pnt.y - res.gry1) <= best.radius) || (Math.abs(pnt.y - res.gry2) <= best.radius));
 
          res.menu = res.exact;
-         res.menu_dist = Math.sqrt((pnt.x-res.x)**2 + Math.min(Math.abs(pnt.y-res.gry1), Math.abs(pnt.y-res.gry2))**2);
+         res.menu_dist = Math.sqrt((pnt.x - res.x) ** 2 + Math.min(Math.abs(pnt.y - res.gry1), Math.abs(pnt.y - res.gry2)) ** 2);
       }
 
       if (this.fillatt?.used && !this.fillatt?.empty())
@@ -1443,11 +1443,11 @@ class TGraphPainter extends ObjectPainter {
                  .style('opacity', '0.3')
                  .attr('x', Math.round(hint.x - hint.radius))
                  .attr('y', Math.round(hint.y - hint.radius))
-                 .attr('width', 2*hint.radius)
-                 .attr('height', 2*hint.radius);
+                 .attr('width', 2 * hint.radius)
+                 .attr('height', 2 * hint.radius);
          } else {
             ttbin.append('svg:circle').attr('cy', Math.round(hint.gry1));
-            if (Math.abs(hint.gry1-hint.gry2) > 1)
+            if (Math.abs(hint.gry1 - hint.gry2) > 1)
                ttbin.append('svg:circle').attr('cy', Math.round(hint.gry2));
 
             const o = this.getOptions(),
@@ -1507,7 +1507,7 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary Complete moving */
    moveEnd(not_changed) {
-      const graph = this.getGraph(), last = graph?.fNpoints-1;
+      const graph = this.getGraph(), last = graph?.fNpoints - 1;
       let exec = '';
 
       const changeBin = bin => {

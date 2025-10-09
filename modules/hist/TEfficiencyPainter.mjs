@@ -37,7 +37,7 @@ class TEfficiencyPainter extends ObjectPainter {
                   if (a === b)
                      return 0.5; // cannot do otherwise
                }
-               return (a - 1.0) / (a + b -2.0);
+               return (a - 1.0) / (a + b - 2.0);
             },
             total = obj.fTotalHistogram.fArray[bin], // should work for both 1-d and 2-d
             passed = obj.fPassedHistogram.fArray[bin]; // should work for both 1-d and 2-d
@@ -54,10 +54,10 @@ class TEfficiencyPainter extends ObjectPainter {
                   pw = passed; // fPassedHistogram->GetBinContent(bin);
 
             if (tw2 <= 0)
-               return pw/tw;
+               return pw / tw;
 
             // tw/tw2 re-normalize the weights
-            const norm = tw/tw2;
+            const norm = tw / tw2;
             aa = pw * norm + alpha;
             bb = (tw - pw) * norm + beta;
          } else {
@@ -128,17 +128,17 @@ class TEfficiencyPainter extends ObjectPainter {
             plot0Bins = (opt.indexOf('e0') >= 0);
 
       for (let n = 0, j = 0; n < npoints; ++n) {
-         if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0)
+         if (!plot0Bins && eff.fTotalHistogram.getBinContent(n + 1) === 0)
             continue;
 
-         const value = this.getEfficiency(eff, n+1);
+         const value = this.getEfficiency(eff, n + 1);
 
-         gr.fX[j] = xaxis.GetBinCenter(n+1);
+         gr.fX[j] = xaxis.GetBinCenter(n + 1);
          gr.fY[j] = value;
-         gr.fEXlow[j] = xaxis.GetBinCenter(n+1) - xaxis.GetBinLowEdge(n+1);
-         gr.fEXhigh[j] = xaxis.GetBinLowEdge(n+2) - xaxis.GetBinCenter(n+1);
-         gr.fEYlow[j] = this.getEfficiencyErrorLow(eff, n+1, value);
-         gr.fEYhigh[j] = this.getEfficiencyErrorUp(eff, n+1, value);
+         gr.fEXlow[j] = xaxis.GetBinCenter(n + 1) - xaxis.GetBinLowEdge(n + 1);
+         gr.fEXhigh[j] = xaxis.GetBinLowEdge(n + 2) - xaxis.GetBinCenter(n + 1);
+         gr.fEYlow[j] = this.getEfficiencyErrorLow(eff, n + 1, value);
+         gr.fEYhigh[j] = this.getEfficiencyErrorUp(eff, n + 1, value);
 
          gr.fNpoints = ++j;
       }
@@ -153,8 +153,8 @@ class TEfficiencyPainter extends ObjectPainter {
             nbinsx = hist.fXaxis.fNbins,
             nbinsy = hist.fYaxis.fNbins;
 
-      for (let i = 0; i < nbinsx+2; ++i) {
-         for (let j = 0; j < nbinsy+2; ++j) {
+      for (let i = 0; i < nbinsx + 2; ++i) {
+         for (let j = 0; j < nbinsy + 2; ++j) {
             const bin = hist.getBin(i, j);
             hist.fArray[bin] = this.getEfficiency(eff, bin);
          }

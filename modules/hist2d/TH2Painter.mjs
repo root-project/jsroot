@@ -14,9 +14,9 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
    const kMAXCONTOUR = 2004,
          kMAXCOUNT = 2000,
          // arguments used in the PaintContourLine
-         xarr = new Float32Array(2*kMAXCONTOUR),
-         yarr = new Float32Array(2*kMAXCONTOUR),
-         itarr = new Int32Array(2*kMAXCONTOUR),
+         xarr = new Float32Array(2 * kMAXCONTOUR),
+         yarr = new Float32Array(2 * kMAXCONTOUR),
+         itarr = new Int32Array(2 * kMAXCONTOUR),
          nlevels = levels.length,
          first_level = levels[0], last_level = levels[nlevels - 1],
          polys = [],
@@ -32,7 +32,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
 
       for (let kk = 0; kk < nlevels; ++kk) {
          if (zvalue < levels[kk])
-            return kk-1;
+            return kk - 1;
       }
       return nlevels - 1;
    }, BinarySearch = zvalue => {
@@ -57,16 +57,16 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
       const vert = (x1 === x2),
             tlen = vert ? (y2 - y1) : (x2 - x1),
             tdif = elev2 - elev1;
-      let n = icont1 + 1, ii = lj-1, icount = 0,
+      let n = icont1 + 1, ii = lj - 1, icount = 0,
           xlen, pdif, diff, elev;
-      const maxii = ii + kMAXCONTOUR/2 -3;
+      const maxii = ii + kMAXCONTOUR / 2 - 3;
 
       while (n <= icont2 && ii <= maxii) {
          // elev = fH->GetContourLevel(n);
          elev = levels[n];
          diff = elev - elev1;
-         pdif = diff/tdif;
-         xlen = tlen*pdif;
+         pdif = diff / tdif;
+         xlen = tlen * pdif;
          if (vert) {
             xarr[ii] = x1;
             yarr[ii] = y1 + xlen;
@@ -86,22 +86,22 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
        i, j, k, m, n, ljfill, count,
        xsave, ysave, itars, ix, jx;
 
-   for (j = handle.j1; j < handle.j2-1; ++j) {
-      y[1] = y[0] = (arry[j] + arry[j+1])/2;
-      y[3] = y[2] = (arry[j+1] + arry[j+2])/2;
+   for (j = handle.j1; j < handle.j2 - 1; ++j) {
+      y[1] = y[0] = (arry[j] + arry[j + 1]) / 2;
+      y[3] = y[2] = (arry[j + 1] + arry[j + 2]) / 2;
 
-      for (i = handle.i1; i < handle.i2-1; ++i) {
-         zc[0] = histo.getBinContent(i+1, j+1);
-         zc[1] = histo.getBinContent(i+2, j+1);
-         zc[2] = histo.getBinContent(i+2, j+2);
-         zc[3] = histo.getBinContent(i+1, j+2);
+      for (i = handle.i1; i < handle.i2 - 1; ++i) {
+         zc[0] = histo.getBinContent(i + 1, j + 1);
+         zc[1] = histo.getBinContent(i + 2, j + 1);
+         zc[2] = histo.getBinContent(i + 2, j + 2);
+         zc[3] = histo.getBinContent(i + 1, j + 2);
 
          for (k = 0; k < 4; k++)
             ir[k] = LevelSearch(zc[k]);
 
          if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
-            x[3] = x[0] = (arrx[i] + arrx[i+1])/2;
-            x[2] = x[1] = (arrx[i+1] + arrx[i+2])/2;
+            x[3] = x[0] = (arrx[i] + arrx[i + 1]) / 2;
+            x[2] = x[1] = (arrx[i + 1] + arrx[i + 2]) / 2;
 
             n = zc[0] <= zc[1] ? 0 : 1;
             m = zc[2] <= zc[3] ? 2 : 3;
@@ -109,10 +109,10 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
                n = m;
             n++;
             lj = 1;
-            for (ix=1; ix<=4; ix++) {
-               m = n%4 + 1;
-               ljfill = PaintContourLine(zc[n-1], ir[n-1], x[n-1], y[n-1], zc[m-1], ir[m-1], x[m-1], y[m-1]);
-               lj += 2*ljfill;
+            for (ix = 1; ix <= 4; ix++) {
+               m = n % 4 + 1;
+               ljfill = PaintContourLine(zc[n - 1], ir[n - 1], x[n - 1], y[n - 1], zc[m - 1], ir[m - 1], x[m - 1], y[m - 1]);
+               lj += 2 * ljfill;
                n = m;
             }
 
@@ -122,10 +122,10 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
                n = m;
             n++;
             lj = 2;
-            for (ix=1; ix<=4; ix++) {
-               m = (n === 1) ? 4 : n-1;
-               ljfill = PaintContourLine(zc[n-1], ir[n-1], x[n-1], y[n-1], zc[m-1], ir[m-1], x[m-1], y[m-1]);
-               lj += 2*ljfill;
+            for (ix = 1; ix <= 4; ix++) {
+               m = (n === 1) ? 4 : n - 1;
+               ljfill = PaintContourLine(zc[n - 1], ir[n - 1], x[n - 1], y[n - 1], zc[m - 1], ir[m - 1], x[m - 1], y[m - 1]);
+               lj += 2 * ljfill;
                n = m;
             }
             //     Re-order endpoints
@@ -133,18 +133,18 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
             count = 0;
             for (ix = 1; ix <= lj - 5; ix += 2) {
                // count = 0;
-               while (itarr[ix-1] !== itarr[ix]) {
+               while (itarr[ix - 1] !== itarr[ix]) {
                   xsave = xarr[ix];
                   ysave = yarr[ix];
                   itars = itarr[ix];
-                  for (jx=ix; jx<=lj-5; jx +=2) {
-                     xarr[jx] = xarr[jx+2];
-                     yarr[jx] = yarr[jx+2];
-                     itarr[jx] = itarr[jx+2];
+                  for (jx = ix; jx <= lj - 5; jx += 2) {
+                     xarr[jx] = xarr[jx + 2];
+                     yarr[jx] = yarr[jx + 2];
+                     itarr[jx] = itarr[jx + 2];
                   }
-                  xarr[lj-3] = xsave;
-                  yarr[lj-3] = ysave;
-                  itarr[lj-3] = itars;
+                  xarr[lj - 3] = xsave;
+                  yarr[lj - 3] = ysave;
+                  itarr[lj - 3] = itars;
                   if (count > kMAXCOUNT)
                      break;
                   count++;
@@ -155,21 +155,21 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
                continue;
 
             for (ix = 1; ix <= lj - 2; ix += 2) {
-               ipoly = itarr[ix-1];
+               ipoly = itarr[ix - 1];
 
                if ((ipoly >= 0) && (ipoly < levels.length)) {
                   poly = polys[ipoly];
                   if (!poly)
-                     poly = polys[ipoly] = createTPolyLine(kMAXCONTOUR*4, true);
+                     poly = polys[ipoly] = createTPolyLine(kMAXCONTOUR * 4, true);
 
                   const np = poly.fLastPoint;
-                  if (np < poly.fN-2) {
-                     poly.fX[np+1] = Math.round(xarr[ix-1]);
-                     poly.fY[np+1] = Math.round(yarr[ix-1]);
-                     poly.fX[np+2] = Math.round(xarr[ix]);
-                     poly.fY[np+2] = Math.round(yarr[ix]);
-                     poly.fLastPoint = np+2;
-                     npmax = Math.max(npmax, poly.fLastPoint+1);
+                  if (np < poly.fN - 2) {
+                     poly.fX[np + 1] = Math.round(xarr[ix - 1]);
+                     poly.fY[np + 1] = Math.round(yarr[ix - 1]);
+                     poly.fX[np + 2] = Math.round(xarr[ix]);
+                     poly.fY[np + 2] = Math.round(yarr[ix]);
+                     poly.fLastPoint = np + 2;
+                     npmax = Math.max(npmax, poly.fLastPoint + 1);
                   } else {
                      // console.log(`reject point ${poly.fLastPoint}`);
                   }
@@ -191,13 +191,13 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
 
    // store negative contours from 0 to minimum, then all positive contours
    k = 0;
-   for (ipoly = first-1; ipoly >= 0; ipoly--)
+   for (ipoly = first - 1; ipoly >= 0; ipoly--)
       polysort[k++] = ipoly;
    for (ipoly = first; ipoly < levels.length; ipoly++)
       polysort[k++] = ipoly;
 
-   const xp = new Float32Array(2*npmax),
-         yp = new Float32Array(2*npmax),
+   const xp = new Float32Array(2 * npmax),
+         yp = new Float32Array(2 * npmax),
          has_func = isFunc(palette.calcColorIndex); // rcanvas for v7
 
    for (k = 0; k < levels.length; ++k) {
@@ -207,36 +207,36 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
          continue;
 
       const colindx = has_func ? palette.calcColorIndex(ipoly, levels.length) : ipoly,
-            xx = poly.fX, yy = poly.fY, np2 = poly.fLastPoint+1,
+            xx = poly.fX, yy = poly.fY, np2 = poly.fLastPoint + 1,
             xmin = 0, ymin = 0;
       let istart = 0, iminus, iplus, nadd;
 
       while (true) {
          iminus = npmax;
-         iplus = iminus+1;
-         xp[iminus]= xx[istart];
+         iplus = iminus + 1;
+         xp[iminus] = xx[istart];
          yp[iminus] = yy[istart];
-         xp[iplus] = xx[istart+1];
-         yp[iplus] = yy[istart+1];
-         xx[istart] = xx[istart+1] = xmin;
-         yy[istart] = yy[istart+1] = ymin;
+         xp[iplus] = xx[istart + 1];
+         yp[iplus] = yy[istart + 1];
+         xx[istart] = xx[istart + 1] = xmin;
+         yy[istart] = yy[istart + 1] = ymin;
          while (true) {
             nadd = 0;
             for (i = 2; i < np2; i += 2) {
-               if ((iplus < 2*npmax-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
+               if ((iplus < 2 * npmax - 1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
                   iplus++;
-                  xp[iplus] = xx[i+1];
-                  yp[iplus] = yy[i+1];
-                  xx[i] = xx[i+1] = xmin;
-                  yy[i] = yy[i+1] = ymin;
+                  xp[iplus] = xx[i + 1];
+                  yp[iplus] = yy[i + 1];
+                  xx[i] = xx[i + 1] = xmin;
+                  yy[i] = yy[i + 1] = ymin;
                   nadd++;
                }
-               if ((iminus > 0) && (xx[i+1] === xp[iminus]) && (yy[i+1] === yp[iminus])) {
+               if ((iminus > 0) && (xx[i + 1] === xp[iminus]) && (yy[i + 1] === yp[iminus])) {
                   iminus--;
                   xp[iminus] = xx[i];
                   yp[iminus] = yy[i];
-                  xx[i] = xx[i+1] = xmin;
-                  yy[i] = yy[i+1] = ymin;
+                  xx[i] = xx[i + 1] = xmin;
+                  yy[i] = yy[i + 1] = ymin;
                   nadd++;
                }
             }
@@ -244,7 +244,7 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
                break;
          }
 
-         if ((iminus+1 < iplus) && (iminus >= 0))
+         if ((iminus + 1 < iplus) && (iminus >= 0))
             contour_func(colindx, xp, yp, iminus, iplus, ipoly);
 
          istart = 0;
@@ -280,8 +280,8 @@ class Triangles3DHandler {
       this.loop = 0;
 
       const nfaces = [], posbuf = [], posbufindx = [],    // buffers for faces
-            pntbuf = new Float32Array(6*3), // maximal 6 points
-            gridpnts = new Float32Array(2*3),
+            pntbuf = new Float32Array(6 * 3), // maximal 6 points
+            gridpnts = new Float32Array(2 * 3),
             levels_eps = (levels.at(-1) - levels.at(0)) / levels.length / 1e2;
       let nsegments = 0, lpos = null, lindx = 0,  // buffer for lines
           ngridsegments = 0, grid = null, gindx = 0, // buffer for grid lines segments
@@ -295,7 +295,7 @@ class Triangles3DHandler {
       this.createNormIndex = function(handle) {
          // for each bin maximal 8 points reserved
          if (handle.donormals)
-            normindx = new Int32Array((handle.i2-handle.i1)*(handle.j2-handle.j1)*8).fill(-1);
+            normindx = new Int32Array((handle.i2 - handle.i1) * (handle.j2 - handle.j1) * 8).fill(-1);
       };
 
       this.createBuffers = function() {
@@ -338,13 +338,13 @@ class Triangles3DHandler {
          }
 
          lpos[lindx] = x1;
-         lpos[lindx+1] = y1;
-         lpos[lindx+2] = z1;
-         lindx+=3;
+         lpos[lindx + 1] = y1;
+         lpos[lindx + 2] = z1;
+         lindx += 3;
          lpos[lindx] = x2;
-         lpos[lindx+1] = y2;
-         lpos[lindx+2] = z2;
-         lindx+=3;
+         lpos[lindx + 1] = y2;
+         lpos[lindx + 2] = z2;
+         lindx += 3;
       };
 
       function addCrossingPoint(xx1, yy1, zz1, xx2, yy2, zz2, crossz, with_grid) {
@@ -355,21 +355,21 @@ class Triangles3DHandler {
          let shift = 3;
          if (lastpart && (Math.abs(part) < Math.abs(lastpart))) {
             // while second crossing point closer than first to original, move it in memory
-            pntbuf[pntindx] = pntbuf[pntindx-3];
-            pntbuf[pntindx+1] = pntbuf[pntindx-2];
-            pntbuf[pntindx+2] = pntbuf[pntindx-1];
-            pntindx-=3;
+            pntbuf[pntindx] = pntbuf[pntindx - 3];
+            pntbuf[pntindx + 1] = pntbuf[pntindx - 2];
+            pntbuf[pntindx + 2] = pntbuf[pntindx - 1];
+            pntindx -= 3;
             shift = 6;
          }
 
-         pntbuf[pntindx] = xx1 + part*(xx2-xx1);
-         pntbuf[pntindx+1] = yy1 + part*(yy2-yy1);
-         pntbuf[pntindx+2] = crossz;
+         pntbuf[pntindx] = xx1 + part * (xx2 - xx1);
+         pntbuf[pntindx + 1] = yy1 + part * (yy2 - yy1);
+         pntbuf[pntindx + 2] = crossz;
 
          if (with_grid && grid) {
             gridpnts[gridcnt] = pntbuf[pntindx];
-            gridpnts[gridcnt+1] = pntbuf[pntindx+1];
-            gridpnts[gridcnt+2] = pntbuf[pntindx+2];
+            gridpnts[gridcnt + 1] = pntbuf[pntindx + 1];
+            gridpnts[gridcnt + 2] = pntbuf[pntindx + 2];
             gridcnt += 3;
          }
 
@@ -378,7 +378,7 @@ class Triangles3DHandler {
       }
 
       function rememberVertex(indx, handle, ii, jj) {
-         const bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1))*8;
+         const bin = ((ii - handle.i1) * (handle.j2 - handle.j1) + (jj - handle.j1)) * 8;
 
          if (normindx[bin] >= 0)
             return console.error('More than 8 vertexes for the bin');
@@ -390,9 +390,9 @@ class Triangles3DHandler {
 
       this.addMainTriangle = function(x1, y1, z1, x2, y2, z2, x3, y3, z3, is_first, handle, i, j) {
          for (let lvl = 1; lvl < levels.length; ++lvl) {
-            let side1 = checkSide(z1, levels[lvl-1], levels[lvl], levels_eps),
-                side2 = checkSide(z2, levels[lvl-1], levels[lvl], levels_eps),
-                side3 = checkSide(z3, levels[lvl-1], levels[lvl], levels_eps),
+            let side1 = checkSide(z1, levels[lvl - 1], levels[lvl], levels_eps),
+                side2 = checkSide(z2, levels[lvl - 1], levels[lvl], levels_eps),
+                side3 = checkSide(z3, levels[lvl - 1], levels[lvl], levels_eps),
                 side_sum = side1 + side2 + side3;
 
             // always show top segments
@@ -406,7 +406,7 @@ class Triangles3DHandler {
                return;
 
             if (!this.loop) {
-               let npnts = Math.abs(side2-side1) + Math.abs(side3-side2) + Math.abs(side1-side3);
+               let npnts = Math.abs(side2 - side1) + Math.abs(side3 - side2) + Math.abs(side1 - side3);
                if (side1 === 0)
                   ++npnts;
                if (side2 === 0)
@@ -420,7 +420,7 @@ class Triangles3DHandler {
                if (npnts > 2) {
                   if (nfaces[lvl] === undefined)
                      nfaces[lvl] = 0;
-                  nfaces[lvl] += npnts-2;
+                  nfaces[lvl] += npnts - 2;
                }
 
                // check if any(contours for given level exists
@@ -436,8 +436,8 @@ class Triangles3DHandler {
             pntindx = 0;
             if (side1 === 0) {
                pntbuf[pntindx] = x1;
-               pntbuf[pntindx+1] = y1;
-               pntbuf[pntindx+2] = z1;
+               pntbuf[pntindx + 1] = y1;
+               pntbuf[pntindx + 2] = z1;
                pntindx += 3;
             }
 
@@ -445,15 +445,15 @@ class Triangles3DHandler {
                // order is important, should move from 1->2 point, checked via lastpart
                lastpart = 0;
                if ((side1 < 0) || (side2 < 0))
-                  addCrossingPoint(x1, y1, z1, x2, y2, z2, levels[lvl-1]);
+                  addCrossingPoint(x1, y1, z1, x2, y2, z2, levels[lvl - 1]);
                if ((side1 > 0) || (side2 > 0))
                   addCrossingPoint(x1, y1, z1, x2, y2, z2, levels[lvl], true);
             }
 
             if (side2 === 0) {
                pntbuf[pntindx] = x2;
-               pntbuf[pntindx+1] = y2;
-               pntbuf[pntindx+2] = z2;
+               pntbuf[pntindx + 1] = y2;
+               pntbuf[pntindx + 2] = z2;
                pntindx += 3;
             }
 
@@ -461,15 +461,15 @@ class Triangles3DHandler {
                // order is important, should move from 2->3 point, checked via lastpart
                lastpart = 0;
                if ((side2 < 0) || (side3 < 0))
-                  addCrossingPoint(x2, y2, z2, x3, y3, z3, levels[lvl-1]);
+                  addCrossingPoint(x2, y2, z2, x3, y3, z3, levels[lvl - 1]);
                if ((side2 > 0) || (side3 > 0))
                   addCrossingPoint(x2, y2, z2, x3, y3, z3, levels[lvl], true);
             }
 
             if (side3 === 0) {
                pntbuf[pntindx] = x3;
-               pntbuf[pntindx+1] = y3;
-               pntbuf[pntindx+2] = z3;
+               pntbuf[pntindx + 1] = y3;
+               pntbuf[pntindx + 2] = z3;
                pntindx += 3;
             }
 
@@ -477,7 +477,7 @@ class Triangles3DHandler {
                // order is important, should move from 3->1 point, checked via lastpart
                lastpart = 0;
                if ((side3 < 0) || (side1 < 0))
-                  addCrossingPoint(x3, y3, z3, x1, y1, z1, levels[lvl-1]);
+                  addCrossingPoint(x3, y3, z3, x1, y1, z1, levels[lvl - 1]);
                if ((side3 > 0) || (side1 > 0))
                   addCrossingPoint(x3, y3, z3, x1, y1, z1, levels[lvl], true);
             }
@@ -485,13 +485,13 @@ class Triangles3DHandler {
             if (pntindx === 0)
                continue;
             if (pntindx < 9) {
-               console.log(`found ${pntindx/3} points, must be at least 3`);
+               console.log(`found ${pntindx / 3} points, must be at least 3`);
                continue;
             }
 
             if (grid && (gridcnt === 6)) {
                for (let jj = 0; jj < 6; ++jj)
-                  grid[gindx+jj] = gridpnts[jj];
+                  grid[gindx + jj] = gridpnts[jj];
                gindx += 6;
             }
 
@@ -501,23 +501,23 @@ class Triangles3DHandler {
             let s = posbufindx[lvl];
             if (this.donormals && (pntindx === 9)) {
                rememberVertex(s, handle, i, j);
-               rememberVertex(s+3, handle, i+1, is_first ? j+1 : j);
-               rememberVertex(s+6, handle, is_first ? i : i+1, j+1);
+               rememberVertex(s + 3, handle, i + 1, is_first ? j + 1 : j);
+               rememberVertex(s + 6, handle, is_first ? i : i + 1, j + 1);
             }
 
             for (let k1 = 3; k1 < pntindx - 3; k1 += 3) {
                buf[s] = pntbuf[0];
-               buf[s+1] = pntbuf[1];
-               buf[s+2] = pntbuf[2];
-               s+=3;
+               buf[s + 1] = pntbuf[1];
+               buf[s + 2] = pntbuf[2];
+               s += 3;
                buf[s] = pntbuf[k1];
-               buf[s+1] = pntbuf[k1+1];
-               buf[s+2] = pntbuf[k1+2];
-               s+=3;
-               buf[s] = pntbuf[k1+3];
-               buf[s+1] = pntbuf[k1+4];
-               buf[s+2] = pntbuf[k1+5];
-               s+=3;
+               buf[s + 1] = pntbuf[k1 + 1];
+               buf[s + 2] = pntbuf[k1 + 2];
+               s += 3;
+               buf[s] = pntbuf[k1 + 3];
+               buf[s + 1] = pntbuf[k1 + 4];
+               buf[s + 2] = pntbuf[k1 + 5];
+               s += 3;
             }
             posbufindx[lvl] = s;
          }
@@ -530,14 +530,14 @@ class Triangles3DHandler {
          }
 
          if (lpos && linesFunc) {
-            if (nsegments*6 !== lindx)
-               console.error(`SURF lines mismmatch nsegm=${nsegments} lindx=${lindx} diff=${nsegments*6 - lindx}`);
+            if (nsegments * 6 !== lindx)
+               console.error(`SURF lines mismmatch nsegm=${nsegments} lindx=${lindx} diff=${nsegments * 6 - lindx}`);
             linesFunc(false, lpos);
          }
 
          if (grid && linesFunc) {
-            if (ngridsegments*6 !== gindx)
-               console.error(`SURF grid draw mismatch ngridsegm=${ngridsegments} gindx=${gindx} diff=${ngridsegments*6 - gindx}`);
+            if (ngridsegments * 6 !== gindx)
+               console.error(`SURF grid draw mismatch ngridsegm=${ngridsegments} gindx=${gindx} diff=${ngridsegments * 6 - gindx}`);
             linesFunc(true, grid);
          }
       };
@@ -561,17 +561,17 @@ function buildSurf3D(histo, handle, ilevels, meshFunc, linesFunc) {
    for (triangles.loop = 0; triangles.loop < 2; ++triangles.loop) {
       triangles.createBuffers();
 
-      for (i = handle.i1; i < handle.i2-1; ++i) {
-         x1 = handle.original ? 0.5 * (arrx[i] + arrx[i+1]) : arrx[i];
-         x2 = handle.original ? 0.5 * (arrx[i+1] + arrx[i+2]) : arrx[i+1];
-         for (j = handle.j1; j < handle.j2-1; ++j) {
-            y1 = handle.original ? 0.5 * (arry[j] + arry[j+1]) : arry[j];
-            y2 = handle.original ? 0.5 * (arry[j+1] + arry[j+2]) : arry[j+1];
+      for (i = handle.i1; i < handle.i2 - 1; ++i) {
+         x1 = handle.original ? 0.5 * (arrx[i] + arrx[i + 1]) : arrx[i];
+         x2 = handle.original ? 0.5 * (arrx[i + 1] + arrx[i + 2]) : arrx[i + 1];
+         for (j = handle.j1; j < handle.j2 - 1; ++j) {
+            y1 = handle.original ? 0.5 * (arry[j] + arry[j + 1]) : arry[j];
+            y2 = handle.original ? 0.5 * (arry[j + 1] + arry[j + 2]) : arry[j + 1];
 
-            z11 = main_grz(histo.getBinContent(i+1, j+1));
-            z12 = main_grz(histo.getBinContent(i+1, j+2));
-            z21 = main_grz(histo.getBinContent(i+2, j+1));
-            z22 = main_grz(histo.getBinContent(i+2, j+2));
+            z11 = main_grz(histo.getBinContent(i + 1, j + 1));
+            z12 = main_grz(histo.getBinContent(i + 1, j + 2));
+            z21 = main_grz(histo.getBinContent(i + 2, j + 1));
+            z22 = main_grz(histo.getBinContent(i + 2, j + 2));
 
             triangles.addMainTriangle(x1, y1, z11, x2, y2, z22, x1, y2, z12, true, handle, i, j);
 
@@ -665,13 +665,13 @@ class TH2Painter extends THistPainter {
          widthX = widthY = parseInt(ws) || 1;
       } else if (isStr(kind) && (kind.length > 1)) {
          const ps = kind.indexOf('_');
-         if ((ps > 0) && (kind[0] === 'X') && (kind[ps+1] === 'Y')) {
+         if ((ps > 0) && (kind[0] === 'X') && (kind[ps + 1] === 'Y')) {
             widthX = parseWidth(kind.slice(1, ps));
-            widthY = parseWidth(kind.slice(ps+2));
+            widthY = parseWidth(kind.slice(ps + 2));
             kind = 'XY';
-         } else if ((ps > 0) && (kind[0] === 'Y') && (kind[ps+1] === 'X')) {
+         } else if ((ps > 0) && (kind[0] === 'Y') && (kind[ps + 1] === 'X')) {
             widthY = parseWidth(kind.slice(1, ps));
-            widthX = parseWidth(kind.slice(ps+2));
+            widthX = parseWidth(kind.slice(ps + 2));
             kind = 'XY';
          } else {
             widthX = widthY = parseWidth(kind.slice(1));
@@ -713,9 +713,9 @@ class TH2Painter extends THistPainter {
       if (jj2 === undefined) {
          if (!this.tt_handle)
             return;
-         ii1 = Math.round((this.tt_handle.i1 + this.tt_handle.i2)/2);
+         ii1 = Math.round((this.tt_handle.i1 + this.tt_handle.i2) / 2);
          ii2 = ii1 + 1;
-         jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2);
+         jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2) / 2);
          jj2 = jj1 + 1;
       }
 
@@ -724,11 +724,11 @@ class TH2Painter extends THistPainter {
       if (canp && !canp.isReadonly() && this.hasSnapId()) {
          // this is when projection should be created on the server side
          if (((this.#projection_kind === 'X') || (this.#projection_kind === 'XY')) && !canp.websocketTimeout('projX')) {
-            if (canp.sendWebsocket(`EXECANDSEND:DXPROJ:${this.getSnapId()}:ProjectionX("_projx",${jj1+1},${jj2},"")`))
+            if (canp.sendWebsocket(`EXECANDSEND:DXPROJ:${this.getSnapId()}:ProjectionX("_projx",${jj1 + 1},${jj2},"")`))
                canp.websocketTimeout('projX', 1000);
          }
          if (((this.#projection_kind === 'Y') || (this.#projection_kind === 'XY')) && !canp.websocketTimeout('projY')) {
-            if (canp.sendWebsocket(`EXECANDSEND:DYPROJ:${this.getSnapId()}:ProjectionY("_projy",${ii1+1},${ii2},"")`))
+            if (canp.sendWebsocket(`EXECANDSEND:DYPROJ:${this.getSnapId()}:ProjectionY("_projy",${ii1 + 1},${ii2},"")`))
                canp.websocketTimeout('projY', 1000);
          }
          return true;
@@ -760,24 +760,24 @@ class TH2Painter extends THistPainter {
                   for (let i = 0; i < this.nbinsx; ++i) {
                      let sum = 0;
                      for (let j = jj1; j < jj2; ++j)
-                        sum += histo.getBinContent(i+1, j+1);
-                     p.setBinContent(i+1, sum);
+                        sum += histo.getBinContent(i + 1, j + 1);
+                     p.setBinContent(i + 1, sum);
                   }
-                  p.fTitle = 'X projection ' + (jj1+1 === jj2 ? `bin ${jj2}` : `bins [${jj1+1} .. ${jj2}]`);
+                  p.fTitle = 'X projection ' + (jj1 + 1 === jj2 ? `bin ${jj2}` : `bins [${jj1 + 1} .. ${jj2}]`);
                   if (this.tt_handle) {
-                     first = this.tt_handle.i1+1;
+                     first = this.tt_handle.i1 + 1;
                      last = this.tt_handle.i2;
                   }
                } else {
                   for (let j = 0; j < this.nbinsy; ++j) {
                      let sum = 0;
                      for (let i = ii1; i < ii2; ++i)
-                        sum += histo.getBinContent(i+1, j+1);
-                     p.setBinContent(j+1, sum);
+                        sum += histo.getBinContent(i + 1, j + 1);
+                     p.setBinContent(j + 1, sum);
                   }
-                  p.fTitle = 'Y projection ' + (ii1+1 === ii2 ? `bin ${ii2}` : `bins [${ii1+1} .. ${ii2}]`);
+                  p.fTitle = 'Y projection ' + (ii1 + 1 === ii2 ? `bin ${ii2}` : `bins [${ii1 + 1} .. ${ii2}]`);
                   if (this.tt_handle) {
-                     first = this.tt_handle.j1+1;
+                     first = this.tt_handle.j1 + 1;
                      last = this.tt_handle.j2;
                   }
                }
@@ -985,24 +985,24 @@ class TH2Painter extends THistPainter {
 
       let xmin, xmax, ymin, ymax, isany = false;
 
-      if ((ileft === iright-1) && (ileft > i1+1) && (iright < i2-1)) {
+      if ((ileft === iright - 1) && (ileft > i1 + 1) && (iright < i2 - 1)) {
          ileft--;
          iright++;
       }
-      if ((jleft === jright-1) && (jleft > j1+1) && (jright < j2-1)) {
+      if ((jleft === jright - 1) && (jleft > j1 + 1) && (jright < j2 - 1)) {
          jleft--;
          jright++;
       }
 
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
-         xmin = histo.fXaxis.GetBinLowEdge(ileft+1);
-         xmax = histo.fXaxis.GetBinLowEdge(iright+1);
+         xmin = histo.fXaxis.GetBinLowEdge(ileft + 1);
+         xmax = histo.fXaxis.GetBinLowEdge(iright + 1);
          isany = true;
       }
 
       if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
-         ymin = histo.fYaxis.GetBinLowEdge(jleft+1);
-         ymax = histo.fYaxis.GetBinLowEdge(jright+1);
+         ymin = histo.fYaxis.GetBinLowEdge(jleft + 1);
+         ymax = histo.fYaxis.GetBinLowEdge(jright + 1);
          isany = true;
       }
 
@@ -1045,7 +1045,7 @@ class TH2Painter extends THistPainter {
          this.gminposbin = null;
          for (i = 0; i < this.nbinsx; ++i) {
             for (j = 0; j < this.nbinsy; ++j) {
-               const bin_content = histo.getBinContent(i+1, j+1);
+               const bin_content = histo.getBinContent(i + 1, j + 1);
                if (bin_content < this.gminbin)
                   this.gminbin = bin_content;
                else if (bin_content > this.gmaxbin)
@@ -1060,7 +1060,7 @@ class TH2Painter extends THistPainter {
 
       // this value used for logz scale drawing
       if ((this.gminposbin === null) && (this.gmaxbin > 0))
-         this.gminposbin = this.gmaxbin*1e-4;
+         this.gminposbin = this.gmaxbin * 1e-4;
 
       let is_content = this.gmaxbin || this.gminbin;
 
@@ -1207,8 +1207,8 @@ class TH2Painter extends THistPainter {
                   stat_sumw2 += zz * zz;
                   stat_sumx1 += xx * zz;
                   stat_sumy1 += yy * zz;
-                  stat_sumx2 += xx**2 * zz;
-                  stat_sumy2 += yy**2 * zz;
+                  stat_sumx2 += xx ** 2 * zz;
+                  stat_sumy2 += yy ** 2 * zz;
                }
             }
          }
@@ -1226,8 +1226,8 @@ class TH2Painter extends THistPainter {
       if (Math.abs(stat_sum0) > 1e-300) {
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
-         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx**2));
-         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany**2));
+         res.rmsx = Math.sqrt(Math.abs(stat_sumx2 / stat_sum0 - res.meanx ** 2));
+         res.rmsy = Math.sqrt(Math.abs(stat_sumy2 / stat_sum0 - res.meany ** 2));
       }
 
       if (res.wmax === null)
@@ -1237,7 +1237,7 @@ class TH2Painter extends THistPainter {
       if (histo.fEntries > 0)
          res.entries = histo.fEntries;
 
-      res.eff_entries = stat_sumw2 ? stat_sum0*stat_sum0/stat_sumw2 : Math.abs(stat_sum0);
+      res.eff_entries = stat_sumw2 ? stat_sum0 * stat_sum0 / stat_sumw2 : Math.abs(stat_sum0);
 
       if (count_skew && !this.isTH2Poly()) {
          let sumx3 = 0, sumy3 = 0, sumx4 = 0, sumy4 = 0, np = 0, w;
@@ -1264,12 +1264,12 @@ class TH2Painter extends THistPainter {
             res.skewx = sumx3 / (np * stddev3x);
          if (np * stddev3y)
             res.skewy = sumy3 / (np * stddev3y);
-         res.skewd = res.eff_entries > 0 ? Math.sqrt(6/res.eff_entries) : 0;
+         res.skewd = res.eff_entries > 0 ? Math.sqrt(6 / res.eff_entries) : 0;
          if (np * stddev4x)
             res.kurtx = sumx4 / (np * stddev4x) - 3;
          if (np * stddev4y)
             res.kurty = sumy4 / (np * stddev4y) - 3;
-         res.kurtd = res.eff_entries > 0 ? Math.sqrt(24/res.eff_entries) : 0;
+         res.kurtd = res.eff_entries > 0 ? Math.sqrt(24 / res.eff_entries) : 0;
       }
 
       return res;
@@ -1365,7 +1365,7 @@ class TH2Painter extends THistPainter {
 
       const test_cutg = o.cutg,
             flush_last_entry = () => {
-               last_entry.path += `h${dx}v${last_entry.y1-last_entry.y2}h${-dx}z`;
+               last_entry.path += `h${dx}v${last_entry.y1 - last_entry.y2}h${-dx}z`;
                last_entry = null;
             };
 
@@ -1379,12 +1379,12 @@ class TH2Painter extends THistPainter {
 
       // now start build
       for (let i = handle.i1; i < handle.i2; ++i) {
-         dx = (handle.grx[i+1] - handle.grx[i]) || 1;
+         dx = (handle.grx[i + 1] - handle.grx[i]) || 1;
          if (can_merge_x)
             x1 = handle.grx[i];
          else {
-            x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
-            dx = Math.round(dx*(handle.xbar2 - handle.xbar1)) || 1;
+            x1 = Math.round(handle.grx[i] + dx * handle.xbar1);
+            dx = Math.round(dx * (handle.xbar2 - handle.xbar1)) || 1;
          }
 
          for (let j = handle.j2 - 1; j >= handle.j1; --j) {
@@ -1411,12 +1411,12 @@ class TH2Painter extends THistPainter {
                }
             }
 
-            dy = (handle.gry[j] - handle.gry[j+1]) || 1;
+            dy = (handle.gry[j] - handle.gry[j + 1]) || 1;
             if (can_merge_y)
-               y2 = handle.gry[j+1];
+               y2 = handle.gry[j + 1];
             else {
-               y2 = Math.round(handle.gry[j] - dy*handle.ybar2);
-               dy = Math.round(dy*(handle.ybar2 - handle.ybar1)) || 1;
+               y2 = Math.round(handle.gry[j] - dy * handle.ybar2);
+               dy = Math.round(dy * (handle.ybar2 - handle.ybar1)) || 1;
             }
 
             const cmd1 = `M${x1},${y2}`;
@@ -1493,11 +1493,11 @@ class TH2Painter extends THistPainter {
          if ((a2 <= a1) || (r2 <= r1))
             return '';
 
-         const x0 = this.width/2, y0 = this.height/2,
-               rx1 = r1 * this.width/2,
-               rx2 = r2 * this.width/2,
-               ry1 = r1 * this.height/2,
-               ry2 = r2 * this.height/2,
+         const x0 = this.width / 2, y0 = this.height / 2,
+               rx1 = r1 * this.width / 2,
+               rx2 = r2 * this.width / 2,
+               ry1 = r1 * this.height / 2,
+               ry2 = r2 * this.height / 2,
                x11 = x0 + rx1 * Math.cos(a1),
                x12 = x0 + rx1 * Math.cos(a2),
                y11 = y0 + ry1 * Math.sin(a1),
@@ -1514,7 +1514,7 @@ class TH2Painter extends THistPainter {
       };
 
       handle.findBin = function(x, y) {
-         const x0 = this.width/2, y0 = this.height/2;
+         const x0 = this.width / 2, y0 = this.height / 2;
          let angle = Math.atan2((y - y0) / this.height, (x - x0) / this.width), i, j;
          const radius = Math.abs(Math.cos(angle)) > 0.5 ? (x - x0) / Math.cos(angle) / this.width * 2 : (y - y0) / Math.sin(angle) / this.height * 2;
 
@@ -1604,13 +1604,13 @@ class TH2Painter extends THistPainter {
                if ((x === lastx) && (y === lasty))
                   continue;
                if (i % 9 === 0)
-                  dd += `m${x-lastx},${y-lasty}`;
+                  dd += `m${x - lastx},${y - lasty}`;
                else if (y === lasty)
-                  dd += `h${x-lastx}`;
+                  dd += `h${x - lastx}`;
                else if (x === lastx)
-                  dd += `v${y-lasty}`;
+                  dd += `v${y - lasty}`;
                else
-                  dd += `l${x-lastx},${y-lasty}`;
+                  dd += `l${x - lastx},${y - lasty}`;
             }
 
             lastx = x;
@@ -1698,9 +1698,9 @@ class TH2Painter extends THistPainter {
 
          /* eslint-disable-next-line one-var */
          const get_intersect = (indx, di) => {
-            const segm = { x1: xp[indx], y1: yp[indx], x2: 2*xp[indx] - xp[indx+di], y2: 2*yp[indx] - yp[indx+di] };
+            const segm = { x1: xp[indx], y1: yp[indx], x2: 2 * xp[indx] - xp[indx + di], y2: 2 * yp[indx] - yp[indx + di] };
             for (let i = 0; i < 4; ++i) {
-               const res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i+1)%4].x, y2: points[(i+1)%4].y });
+               const res = get_segm_intersection(segm, { x1: points[i].x, y1: points[i].y, x2: points[(i + 1) % 4].x, y2: points[(i + 1) % 4].y });
                if (res) {
                   res.indx = i + 0.5;
                   return res;
@@ -1725,7 +1725,7 @@ class TH2Painter extends THistPainter {
 
          let dd = buildPath(xp, yp, iminus, iplus),
              indx = pnt2.indx;
-         const side = 1, step = side*0.5;
+         const side = 1, step = side * 0.5;
 
          dd += `L${pnt2.x},${pnt2.y}`;
 
@@ -1755,7 +1755,7 @@ class TH2Painter extends THistPainter {
                break;
             case 12:
                fillcolor = 'none';
-               lineatt = this.createAttLine({ color: 1, style: (ipoly%5 + 1), width: 1, std: false });
+               lineatt = this.createAttLine({ color: 1, style: (ipoly % 5 + 1), width: 1, std: false });
                break;
             case 13:
                fillcolor = 'none';
@@ -1781,7 +1781,7 @@ class TH2Painter extends THistPainter {
    getGrNPoints(gr) {
       const x = gr.fX, y = gr.fY;
       let npnts = gr.fNpoints;
-      if ((npnts > 2) && (x[0] === x[npnts-1]) && (y[0] === y[npnts-1]))
+      if ((npnts > 2) && (x[0] === x[npnts - 1]) && (y[0] === y[npnts - 1]))
          npnts--;
       return npnts;
    }
@@ -2006,9 +2006,9 @@ class TH2Painter extends THistPainter {
 
       if (textbins.length) {
          const color = this.getColor(histo.fMarkerColor),
-               rotate = -1*o.TextAngle,
+               rotate = -1 * o.TextAngle,
                text_g = this.getG().append('svg:g').attr('class', 'th2poly_text'),
-               text_size = ((histo.fMarkerSize !== 1) && rotate) ? Math.round(0.02*h*histo.fMarkerSize) : 12;
+               text_size = ((histo.fMarkerSize !== 1) && rotate) ? Math.round(0.02 * h * histo.fMarkerSize) : 12;
 
          pr = this.startTextDrawingAsync(42, text_size, text_g, text_size).then(() => {
             for (i = 0; i < textbins.length; ++i) {
@@ -2020,8 +2020,8 @@ class TH2Painter extends THistPainter {
                   textbin.midx = Math.round(textbin.sumx / textbin.sum);
                   textbin.midy = Math.round(textbin.sumy / textbin.sum);
                } else {
-                  textbin.midx = Math.round(funcs.grx((bin.fXmin + bin.fXmax)/2));
-                  textbin.midy = Math.round(funcs.gry((bin.fYmin + bin.fYmax)/2));
+                  textbin.midx = Math.round(funcs.grx((bin.fXmin + bin.fXmax) / 2));
+                  textbin.midy = Math.round(funcs.gry((bin.fYmin + bin.fYmax) / 2));
                }
 
                let text;
@@ -2053,16 +2053,16 @@ class TH2Painter extends THistPainter {
             o = this.getOptions(),
             test_cutg = o.cutg,
             color = this.getColor(histo.fMarkerColor),
-            rotate = -1*o.TextAngle,
+            rotate = -1 * o.TextAngle,
             draw_g = this.getG().append('svg:g').attr('class', 'th2_text'),
             show_err = (o.TextKind === 'E'),
             latex = (show_err && !o.TextLine) ? 1 : 0,
-            text_offset = histo.fBarOffset*1e-3,
+            text_offset = histo.fBarOffset * 1e-3,
             text_size = ((histo.fMarkerSize === 1) || !rotate) ? 20 : Math.round(0.02 * histo.fMarkerSize * handle.height);
 
       return this.startTextDrawingAsync(42, text_size, draw_g, text_size).then(() => {
          for (let i = handle.i1; i < handle.i2; ++i) {
-            const binw = handle.grx[i+1] - handle.grx[i];
+            const binw = handle.grx[i + 1] - handle.grx[i];
             for (let j = handle.j1; j < handle.j2; ++j) {
                const binz = histo.getBinContent(i + 1, j + 1);
                if ((binz === 0) && !o.ShowEmpty)
@@ -2072,7 +2072,7 @@ class TH2Painter extends THistPainter {
                                                     histo.fYaxis.GetBinCoord(j + 0.5)))
                   continue;
 
-               const binh = handle.gry[j] - handle.gry[j+1];
+               const binh = handle.gry[j] - handle.gry[j + 1];
 
                let text = (binz === Math.round(binz)) ? binz.toString() : floatToString(binz, gStyle.fPaintTextFormat);
 
@@ -2096,14 +2096,14 @@ class TH2Painter extends THistPainter {
                let x, y, width, height;
 
                if (rotate) {
-                  x = Math.round(handle.grx[i] + binw*0.5);
-                  y = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
+                  x = Math.round(handle.grx[i] + binw * 0.5);
+                  y = Math.round(handle.gry[j + 1] + binh * (0.5 + text_offset));
                   width = height = 0;
                } else {
-                  x = Math.round(handle.grx[i] + binw*0.1);
-                  y = Math.round(handle.gry[j+1] + binh*(0.1 + text_offset));
-                  width = Math.round(binw*0.8);
-                  height = Math.round(binh*0.8);
+                  x = Math.round(handle.grx[i] + binw * 0.1);
+                  y = Math.round(handle.gry[j + 1] + binh * (0.1 + text_offset));
+                  width = Math.round(binw * 0.8);
+                  height = Math.round(binh * 0.8);
                }
 
                this.drawText({ align: 22, x, y, width, height, rotate, text, color, latex, draw_g });
@@ -2124,8 +2124,8 @@ class TH2Painter extends THistPainter {
             handle = this.prepareDraw({ rounding: false }),
             cntr = o.Color ? this.getContour() : null,
             palette = o.Color ? this.getHistPalette() : null,
-            scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1)/2,
-            scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1)/2,
+            scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1]) / (handle.i2 - handle.i1 + 1) / 2,
+            scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1]) / (handle.j2 - handle.j1 + 1) / 2,
             makeLine = (dx, dy) => { return dx ? (dy ? `l${dx},${dy}` : `h${dx}`) : (dy ? `v${dy}` : ''); },
             entries = [];
       let dn = 1e-30, dx, dy, xc, yc, plain = '',
@@ -2145,36 +2145,36 @@ class TH2Painter extends THistPainter {
                else if (i === handle.i2 - 1)
                   dx = bincont - histo.getBinContent(i, j + 1);
                else
-                  dx = 0.5*(histo.getBinContent(i+2, j + 1) - histo.getBinContent(i, j+1));
+                  dx = 0.5 * (histo.getBinContent(i + 2, j + 1) - histo.getBinContent(i, j + 1));
 
                if (j === handle.j1)
                   dy = histo.getBinContent(i + 1, j + 2) - bincont;
                else if (j === handle.j2 - 1)
                   dy = bincont - histo.getBinContent(i + 1, j);
                else
-                  dy = 0.5*(histo.getBinContent(i + 1, j + 2) - histo.getBinContent(i + 1, j));
+                  dy = 0.5 * (histo.getBinContent(i + 1, j + 2) - histo.getBinContent(i + 1, j));
 
                if (loop === 0)
                   dn = Math.max(dn, Math.abs(dx), Math.abs(dy));
                else {
-                  xc = (handle.grx[i] + handle.grx[i+1])/2;
-                  yc = (handle.gry[j] + handle.gry[j+1])/2;
-                  dxn = scale_x*dx/dn;
-                  dyn = scale_y*dy/dn;
+                  xc = (handle.grx[i] + handle.grx[i + 1]) / 2;
+                  yc = (handle.gry[j] + handle.gry[j + 1]) / 2;
+                  dxn = scale_x * dx / dn;
+                  dyn = scale_y * dy / dn;
                   x1 = xc - dxn;
                   x2 = xc + dxn;
                   y1 = yc - dyn;
                   y2 = yc + dyn;
-                  dx = Math.round(x2-x1);
-                  dy = Math.round(y2-y1);
+                  dx = Math.round(x2 - x1);
+                  dy = Math.round(y2 - y1);
 
                   if (dx || dy) {
                      let cmd = `M${Math.round(x1)},${Math.round(y1)}${makeLine(dx, dy)}`;
 
                      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        const anr = Math.sqrt(9/(dx**2 + dy**2)),
-                              si = Math.round(anr*(dx + dy)),
-                              co = Math.round(anr*(dx - dy));
+                        const anr = Math.sqrt(9 / (dx ** 2 + dy ** 2)),
+                              si = Math.round(anr * (dx + dy)),
+                              co = Math.round(anr * (dx - dy));
                         if (si || co)
                            cmd += `m${-si},${co}${makeLine(si, -co)}${makeLine(-co, -si)}`;
                      }
@@ -2265,17 +2265,17 @@ class TH2Painter extends THistPainter {
             if (zdiff < 0)
                zdiff = 0;
 
-            ww = handle.grx[i+1] - handle.grx[i];
-            hh = handle.gry[j] - handle.gry[j+1];
+            ww = handle.grx[i + 1] - handle.grx[i];
+            hh = handle.gry[j] - handle.gry[j + 1];
 
             dgrx = zdiff * ww;
             dgry = zdiff * hh;
 
             xx = Math.round(handle.grx[i] + dgrx);
-            yy = Math.round(handle.gry[j+1] + dgry);
+            yy = Math.round(handle.gry[j + 1] + dgry);
 
-            ww = Math.max(Math.round(ww - 2*dgrx), 1);
-            hh = Math.max(Math.round(hh - 2*dgry), 1);
+            ww = Math.max(Math.round(ww - 2 * dgrx), 1);
+            hh = Math.max(Math.round(hh - 2 * dgry), 1);
 
             res += `M${xx},${yy}v${hh}h${ww}v${-hh}z`;
 
@@ -2283,7 +2283,7 @@ class TH2Painter extends THistPainter {
                cross += `M${xx},${yy}l${ww},${hh}m0,${-hh}l${-ww},${hh}`;
 
             if ((o.BoxStyle === 11) && (ww > 5) && (hh > 5)) {
-               const arr = getBoxDecorations(xx, yy, ww, hh, binz < 0 ? -1 : 1, Math.round(ww*0.1), Math.round(hh*0.1));
+               const arr = getBoxDecorations(xx, yy, ww, hh, binz < 0 ? -1 : 1, Math.round(ww * 0.1), Math.round(hh * 0.1));
                btn1 += arr[0];
                btn2 += arr[1];
             }
@@ -2349,7 +2349,7 @@ class TH2Painter extends THistPainter {
          while (opt >= mult)
             mult *= 10;
          mult /= 10;
-         return Math.floor(fOption/mult) % 10 === Math.floor(opt/mult);
+         return Math.floor(fOption / mult) % 10 === Math.floor(opt / mult);
       }, parseOption = (opt, is_candle) => {
          let direction = '', preset = '', res = kNoOption;
          const c0 = opt[0], c1 = opt[1];
@@ -2382,8 +2382,8 @@ class TH2Painter extends THistPainter {
          }
 
          const l = opt.indexOf('('), r = opt.lastIndexOf(')');
-         if ((l >= 0) && (r > l+1))
-            res = parseInt(opt.slice(l+1, r));
+         if ((l >= 0) && (r > l + 1))
+            res = parseInt(opt.slice(l + 1, r));
 
          fOption = res;
 
@@ -2401,13 +2401,13 @@ class TH2Painter extends THistPainter {
                res.last = j;
             }
             integral += proj[j];
-            sum1 += proj[j]*(xx[j]+xx[j+1])/2;
+            sum1 += proj[j] * (xx[j] + xx[j + 1]) / 2;
          }
          if (integral <= 0)
             return null;
 
          res.entries = integral;
-         res.mean = sum1/integral;
+         res.mean = sum1 / integral;
          res.quantiles = new Array(prob.length);
          res.indx = new Array(prob.length);
 
@@ -2483,21 +2483,21 @@ class TH2Painter extends THistPainter {
                case 'Z':
                   return res + 'z';
                case 'V':
-                  if (yy !== a[i+1]) {
-                     res += (swapXY ? 'h' : 'v') + (a[i+1] - yy);
-                     yy = a[i+1];
+                  if (yy !== a[i + 1]) {
+                     res += (swapXY ? 'h' : 'v') + (a[i + 1] - yy);
+                     yy = a[i + 1];
                   }
                   break;
                case 'H':
-                  if (xx !== a[i+1]) {
-                     res += (swapXY ? 'v' : 'h') + (a[i+1] - xx);
-                     xx = a[i+1];
+                  if (xx !== a[i + 1]) {
+                     res += (swapXY ? 'v' : 'h') + (a[i + 1] - xx);
+                     xx = a[i + 1];
                   }
                   break;
                default:
-                  res += swapXY ? `l${a[i+1]-yy},${a[i]-xx}` : `l${a[i]-xx},${a[i+1]-yy}`;
+                  res += swapXY ? `l${a[i + 1] - yy},${a[i] - xx}` : `l${a[i] - xx},${a[i + 1] - yy}`;
                   xx = a[i];
-                  yy = a[i+1];
+                  yy = a[i + 1];
             }
             i += 2;
          }
@@ -2528,11 +2528,11 @@ class TH2Painter extends THistPainter {
 
       // Determining the quintiles
       const wRange = gStyle.fCandleWhiskerRange, bRange = gStyle.fCandleBoxRange,
-            prob = [(wRange >= 1) ? 1e-15 : 0.5 - wRange/2.0,
-                    (bRange >= 1) ? 1e-14 : 0.5 - bRange/2.0,
+            prob = [(wRange >= 1) ? 1e-15 : 0.5 - wRange / 2.0,
+                    (bRange >= 1) ? 1e-14 : 0.5 - bRange / 2.0,
                     0.5,
-                    (bRange >= 1) ? 1 - 1e-14 : 0.5 + bRange/2.0,
-                    (wRange >= 1) ? 1 - 1e-15 : 0.5 + wRange/2.0];
+                    (bRange >= 1) ? 1 - 1e-14 : 0.5 + bRange / 2.0,
+                    (wRange >= 1) ? 1 - 1e-15 : 0.5 + wRange / 2.0];
 
       /* eslint-disable-next-line one-var */
       const produceCandlePoint = (bin_indx, grx_left, grx_right, xindx1, xindx2) => {
@@ -2545,22 +2545,22 @@ class TH2Painter extends THistPainter {
          let fWhiskerDown = res.quantiles[0], fWhiskerUp = res.quantiles[4];
 
          if (isOption(kWhisker15)) { // Improved whisker definition, with 1.5*iqr
-            let pos = pnt.fBoxDown-1.5*iqr, indx = res.indx[1];
+            let pos = pnt.fBoxDown - 1.5 * iqr, indx = res.indx[1];
             while ((xx[indx] > pos) && (indx > 0))
                indx--;
             while (!proj[indx])
                indx++;
             fWhiskerDown = xx[indx]; // use lower edge here
-            pos = pnt.fBoxUp+1.5*iqr; indx = res.indx[3];
+            pos = pnt.fBoxUp + 1.5 * iqr; indx = res.indx[3];
             while ((xx[indx] < pos) && (indx < proj.length))
                indx++;
             while (!proj[indx])
                indx--;
-            fWhiskerUp = xx[indx+1]; // use upper index edge here
+            fWhiskerUp = xx[indx + 1]; // use upper index edge here
          }
 
          const fMean = res.mean,
-               fMedianErr = 1.57*iqr/Math.sqrt(res.entries);
+               fMedianErr = 1.57 * iqr / Math.sqrt(res.entries);
 
          // estimate quantiles... simple function... not so nice as GetQuantiles
 
@@ -2570,25 +2570,25 @@ class TH2Painter extends THistPainter {
 
          const w = (grx_right - grx_left);
          let candleWidth, histoWidth,
-             center = (grx_left + grx_right) / 2 + histo.fBarOffset/1000*w;
+             center = (grx_left + grx_right) / 2 + histo.fBarOffset / 1000 * w;
          if ((histo.fBarWidth > 0) && (histo.fBarWidth !== 1000))
             candleWidth = histoWidth = w * histo.fBarWidth / 1000;
          else {
-            candleWidth = w*0.66;
-            histoWidth = w*0.8;
+            candleWidth = w * 0.66;
+            histoWidth = w * 0.8;
          }
 
          if (scaledViolin && (maxContent > 0))
-            histoWidth *= res.max/maxContent;
+            histoWidth *= res.max / maxContent;
          if (scaledCandle && (maxIntegral > 0))
-            candleWidth *= res.entries/maxIntegral;
+            candleWidth *= res.entries / maxIntegral;
 
-         pnt.x1 = Math.round(center - candleWidth/2);
-         pnt.x2 = Math.round(center + candleWidth/2);
+         pnt.x1 = Math.round(center - candleWidth / 2);
+         pnt.x2 = Math.round(center + candleWidth / 2);
          center = Math.round(center);
 
-         const x1d = Math.round(center - candleWidth/3),
-               x2d = Math.round(center + candleWidth/3),
+         const x1d = Math.round(center - candleWidth / 3),
+               x2d = Math.round(center + candleWidth / 3),
                ff = swapXY ? funcs.grx : funcs.gry;
 
          pnt.yy1 = Math.round(ff(fWhiskerUp));
@@ -2634,11 +2634,11 @@ class TH2Painter extends THistPainter {
 
          if (isOption(kPointsOutliers) || isOption(kPointsAll) || isOption(kPointsAllScat)) {
             // reset seed for each projection to have always same pixels
-            const rnd = new TRandom(bin_indx*7521 + Math.round(res.integral)),
+            const rnd = new TRandom(bin_indx * 7521 + Math.round(res.integral)),
                   show_all = !isOption(kPointsOutliers),
                   show_scat = isOption(kPointsAllScat);
             for (let ii = 0; ii < proj.length; ++ii) {
-               const bin_content = proj[ii], binx = (xx[ii] + xx[ii+1])/2;
+               const bin_content = proj[ii], binx = (xx[ii] + xx[ii + 1]) / 2;
                let marker_x = center, marker_y;
 
                if (!bin_content)
@@ -2653,7 +2653,7 @@ class TH2Painter extends THistPainter {
                   if ((bin_content === 1) && !show_scat)
                      marker_y = Math.round(ff(binx));
                   else
-                     marker_y = Math.round(ff(xx[ii] + rnd.random()*(xx[ii+1]-xx[ii])));
+                     marker_y = Math.round(ff(xx[ii] + rnd.random() * (xx[ii + 1] - xx[ii])));
 
                   make_marker(marker_x, marker_y);
                }
@@ -2664,14 +2664,14 @@ class TH2Painter extends THistPainter {
             const arr = [], scale = (swapXY ? -0.5 : 0.5) * histoWidth / res.max;
 
             xindx1 = Math.max(xindx1, res.first);
-            xindx2 = Math.min(xindx2-1, res.last);
+            xindx2 = Math.min(xindx2 - 1, res.last);
 
             if (isOption(kHistoRight) || isOption(kHistoViolin)) {
                let prev_x = center, prev_y = Math.round(ff(xx[xindx1]));
                arr.push(prev_x, prev_y);
                for (let ii = xindx1; ii <= xindx2; ii++) {
-                  const curr_x = Math.round(center + scale*proj[ii]),
-                        curr_y = Math.round(ff(xx[ii+1]));
+                  const curr_x = Math.round(center + scale * proj[ii]),
+                        curr_y = Math.round(ff(xx[ii + 1]));
                   if (curr_x !== prev_x) {
                      if (ii !== xindx1)
                         arr.push('V', prev_y);
@@ -2684,11 +2684,11 @@ class TH2Painter extends THistPainter {
             }
 
             if (isOption(kHistoLeft) || isOption(kHistoViolin)) {
-               let prev_x = center, prev_y = Math.round(ff(xx[xindx2+1]));
+               let prev_x = center, prev_y = Math.round(ff(xx[xindx2 + 1]));
                if (!arr.length)
                   arr.push(prev_x, prev_y);
                for (let ii = xindx2; ii >= xindx1; ii--) {
-                  const curr_x = Math.round(center - scale*proj[ii]),
+                  const curr_x = Math.round(center - scale * proj[ii]),
                         curr_y = Math.round(ff(xx[ii]));
                   if (curr_x !== prev_x) {
                      if (ii !== xindx2)
@@ -2713,38 +2713,38 @@ class TH2Painter extends THistPainter {
       };
 
       if (swapXY) {
-         xx = new Array(this.nbinsx+1);
+         xx = new Array(this.nbinsx + 1);
          proj = new Array(this.nbinsx);
-         for (let i = 0; i < this.nbinsx+1; ++i)
-            xx[i] = histo.fXaxis.GetBinLowEdge(i+1);
+         for (let i = 0; i < this.nbinsx + 1; ++i)
+            xx[i] = histo.fXaxis.GetBinLowEdge(i + 1);
 
          if (scaledCandle) {
             for (let j = 0; j < this.nbinsy; ++j) {
                let sum = 0;
                for (let i = 0; i < this.nbinsx; ++i)
-                  sum += histo.getBinContent(i+1, j+1);
+                  sum += histo.getBinContent(i + 1, j + 1);
                maxIntegral = Math.max(maxIntegral, sum);
             }
          }
 
          for (let j = handle.j1; j < handle.j2; ++j) {
             for (let i = 0; i < this.nbinsx; ++i)
-               proj[i] = histo.getBinContent(i+1, j+1);
+               proj[i] = histo.getBinContent(i + 1, j + 1);
 
-            produceCandlePoint(j, handle.gry[j+1], handle.gry[j], handle.i1, handle.i2);
+            produceCandlePoint(j, handle.gry[j + 1], handle.gry[j], handle.i1, handle.i2);
          }
       } else {
-         xx = new Array(this.nbinsy+1);
+         xx = new Array(this.nbinsy + 1);
          proj = new Array(this.nbinsy);
 
-         for (let j = 0; j < this.nbinsy+1; ++j)
-            xx[j] = histo.fYaxis.GetBinLowEdge(j+1);
+         for (let j = 0; j < this.nbinsy + 1; ++j)
+            xx[j] = histo.fYaxis.GetBinLowEdge(j + 1);
 
          if (scaledCandle) {
             for (let i = 0; i < this.nbinsx; ++i) {
                let sum = 0;
                for (let j = 0; j < this.nbinsy; ++j)
-                  sum += histo.getBinContent(i+1, j+1);
+                  sum += histo.getBinContent(i + 1, j + 1);
                maxIntegral = Math.max(maxIntegral, sum);
             }
          }
@@ -2752,9 +2752,9 @@ class TH2Painter extends THistPainter {
          // loop over visible x-bins
          for (let i = handle.i1; i < handle.i2; ++i) {
             for (let j = 0; j < this.nbinsy; ++j)
-               proj[j] = histo.getBinContent(i+1, j+1);
+               proj[j] = histo.getBinContent(i + 1, j + 1);
 
-            produceCandlePoint(i, handle.grx[i], handle.grx[i+1], handle.j1, handle.j2);
+            produceCandlePoint(i, handle.grx[i], handle.grx[i + 1], handle.j1, handle.j2);
          }
       }
 
@@ -2825,12 +2825,12 @@ class TH2Painter extends THistPainter {
 
          let path = '';
          for (i = handle.i1; i < handle.i2; ++i) {
-            cw = handle.grx[i+1] - handle.grx[i];
+            cw = handle.grx[i + 1] - handle.grx[i];
             for (j = handle.j1; j < handle.j2; ++j) {
-               ch = handle.gry[j] - handle.gry[j+1];
+               ch = handle.gry[j] - handle.gry[j + 1];
                binz = histo.getBinContent(i + 1, j + 1);
 
-               const npix = Math.round(scale*binz);
+               const npix = Math.round(scale * binz);
                if (npix <= 0)
                   continue;
 
@@ -2841,7 +2841,7 @@ class TH2Painter extends THistPainter {
                for (let k = 0; k < npix; ++k) {
                   path += this.markeratt.create(
                      Math.round(handle.grx[i] + cw * rnd.random()),
-                     Math.round(handle.gry[j+1] + ch * rnd.random()));
+                     Math.round(handle.gry[j + 1] + ch * rnd.random()));
                }
             }
          }
@@ -2866,32 +2866,32 @@ class TH2Painter extends THistPainter {
             if ((binz <= 0) || (binz < this.minbin))
                continue;
 
-            cw = handle.grx[i+1] - handle.grx[i];
-            ch = handle.gry[j] - handle.gry[j+1];
+            cw = handle.grx[i + 1] - handle.grx[i];
+            ch = handle.gry[j] - handle.gry[j + 1];
             if (cw * ch <= 0)
                continue;
 
-            colindx = cntr.getContourIndex(binz/cw/ch);
+            colindx = cntr.getContourIndex(binz / cw / ch);
             if (colindx < 0)
                continue;
 
             if (test_cutg && !test_cutg.IsInside(histo.fXaxis.GetBinCoord(i + 0.5), histo.fYaxis.GetBinCoord(j + 0.5)))
                continue;
 
-            cmd1 = `M${handle.grx[i]},${handle.gry[j+1]}`;
+            cmd1 = `M${handle.grx[i]},${handle.gry[j + 1]}`;
             if (colPaths[colindx] === undefined) {
                colPaths[colindx] = cmd1;
                cell_w[colindx] = cw;
                cell_h[colindx] = ch;
             } else {
-               cmd2 = `m${handle.grx[i]-currx[colindx]},${handle.gry[j+1]-curry[colindx]}`;
+               cmd2 = `m${handle.grx[i] - currx[colindx]},${handle.gry[j + 1] - curry[colindx]}`;
                colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                cell_w[colindx] = Math.max(cell_w[colindx], cw);
                cell_h[colindx] = Math.max(cell_h[colindx], ch);
             }
 
             currx[colindx] = handle.grx[i];
-            curry[colindx] = handle.gry[j+1];
+            curry[colindx] = handle.gry[j + 1];
 
             colPaths[colindx] += `v${ch}h${cw}v${-ch}z`;
          }
@@ -2916,7 +2916,7 @@ class TH2Painter extends THistPainter {
             } else
                pattern.selectAll('*').remove();
 
-            let npix = Math.round(factor*cntr.arr[colindx]*cell_w[colindx]*cell_h[colindx]);
+            let npix = Math.round(factor * cntr.arr[colindx] * cell_w[colindx] * cell_h[colindx]);
             npix = Math.max(1, npix);
 
             const arrx = new Float32Array(npix), arry = new Float32Array(npix);
@@ -3035,7 +3035,7 @@ class TH2Painter extends THistPainter {
 
       pp.getFrameSvg().style('display', 'none');
 
-      this.assignChordCircInteractive(Math.round(rect.x + rect.width/2), Math.round(rect.y + rect.height/2));
+      this.assignChordCircInteractive(Math.round(rect.x + rect.width / 2), Math.round(rect.y + rect.height / 2));
 
       const nbins = Math.min(this.nbinsx, this.nbinsy);
 
@@ -3043,13 +3043,13 @@ class TH2Painter extends THistPainter {
          const pnts = [];
 
          for (let n = 0; n < nbins; n++) {
-            const a = (0.5 - n/nbins)*Math.PI*2,
-                  cx = Math.round((0.9*rect.width/2 - 2*circle_size) * Math.cos(a)),
-                  cy = Math.round((0.9*rect.height/2 - 2*circle_size) * Math.sin(a)),
-                  x = Math.round(0.9*rect.width/2 * Math.cos(a)),
-                  y = Math.round(0.9*rect.height/2 * Math.sin(a)),
+            const a = (0.5 - n / nbins) * Math.PI * 2,
+                  cx = Math.round((0.9 * rect.width / 2 - 2 * circle_size) * Math.cos(a)),
+                  cy = Math.round((0.9 * rect.height / 2 - 2 * circle_size) * Math.sin(a)),
+                  x = Math.round(0.9 * rect.width / 2 * Math.cos(a)),
+                  y = Math.round(0.9 * rect.height / 2 * Math.sin(a)),
                   color = palette?.calcColor(n, nbins) ?? 'black';
-            let rotate = Math.round(a/Math.PI*180), align = 12;
+            let rotate = Math.round(a / Math.PI * 180), align = 12;
 
             pnts.push({ x: cx, y: cy, a, color }); // remember points coordinates
 
@@ -3058,22 +3058,22 @@ class TH2Painter extends THistPainter {
                align = 32;
             }
 
-            const s2 = Math.round(text_size/2), s1 = 2*s2;
+            const s2 = Math.round(text_size / 2), s1 = 2 * s2;
 
             g.append('path')
-             .attr('d', `M${cx-s2},${cy} a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,${-s1},0z`)
+             .attr('d', `M${cx - s2},${cy} a${s2},${s2},0,1,0,${s1},0a${s2},${s2},0,1,0,${-s1},0z`)
              .style('stroke', color)
              .style('fill', 'none');
 
             this.drawText({ align, rotate, x, y, text: getBinLabel(n) });
          }
 
-         const max_width = circle_size/2;
+         const max_width = circle_size / 2;
          let max_value = 0, min_value = 0;
          if (circ > 11) {
             for (let i = 0; i < nbins - 1; ++i) {
-               for (let j = i+1; j < nbins; ++j) {
-                  const cont = hist.getBinContent(i+1, j+1);
+               for (let j = i + 1; j < nbins; ++j) {
+                  const cont = hist.getBinContent(i + 1, j + 1);
                   if (cont > 0) {
                      max_value = Math.max(max_value, cont);
                      if (!min_value || (cont < min_value))
@@ -3083,20 +3083,20 @@ class TH2Painter extends THistPainter {
             }
          }
 
-         for (let i = 0; i < nbins-1; ++i) {
+         for (let i = 0; i < nbins - 1; ++i) {
             const pi = pnts[i];
             let path = '';
 
-            for (let j = i+1; j < nbins; ++j) {
-               const cont = hist.getBinContent(i+1, j+1);
+            for (let j = i + 1; j < nbins; ++j) {
+               const cont = hist.getBinContent(i + 1, j + 1);
                if (cont <= 0)
                   continue;
 
                const pj = pnts[j],
-                     a = (pi.a + pj.a)/2,
-                     qr = 0.5*(1-Math.abs(pi.a - pj.a)/Math.PI), // how far Q point will be away from center
-                     qx = Math.round(qr*rect.width/2 * Math.cos(a)),
-                     qy = Math.round(qr*rect.height/2 * Math.sin(a));
+                     a = (pi.a + pj.a) / 2,
+                     qr = 0.5 * (1 - Math.abs(pi.a - pj.a) / Math.PI), // how far Q point will be away from center
+                     qx = Math.round(qr * rect.width / 2 * Math.cos(a)),
+                     qy = Math.round(qr * rect.height / 2 * Math.sin(a));
 
                path += `M${pi.x},${pi.y}Q${qx},${qy},${pj.x},${pj.y}`;
 
@@ -3114,7 +3114,7 @@ class TH2Painter extends THistPainter {
       }).then(() => {
          if (!this.isBatchMode()) {
             g.insert('path', ':first-child')
-             .attr('d', `M${-rect.width/2},${-rect.height/2}h${rect.width}v${rect.height}h${-rect.width}z`)
+             .attr('d', `M${-rect.width / 2},${-rect.height / 2}h${rect.width}v${rect.height}h${-rect.width}z`)
              .style('opacity', 0)
              .style('fill', 'none')
              .style('pointer-events', 'visibleFill');
@@ -3167,7 +3167,7 @@ class TH2Painter extends THistPainter {
       for (let i = 0; i < nbins; ++i) {
          let sum = 0;
          for (let j = 0; j < nbins; ++j) {
-            const cont = hist.getBinContent(i+1, j+1);
+            const cont = hist.getBinContent(i + 1, j + 1);
             if (cont > 0) {
                sum += cont;
                if (isint && (Math.round(cont) !== cont))
@@ -3185,8 +3185,8 @@ class TH2Painter extends THistPainter {
 
       let ndig = 0, tickStep = 1;
       const rect = this.getPadPainter().getFrameRect(),
-            midx = Math.round(rect.x + rect.width/2),
-            midy = Math.round(rect.y + rect.height/2),
+            midx = Math.round(rect.x + rect.width / 2),
+            midy = Math.round(rect.y + rect.height / 2),
             palette = this.getHistPalette(),
             outerRadius = Math.max(10, Math.min(rect.width, rect.height) * 0.5 - 60),
             innerRadius = Math.max(2, outerRadius - 10),
@@ -3212,13 +3212,13 @@ class TH2Painter extends THistPainter {
       for (let i = 0; i < used.length; ++i) {
          data[i] = [];
          for (let j = 0; j < used.length; ++j)
-            data[i].push(hist.getBinContent(used[i]+1, used[j]+1));
+            data[i].push(hist.getBinContent(used[i] + 1, used[j] + 1));
          const axis = hist.fXaxis;
          let lbl = 'indx_' + used[i].toString();
          if (axis.fLabels) {
             for (let k = 0; k < axis.fLabels.arr.length; ++k) {
                const tstr = axis.fLabels.arr[k];
-               if (tstr.fUniqueID === used[i]+1) {
+               if (tstr.fUniqueID === used[i] + 1) {
                   lbl = tstr.fString;
                   break;
                }
@@ -3263,7 +3263,7 @@ class TH2Painter extends THistPainter {
          .selectAll('g')
          .data(ticks)
          .join('g')
-         .attr('transform', d => `rotate(${Math.round(d.angle*180/Math.PI-90)}) translate(${outerRadius})`);
+         .attr('transform', d => `rotate(${Math.round(d.angle * 180 / Math.PI - 90)}) translate(${outerRadius})`);
       groupTick.append('line')
          .attr('stroke', 'currentColor')
          .attr('x2', 6);
@@ -3296,8 +3296,8 @@ class TH2Painter extends THistPainter {
          g.insert('ellipse', ':first-child')
           .attr('cx', 0)
           .attr('cy', 0)
-          .attr('rx', outerRadius*1.2)
-          .attr('ry', outerRadius*1.2)
+          .attr('rx', outerRadius * 1.2)
+          .attr('ry', outerRadius * 1.2)
           .style('opacity', 0)
           .style('fill', 'none')
           .style('pointer-events', 'visibleFill');
@@ -3331,7 +3331,7 @@ class TH2Painter extends THistPainter {
       }
 
       if (profile2d) {
-         const entries = histo.getBinEntries(i+1, j+1);
+         const entries = histo.getBinEntries(i + 1, j + 1);
          lines.push('entries = ' + ((entries === Math.round(entries)) ? entries : floatToString(entries, gStyle.fStatFormat)));
       }
 
@@ -3344,8 +3344,8 @@ class TH2Painter extends THistPainter {
             histo = this.getHisto();
 
       return [this.getObjectHint(),
-              p.swapXY ? 'y = ' + funcs.axisAsText('y', histo.fYaxis.GetBinLowEdge(p.bin+1))
-                       : 'x = ' + funcs.axisAsText('x', histo.fXaxis.GetBinLowEdge(p.bin+1)),
+              p.swapXY ? 'y = ' + funcs.axisAsText('y', histo.fYaxis.GetBinLowEdge(p.bin + 1))
+                       : 'x = ' + funcs.axisAsText('x', histo.fXaxis.GetBinLowEdge(p.bin + 1)),
               'm-25%  = ' + floatToString(p.fBoxDown, gStyle.fStatFormat),
               'median = ' + floatToString(p.fMedian, gStyle.fStatFormat),
               'm+25%  = ' + floatToString(p.fBoxUp, gStyle.fStatFormat)];
@@ -3545,7 +3545,7 @@ class TH2Painter extends THistPainter {
          if (res.changed) {
             res.user_info = {
                obj: histo, name: histo.fName,
-               bin: i+1, cont: p.fMedian, binx: i+1, biny: 1,
+               bin: i + 1, cont: p.fMedian, binx: i + 1, biny: 1,
                grx: pnt.x, gry: pnt.y
             };
          }
@@ -3566,18 +3566,18 @@ class TH2Painter extends THistPainter {
          // search bins position
          if (fp.reverse_x()) {
             for (i = h.i1; i < h.i2; ++i)
-               if ((pnt.x <= h.grx[i]) && (pnt.x >= h.grx[i+1])) break;
+               if ((pnt.x <= h.grx[i]) && (pnt.x >= h.grx[i + 1])) break;
          } else {
             for (i = h.i1; i < h.i2; ++i)
-               if ((pnt.x >= h.grx[i]) && (pnt.x <= h.grx[i+1])) break;
+               if ((pnt.x >= h.grx[i]) && (pnt.x <= h.grx[i + 1])) break;
          }
 
          if (fp.reverse_y()) {
             for (j = h.j1; j < h.j2; ++j)
-               if ((pnt.y <= h.gry[j+1]) && (pnt.y >= h.gry[j])) break;
+               if ((pnt.y <= h.gry[j + 1]) && (pnt.y >= h.gry[j])) break;
          } else {
             for (j = h.j1; j < h.j2; ++j)
-               if ((pnt.y >= h.gry[j+1]) && (pnt.y <= h.gry[j])) break;
+               if ((pnt.y >= h.gry[j + 1]) && (pnt.y <= h.gry[j])) break;
          }
       }
 
@@ -3613,7 +3613,7 @@ class TH2Painter extends THistPainter {
                match = false;
          }
 
-         binz = histo.getBinContent(i+1, j+1);
+         binz = histo.getBinContent(i + 1, j + 1);
          if (this.#projection_kind)
             colindx = 0; // just to avoid hide
          else if (!match)
@@ -3655,27 +3655,27 @@ class TH2Painter extends THistPainter {
                          .call(addHighlightStyle);
          }
 
-         let binid = i*10000 + j, path;
+         let binid = i * 10000 + j, path;
 
          if (this.#projection_kind) {
             const pwx = this.#projection_widthX || 1, ddx = (pwx - 1) / 2;
             if ((this.#projection_kind.indexOf('X')) >= 0 && (pwx > 1)) {
-               if (j2+ddx >= h.j2) {
-                  j2 = Math.min(Math.round(j2+ddx), h.j2);
-                  j1 = Math.max(j2-pwx, h.j1);
+               if (j2 + ddx >= h.j2) {
+                  j2 = Math.min(Math.round(j2 + ddx), h.j2);
+                  j1 = Math.max(j2 - pwx, h.j1);
                } else {
-                  j1 = Math.max(Math.round(j1-ddx), h.j1);
-                  j2 = Math.min(j1+pwx, h.j2);
+                  j1 = Math.max(Math.round(j1 - ddx), h.j1);
+                  j2 = Math.min(j1 + pwx, h.j2);
                }
             }
             const pwy = this.#projection_widthY || 1, ddy = (pwy - 1) / 2;
             if ((this.#projection_kind.indexOf('Y')) >= 0 && (pwy > 1)) {
-               if (i2+ddy >= h.i2) {
-                  i2 = Math.min(Math.round(i2+ddy), h.i2);
-                  i1 = Math.max(i2-pwy, h.i1);
+               if (i2 + ddy >= h.i2) {
+                  i2 = Math.min(Math.round(i2 + ddy), h.i2);
+                  i1 = Math.max(i2 - pwy, h.i1);
                } else {
-                  i1 = Math.max(Math.round(i1-ddy), h.i1);
-                  i2 = Math.min(i1+pwy, h.i2);
+                  i1 = Math.max(Math.round(i1 - ddy), h.i1);
+                  i2 = Math.min(i1 + pwy, h.i2);
                }
             }
          }
@@ -3687,19 +3687,19 @@ class TH2Painter extends THistPainter {
             x2 = fp.getFrameWidth();
             y1 = h.gry[j2];
             y2 = h.gry[j1];
-            binid = j1*777 + j2*333;
+            binid = j1 * 777 + j2 * 333;
          } else if (this.#projection_kind === 'Y') {
             y1 = 0;
             y2 = fp.getFrameHeight();
             x1 = h.grx[i1];
             x2 = h.grx[i2];
-            binid = i1*777 + i2*333;
+            binid = i1 * 777 + i2 * 333;
          } else if (this.#projection_kind === 'XY') {
             y1 = h.gry[j2];
             y2 = h.gry[j1];
             x1 = h.grx[i1];
             x2 = h.grx[i2];
-            binid = i1*789 + i2*653 + j1*12345 + j2*654321;
+            binid = i1 * 789 + i2 * 653 + j1 * 12345 + j2 * 654321;
             path = `M${x1},0H${x2}V${y1}H${fp.getFrameWidth()}V${y2}H${x2}V${fp.getFrameHeight()}H${x1}V${y2}H0V${y1}H${x1}Z`;
          }
 
@@ -3742,7 +3742,7 @@ class TH2Painter extends THistPainter {
             return false;
 
          const fp = this.getFramePainter(),
-               nlevels = Math.max(2*gStyle.fNumberContours, 100),
+               nlevels = Math.max(2 * gStyle.fNumberContours, 100),
                pad = this.getPadPainter().getRootPad(true),
                logv = pad?.fLogv ?? pad?.fLogz;
 
@@ -3750,7 +3750,7 @@ class TH2Painter extends THistPainter {
             return true;
 
          if (logv && (fp.zmin > 0) && (min > 0))
-            return nlevels * Math.log(max/min) > Math.log(fp.zmax/fp.zmin);
+            return nlevels * Math.log(max / min) > Math.log(fp.zmax / fp.zmin);
 
          return (fp.zmax - fp.zmin) < (max - min) * nlevels;
       }

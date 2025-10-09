@@ -178,20 +178,20 @@ class RLegendPainter extends RPavePainter {
 
       const stepy = height / nlines, margin_x = 0.02 * width;
 
-      textFont.setSize(height/(nlines * 1.2));
+      textFont.setSize(height / (nlines * 1.2));
       return this.startTextDrawingAsync(textFont, 'font').then(() => {
          let posy = 0;
 
          if (legend.fTitle) {
-            this.drawText({ latex: 1, width: width - 2*margin_x, height: stepy, x: margin_x, y: posy, text: legend.fTitle });
+            this.drawText({ latex: 1, width: width - 2 * margin_x, height: stepy, x: margin_x, y: posy, text: legend.fTitle });
             posy += stepy;
          }
 
          for (let i = 0; i < legend.fEntries.length; ++i) {
-            const entry = legend.fEntries[i], w4 = Math.round(width/4);
+            const entry = legend.fEntries[i], w4 = Math.round(width / 4);
             let objp = null;
 
-            this.drawText({ latex: 1, width: 0.75*width - 3*margin_x, height: stepy, x: 2*margin_x + w4, y: posy, text: entry.fLabel });
+            this.drawText({ latex: 1, width: 0.75 * width - 3 * margin_x, height: stepy, x: 2 * margin_x + w4, y: posy, text: entry.fLabel });
 
             if (entry.fDrawableId !== 'custom')
                objp = pp.findSnap(entry.fDrawableId, true);
@@ -206,22 +206,22 @@ class RLegendPainter extends RPavePainter {
             }
 
             if (entry.fFill && objp?.fillatt) {
-               this.appendPath(`M${Math.round(margin_x)},${Math.round(posy + stepy*0.1)}h${w4}v${Math.round(stepy*0.8)}h${-w4}z`)
+               this.appendPath(`M${Math.round(margin_x)},${Math.round(posy + stepy * 0.1)}h${w4}v${Math.round(stepy * 0.8)}h${-w4}z`)
                    .call(objp.fillatt.func);
             }
 
             if (entry.fLine && objp?.lineatt) {
-               this.appendPath(`M${Math.round(margin_x)},${Math.round(posy + stepy/2)}h${w4}`)
+               this.appendPath(`M${Math.round(margin_x)},${Math.round(posy + stepy / 2)}h${w4}`)
                    .call(objp.lineatt.func);
             }
 
             if (entry.fError && objp?.lineatt) {
-               this.appendPath(`M${Math.round(margin_x + width/8)},${Math.round(posy + stepy*0.2)}v${Math.round(stepy*0.6)}`)
+               this.appendPath(`M${Math.round(margin_x + width / 8)},${Math.round(posy + stepy * 0.2)}v${Math.round(stepy * 0.6)}`)
                    .call(objp.lineatt.func);
             }
 
             if (entry.fMarker && objp?.markeratt) {
-               this.appendPath(objp.markeratt.create(margin_x + width/8, posy + stepy/2))
+               this.appendPath(objp.markeratt.create(margin_x + width / 8, posy + stepy / 2))
                    .call(objp.markeratt.func);
             }
 
@@ -262,11 +262,11 @@ class RPaveTextPainter extends RPavePainter {
             height = this.pave_height,
             stepy = height / nlines, margin_x = 0.02 * width;
 
-      textFont.setSize(height/(nlines * 1.2));
+      textFont.setSize(height / (nlines * 1.2));
 
       return this.startTextDrawingAsync(textFont, 'font').then(() => {
          for (let i = 0, posy = 0; i < pavetext.fText.length; ++i, posy += stepy)
-            this.drawText({ latex: 1, width: width - 2*margin_x, height: stepy, x: margin_x, y: posy, text: pavetext.fText[i] });
+            this.drawText({ latex: 1, width: width - 2 * margin_x, height: stepy, x: margin_x, y: posy, text: pavetext.fText[i] });
 
          return this.finishTextDrawing(undefined, true);
       });

@@ -92,7 +92,7 @@ class TScatterPainter extends TGraphPainter {
          return false;
       // match at least full color level inside
       for (let i = 0; i < levels.length - 1; ++i) {
-         if ((min <= levels[i]) && (max >= levels[i+1]))
+         if ((min <= levels[i]) && (max >= levels[i + 1]))
             return true;
       }
       return false;
@@ -142,8 +142,8 @@ class TScatterPainter extends TGraphPainter {
             maxc = Math.max(maxc, scatter.fColor[i]);
          }
          if (maxc <= minc)
-            maxc = minc < 0 ? 0.9*minc : (minc > 0 ? 1.1*minc : 1);
-         else if ((minc > 0) && (minc < 0.3*maxc))
+            maxc = minc < 0 ? 0.9 * minc : (minc > 0 ? 1.1 * minc : 1);
+         else if ((minc > 0) && (minc < 0.3 * maxc))
             minc = 0;
          this.#contour = new HistContour(minc, maxc);
          this.#contour.createNormal(30);
@@ -167,7 +167,7 @@ class TScatterPainter extends TGraphPainter {
          }
 
          if (maxs <= mins)
-            maxs = mins < 0 ? 0.9*mins : (mins > 0 ? 1.1*mins : 1);
+            maxs = mins < 0 ? 0.9 * mins : (mins > 0 ? 1.1 * mins : 1);
 
          scale = (scatter.fMaxMarkerSize - scatter.fMinMarkerSize) / (maxs - mins);
          offset = mins;

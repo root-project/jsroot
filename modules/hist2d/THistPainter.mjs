@@ -98,9 +98,9 @@ class THistDrawOptions {
       this.cutg_name = '';
       if (isStr(opt) && (hdim === 2)) {
          const p1 = opt.lastIndexOf('['), p2 = opt.lastIndexOf(']');
-         if ((p1 >= 0) && (p2 > p1+1) && (opt.at(p1 - 1) !== ':')) {
-            this.cutg_name = opt.slice(p1+1, p2);
-            opt = opt.slice(0, p1) + opt.slice(p2+1);
+         if ((p1 >= 0) && (p2 > p1 + 1) && (opt.at(p1 - 1) !== ':')) {
+            this.cutg_name = opt.slice(p1 + 1, p2);
+            opt = opt.slice(0, p1) + opt.slice(p2 + 1);
             this.cutg = pp?.findInPrimitives(this.cutg_name, clTCutG);
             if (this.cutg)
                this.cutg.$redraw_pad = true;
@@ -573,9 +573,9 @@ class THistDrawOptions {
          if ((axis === 'fZaxis') && (hdim < 3) && !this.Lego && !this.Surf)
             return;
          let flag = d.check(aopt);
-         if (pad && pad['$'+aopt]) {
+         if (pad && pad['$' + aopt]) {
             flag = true;
-            pad['$'+aopt] = undefined;
+            pad['$' + aopt] = undefined;
          }
          if (flag && histo)
             histo[axis].SetBit(bit, true);
@@ -736,10 +736,10 @@ class THistDrawOptions {
             if (!this.Zero)
                res += '0';
             if (this.Lego > 10)
-               res += (this.Lego-10);
+               res += (this.Lego - 10);
             res += zopt;
          } else if (this.Surf) {
-            res = 'SURF' + (this.Surf-10);
+            res = 'SURF' + (this.Surf - 10);
             res += zopt;
          }
          if (!this.FrontBox)
@@ -768,7 +768,7 @@ class THistDrawOptions {
          } else if (this.Contour) {
             res = 'CONT';
             if (this.Contour > 10)
-               res += (this.Contour-10);
+               res += (this.Contour - 10);
             res += zopt;
          } else if (this.Bar)
             res = (this.BaseLine === false) ? 'B' : 'B1';
@@ -893,29 +893,29 @@ class HistContour {
             this.colzmax = 1.0;
          if (this.colzmin <= 0) {
             if ((zminpositive === undefined) || (zminpositive <= 0))
-               this.colzmin = 0.0001*this.colzmax;
+               this.colzmin = 0.0001 * this.colzmax;
             else
-               this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3*zminpositive : 1;
+               this.colzmin = ((zminpositive < 3) || (zminpositive > 100)) ? 0.3 * zminpositive : 1;
          }
          if (this.colzmin >= this.colzmax)
-            this.colzmin = 0.0001*this.colzmax;
+            this.colzmin = 0.0001 * this.colzmax;
 
-         const logmin = Math.log(this.colzmin)/Math.log(10),
-               logmax = Math.log(this.colzmax)/Math.log(10),
-               dz = (logmax-logmin)/nlevels;
+         const logmin = Math.log(this.colzmin) / Math.log(10),
+               logmax = Math.log(this.colzmax) / Math.log(10),
+               dz = (logmax - logmin) / nlevels;
          this.arr.push(this.colzmin);
          for (let level = 1; level < nlevels; level++)
-            this.arr.push(Math.exp((logmin + dz*level)*Math.log(10)));
+            this.arr.push(Math.exp((logmin + dz * level) * Math.log(10)));
          this.arr.push(this.colzmax);
          this.custom = true;
       } else {
          if ((this.colzmin === this.colzmax) && this.colzmin) {
-            this.colzmax += 0.01*Math.abs(this.colzmax);
-            this.colzmin -= 0.01*Math.abs(this.colzmin);
+            this.colzmax += 0.01 * Math.abs(this.colzmax);
+            this.colzmin -= 0.01 * Math.abs(this.colzmin);
          }
-         const dz = (this.colzmax-this.colzmin)/nlevels;
+         const dz = (this.colzmax - this.colzmin) / nlevels;
          for (let level = 0; level <= nlevels; level++)
-            this.arr.push(this.colzmin + dz*level);
+            this.arr.push(this.colzmin + dz * level);
       }
    }
 
@@ -954,7 +954,7 @@ class HistContour {
       if (zc >= this.arr[r])
          return r;
       while (l < r - 1) {
-         const mid = Math.round((l+r)/2);
+         const mid = Math.round((l + r) / 2);
          if (this.arr[mid] > zc)
             r = mid;
          else
@@ -1080,7 +1080,7 @@ class FunctionsHandler {
       const func = this.#newfuncs[indx], fopt = this.#newopts[indx];
 
       if (!func || this.#pad_painter?.findPainterFor(func))
-         return this.drawNext(indx+1);
+         return this.drawNext(indx + 1);
 
       const func_id = func?.fName ? `func_${func.fName}` : `indx_${indx}`;
 
@@ -1094,7 +1094,7 @@ class FunctionsHandler {
 
       return promise.then(fpainter => {
          fpainter.setSecondaryId(this.#painter, func_id);
-         return this.drawNext(indx+1);
+         return this.drawNext(indx + 1);
       });
    }
 
@@ -1487,7 +1487,7 @@ class THistPainter extends ObjectPainter {
                if (indx === bin)
                   return this.fXbins[indx];
                const indx2 = (bin < indx) ? indx - 1 : indx + 1;
-               return this.fXbins[indx] * Math.abs(bin-indx2) + this.fXbins[indx2] * Math.abs(bin-indx);
+               return this.fXbins[indx] * Math.abs(bin - indx2) + this.fXbins[indx2] * Math.abs(bin - indx);
             };
             axis.FindBin = function(x, add) {
                for (let k = 1; k < this.fXbins.length; ++k) {
@@ -1498,7 +1498,7 @@ class THistPainter extends ObjectPainter {
             };
          } else {
             axis.$binwidth = (axis.fXmax - axis.fXmin) / (axis.fNbins || 1);
-            axis.GetBinCoord = function(bin) { return this.fXmin + bin*this.$binwidth; };
+            axis.GetBinCoord = function(bin) { return this.fXmin + bin * this.$binwidth; };
             axis.FindBin = function(x, add) { return Math.floor((x - this.fXmin) / this.$binwidth + add); };
          }
       };
@@ -1652,7 +1652,7 @@ class THistPainter extends ObjectPainter {
       if (arg === kOnlyCheck)
          return !histo.TestBit(kNoTitle);
       histo.InvertBit(kNoTitle);
-      this.updateHistTitle().then(() => this.processOnlineChange(`exec:SetBit(TH1::kNoTitle,${histo.TestBit(kNoTitle)?1:0})`));
+      this.updateHistTitle().then(() => this.processOnlineChange(`exec:SetBit(TH1::kNoTitle,${histo.TestBit(kNoTitle) ? 1 : 0})`));
    }
 
    /** @summary Only redraw histogram title
@@ -2091,7 +2091,7 @@ class THistPainter extends ObjectPainter {
 
       if (method.fClassName === clTAxis) {
          const p = isStr(method.$execid) ? method.$execid.indexOf('#') : -1,
-               kind = p > 0 ? method.$execid.slice(p+1) : 'x',
+               kind = p > 0 ? method.$execid.slice(p + 1) : 'x',
                fp = this.getFramePainter();
          if (method.fName === 'UnZoom') {
             fp?.unzoom(kind);
@@ -2099,7 +2099,7 @@ class THistPainter extends ObjectPainter {
          } else if (method.fName === 'SetRange') {
             const axis = fp?.getAxis(kind), bins = JSON.parse(`[${args}]`);
             if (axis && bins?.length === 2)
-               fp?.zoom(kind, axis.GetBinLowEdge(bins[0]), axis.GetBinLowEdge(bins[1]+1));
+               fp?.zoom(kind, axis.GetBinLowEdge(bins[0]), axis.GetBinLowEdge(bins[1] + 1));
             // let execute command on server
          } else if (method.fName === 'SetRangeUser') {
             const values = JSON.parse(`[${args}]`);
@@ -2268,22 +2268,22 @@ class THistPainter extends ObjectPainter {
             tip.iy = 1;
             tip.value = histo.getBinContent(tip.ix);
             tip.error = histo.getBinError(indx);
-            tip.lines = this.getBinTooltips(indx-1);
+            tip.lines = this.getBinTooltips(indx - 1);
             break;
          case 2:
             tip.ix = indx % (this.nbinsx + 2);
             tip.iy = (indx - tip.ix) / (this.nbinsx + 2);
             tip.value = histo.getBinContent(tip.ix, tip.iy);
             tip.error = histo.getBinError(indx);
-            tip.lines = this.getBinTooltips(tip.ix-1, tip.iy-1);
+            tip.lines = this.getBinTooltips(tip.ix - 1, tip.iy - 1);
             break;
          case 3:
-            tip.ix = indx % (this.nbinsx+2);
-            tip.iy = ((indx - tip.ix) / (this.nbinsx+2)) % (this.nbinsy+2);
-            tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
+            tip.ix = indx % (this.nbinsx + 2);
+            tip.iy = ((indx - tip.ix) / (this.nbinsx + 2)) % (this.nbinsy + 2);
+            tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx + 2)) / (this.nbinsx + 2) / (this.nbinsy + 2);
             tip.value = histo.getBinContent(tip.ix, tip.iy, tip.iz);
             tip.error = histo.getBinError(indx);
-            tip.lines = this.getBinTooltips(tip.ix-1, tip.iy-1, tip.iz-1);
+            tip.lines = this.getBinTooltips(tip.ix - 1, tip.iy - 1, tip.iz - 1);
             break;
       }
 
@@ -2549,7 +2549,7 @@ class THistPainter extends ObjectPainter {
                pal.fX1NDC = fp.fX2NDC + 0.005;
                pal.fX2NDC = pal.fX1NDC + d;
             }
-            if (pal.fX1NDC > (fp.fX1NDC + fp.fX2NDC)*0.5) {
+            if (pal.fX1NDC > (fp.fX1NDC + fp.fX2NDC) * 0.5) {
                pal.fX2NDC = fp.fX2NDC + 0.005 + (pal.fX2NDC - pal.fX1NDC);
                pal.fX1NDC = fp.fX2NDC + 0.005;
             } else {
@@ -2839,7 +2839,7 @@ class THistPainter extends ObjectPainter {
          for (j = res.j1; j <= res.j2; ++j) {
             y = yaxis.GetBinCoord(j + args.middle);
             if (funcs.logy && (y <= 0)) {
-               res.j1 = j+1;
+               res.j1 = j + 1;
                continue;
             }
             if (res.origy)
@@ -2876,7 +2876,7 @@ class THistPainter extends ObjectPainter {
             binz = histo.getBinContent(i + 1, j + 1);
             res.sumz += binz;
             if (args.pixel_density) {
-               binarea = (res.grx[i+1] - res.grx[i]) * (res.gry[j] - res.gry[j+1]);
+               binarea = (res.grx[i + 1] - res.grx[i]) * (res.gry[j] - res.gry[j + 1]);
                if (binarea <= 0)
                   continue;
                res.max = Math.max(res.max, binz);
@@ -2912,15 +2912,15 @@ class THistPainter extends ObjectPainter {
    getAxisBinTip(name, axis, bin) {
       const funcs = this.getHistGrFuncs(),
             handle = funcs[`${name}_handle`],
-            x1 = axis.GetBinLowEdge(bin+1);
+            x1 = axis.GetBinLowEdge(bin + 1);
 
       if (handle.kind === kAxisLabels)
          return funcs.axisAsText(name, x1);
 
-      const x2 = axis.GetBinLowEdge(bin+2);
+      const x2 = axis.GetBinLowEdge(bin + 2);
 
       if ((handle.kind === kAxisTime) || this.isTF1())
-         return funcs.axisAsText(name, (x1+x2)/2);
+         return funcs.axisAsText(name, (x1 + x2) / 2);
 
       return `[${funcs.axisAsText(name, x1)}, ${funcs.axisAsText(name, x2)})`;
    }

@@ -160,8 +160,8 @@ class TF3Painter extends TH2Painter {
 
          for (let j = 0; (j < npy) && !iserror; ++j) {
             for (let i = 0; (i < npx) && !iserror; ++i) {
-               const x = hist.fXaxis.GetBinCenter(i+1),
-                     y = hist.fYaxis.GetBinCenter(j+1);
+               const x = hist.fXaxis.GetBinCenter(i + 1),
+                     y = hist.fYaxis.GetBinCenter(j + 1);
                let z = 0;
 
                try {
@@ -187,14 +187,14 @@ class TF3Painter extends TH2Painter {
 
       if (this.#use_saved_points) {
          xmin = func.fSave[nsave];
-         xmax = func.fSave[nsave+1];
-         ymin = func.fSave[nsave+2];
-         ymax = func.fSave[nsave+3];
-         zmin = func.fSave[nsave+4];
-         zmax = func.fSave[nsave+5];
-         npx = Math.round(func.fSave[nsave+6]);
-         npy = Math.round(func.fSave[nsave+7]);
-         npz = Math.round(func.fSave[nsave+8]);
+         xmax = func.fSave[nsave + 1];
+         ymin = func.fSave[nsave + 2];
+         ymax = func.fSave[nsave + 3];
+         zmin = func.fSave[nsave + 4];
+         zmax = func.fSave[nsave + 5];
+         npx = Math.round(func.fSave[nsave + 6]);
+         npy = Math.round(func.fSave[nsave + 7]);
+         npz = Math.round(func.fSave[nsave + 8]);
 
          const dz = (zmax - zmin) / npz;
 
@@ -203,12 +203,12 @@ class TF3Painter extends TH2Painter {
          const arrv = new Array(npz + 1),
                arrz = new Array(npz + 1);
          for (let k = 0; k <= npz; k++)
-            arrz[k] = zmin + k*dz;
+            arrz[k] = zmin + k * dz;
 
          for (let i = 0; i <= npx; ++i) {
             for (let j = 0; j <= npy; ++j) {
                for (let k = 0; k <= npz; k++)
-                  arrv[k] = func.fSave[i + (npx + 1)*(j + (npy + 1)*k)];
+                  arrv[k] = func.fSave[i + (npx + 1) * (j + (npy + 1) * k)];
                const z = findZValue(arrz, arrv);
                hist.setBinContent(hist.getBin(i + 1, j + 1), Number.isFinite(z) ? z : 0);
             }
@@ -242,12 +242,12 @@ class TF3Painter extends TH2Painter {
       const func = this.#func, nsave = func?.fSave.length ?? 0;
 
       if (nsave > 9 && this.#use_saved_points) {
-         this.xmin = Math.min(this.xmin, func.fSave[nsave-9]);
-         this.xmax = Math.max(this.xmax, func.fSave[nsave-8]);
-         this.ymin = Math.min(this.ymin, func.fSave[nsave-7]);
-         this.ymax = Math.max(this.ymax, func.fSave[nsave-6]);
-         this.zmin = Math.min(this.zmin, func.fSave[nsave-5]);
-         this.zmax = Math.max(this.zmax, func.fSave[nsave-4]);
+         this.xmin = Math.min(this.xmin, func.fSave[nsave - 9]);
+         this.xmax = Math.max(this.xmax, func.fSave[nsave - 8]);
+         this.ymin = Math.min(this.ymin, func.fSave[nsave - 7]);
+         this.ymax = Math.max(this.ymax, func.fSave[nsave - 6]);
+         this.zmin = Math.min(this.zmin, func.fSave[nsave - 5]);
+         this.zmax = Math.max(this.zmax, func.fSave[nsave - 4]);
       }
       if (func) {
          this.xmin = Math.min(this.xmin, func.fXmin);

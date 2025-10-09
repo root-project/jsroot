@@ -55,7 +55,7 @@ function drawTH2PolyLego(painter) {
 
          const x = gr.fX, y = gr.fY;
          let npnts = gr.fNpoints;
-         while ((npnts>2) && (x[0]===x[npnts-1]) && (y[0]===y[npnts-1])) --npnts;
+         while ((npnts > 2) && (x[0] === x[npnts - 1]) && (y[0] === y[npnts - 1])) --npnts;
 
          let pnts, faces;
 
@@ -64,7 +64,7 @@ function drawTH2PolyLego(painter) {
 
             let lastx, lasty, currx, curry,
                 dist2 = fp.size_x3d * fp.size_z3d;
-            const dist2limit = (ntry > 0) ? 0 : dist2/1e6;
+            const dist2limit = (ntry > 0) ? 0 : dist2 / 1e6;
 
             pnts = [];
             faces = null;
@@ -73,7 +73,7 @@ function drawTH2PolyLego(painter) {
                currx = fp.grx(x[vert]);
                curry = fp.gry(y[vert]);
                if (vert > 0)
-                  dist2 = (currx - lastx)**2 + (curry - lasty)**2;
+                  dist2 = (currx - lastx) ** 2 + (curry - lasty) ** 2;
                if (dist2 > dist2limit) {
                   pnts.push(new THREE.Vector2(currx, curry));
                   lastx = currx;
@@ -102,7 +102,7 @@ function drawTH2PolyLego(painter) {
          }
       }
 
-      const pos = new Float32Array(nfaces*9);
+      const pos = new Float32Array(nfaces * 9);
       let indx = 0;
 
       for (let ngr = 0; ngr < all_pnts.length; ++ngr) {
@@ -116,19 +116,19 @@ function drawTH2PolyLego(painter) {
                      pnt3 = pnts[face[layer === 0 ? 1 : 2]];
 
                pos[indx] = pnt1.x;
-               pos[indx+1] = pnt1.y;
-               pos[indx+2] = layer ? z1 : z0;
-               indx+=3;
+               pos[indx + 1] = pnt1.y;
+               pos[indx + 2] = layer ? z1 : z0;
+               indx += 3;
 
                pos[indx] = pnt2.x;
-               pos[indx+1] = pnt2.y;
-               pos[indx+2] = layer ? z1 : z0;
-               indx+=3;
+               pos[indx + 1] = pnt2.y;
+               pos[indx + 2] = layer ? z1 : z0;
+               indx += 3;
 
                pos[indx] = pnt3.x;
-               pos[indx+1] = pnt3.y;
-               pos[indx+2] = layer ? z1 : z0;
-               indx+=3;
+               pos[indx + 1] = pnt3.y;
+               pos[indx + 2] = layer ? z1 : z0;
+               indx += 3;
             }
          }
 
@@ -137,34 +137,34 @@ function drawTH2PolyLego(painter) {
                const pnt1 = pnts.at(n), pnt2 = pnts.at(n > 0 ? n - 1 : - 1);
 
                pos[indx] = pnt1.x;
-               pos[indx+1] = pnt1.y;
-               pos[indx+2] = z0;
-               indx+=3;
+               pos[indx + 1] = pnt1.y;
+               pos[indx + 2] = z0;
+               indx += 3;
 
                pos[indx] = pnt2.x;
-               pos[indx+1] = pnt2.y;
-               pos[indx+2] = z0;
-               indx+=3;
+               pos[indx + 1] = pnt2.y;
+               pos[indx + 2] = z0;
+               indx += 3;
 
                pos[indx] = pnt2.x;
-               pos[indx+1] = pnt2.y;
-               pos[indx+2] = z1;
-               indx+=3;
+               pos[indx + 1] = pnt2.y;
+               pos[indx + 2] = z1;
+               indx += 3;
 
                pos[indx] = pnt1.x;
-               pos[indx+1] = pnt1.y;
-               pos[indx+2] = z0;
-               indx+=3;
+               pos[indx + 1] = pnt1.y;
+               pos[indx + 2] = z0;
+               indx += 3;
 
                pos[indx] = pnt2.x;
-               pos[indx+1] = pnt2.y;
-               pos[indx+2] = z1;
-               indx+=3;
+               pos[indx + 1] = pnt2.y;
+               pos[indx + 2] = z1;
+               indx += 3;
 
                pos[indx] = pnt1.x;
-               pos[indx+1] = pnt1.y;
-               pos[indx+2] = z1;
-               indx+=3;
+               pos[indx + 1] = pnt1.y;
+               pos[indx + 2] = z1;
+               indx += 3;
             }
          }
       }
@@ -224,7 +224,7 @@ class TH2Painter extends TH2Painter2D {
       } else if (this.draw_content || this.gmaxbin) {
          this.zmin = logz ? this.gminposbin * 0.3 : this.gminbin;
          this.zmax = this.gmaxbin;
-         zmult = 1 + 2*gStyle.fHistTopMargin;
+         zmult = 1 + 2 * gStyle.fHistTopMargin;
       }
 
       if (logz && (this.zmin <= 0))

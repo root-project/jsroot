@@ -19,7 +19,7 @@ class TH1Painter extends TH1Painter2D {
             is_main = this.isMainPainter(), // is main histogram
             o = this.getOptions();
 
-      o.zmult = 1 + 2*gStyle.fHistTopMargin;
+      o.zmult = 1 + 2 * gStyle.fHistTopMargin;
       let pr = Promise.resolve(true), full_draw = true;
 
       if (reason === 'resize') {
@@ -64,7 +64,7 @@ class TH1Painter extends TH1Painter2D {
       painter.scanContent();
 
       painter.createHistDrawAttributes(true);
-      painter.options.zmult = 1 + 2*gStyle.fHistTopMargin;
+      painter.options.zmult = 1 + 2 * gStyle.fHistTopMargin;
 
       const fp = new TFramePainter(null, null);
       painter.getFramePainter = () => fp;

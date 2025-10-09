@@ -268,7 +268,7 @@ class TCanvasPainter extends TPadPainter {
    /** @summary Function called when canvas menu item Save is called */
    saveCanvasAsFile(fname) {
       const pnt = fname.indexOf('.');
-      this.createImage(fname.slice(pnt+1))
+      this.createImage(fname.slice(pnt + 1))
           .then(res => this.sendWebsocket(`SAVE:${fname}:${res}`));
    }
 
@@ -387,7 +387,7 @@ class TCanvasPainter extends TPadPainter {
          // This is snapshot, produced with TWebCanvas
          const p1 = msg.indexOf(':', 6),
                version = msg.slice(6, p1),
-               snap = parse(msg.slice(p1+1));
+               snap = parse(msg.slice(p1 + 1));
 
          this.syncDraw(true)
              .then(() => {
@@ -421,7 +421,7 @@ class TCanvasPainter extends TPadPainter {
          msg = msg.slice(4);
          const p1 = msg.indexOf(':'),
                cmdid = msg.slice(0, p1),
-               cmd = msg.slice(p1+1),
+               cmd = msg.slice(p1 + 1),
                reply = `REPLY:${cmdid}:`;
          if ((cmd === 'SVG') || (cmd === 'PNG') || (cmd === 'JPEG') || (cmd === 'WEBP') || (cmd === 'PDF')) {
             this.createImage(cmd.toLowerCase())
@@ -950,7 +950,7 @@ class TCanvasPainter extends TPadPainter {
          let apply_size;
          if (!painter.isBatchMode()) {
             const rect0 = d.node().getBoundingClientRect();
-            apply_size = !rect0.height && (rect0.width > 0.1*can.fCw);
+            apply_size = !rect0.height && (rect0.width > 0.1 * can.fCw);
          } else {
             const arg = d.property('_batch_use_canvsize');
             apply_size = arg || (arg === undefined);

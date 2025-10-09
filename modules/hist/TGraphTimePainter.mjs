@@ -104,7 +104,7 @@ class TGraphTimePainter extends ObjectPainter {
          if (++this.#step > gr.fSteps.arr.length) {
             if (o.repeat) {
                this.#step = 0; // start again
-               sleeptime = Math.max(5000, 5*sleeptime); // increase sleep time
+               sleeptime = Math.max(5000, 5 * sleeptime); // increase sleep time
             } else {
                this.#step = undefined;    // clear indicator that animation running
                return;

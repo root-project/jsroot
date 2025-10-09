@@ -41,31 +41,31 @@ function getEarthProjectionFunc(id) {
    switch (id) {
       // Aitoff2xy
       case 1: return (l, b) => {
-         const DegToRad = Math.PI/180,
-               alpha2 = (l/2)*DegToRad,
-               delta = b*DegToRad,
+         const DegToRad = Math.PI / 180,
+               alpha2 = (l / 2) * DegToRad,
+               delta = b * DegToRad,
                r2 = Math.sqrt(2),
-               f = 2*r2/Math.PI,
+               f = 2 * r2 / Math.PI,
                cdec = Math.cos(delta),
-               denom = Math.sqrt(1.0 + cdec*Math.cos(alpha2));
+               denom = Math.sqrt(1.0 + cdec * Math.cos(alpha2));
          return {
-            x: cdec*Math.sin(alpha2)*2.0*r2/denom/f/DegToRad,
-            y: Math.sin(delta)*r2/denom/f/DegToRad
+            x: cdec * Math.sin(alpha2) * 2.0 * r2 / denom / f / DegToRad,
+            y: Math.sin(delta) * r2 / denom / f / DegToRad
          };
       };
       // mercator
-      case 2: return (l, b) => { return { x: l, y: Math.log(Math.tan((Math.PI/2 + b/180*Math.PI)/2)) }; };
+      case 2: return (l, b) => { return { x: l, y: Math.log(Math.tan((Math.PI / 2 + b / 180 * Math.PI) / 2)) }; };
       // sinusoidal
-      case 3: return (l, b) => { return { x: l*Math.cos(b/180*Math.PI), y: b }; };
+      case 3: return (l, b) => { return { x: l * Math.cos(b / 180 * Math.PI), y: b }; };
       // parabolic
-      case 4: return (l, b) => { return { x: l*(2.0*Math.cos(2*b/180*Math.PI/3) - 1), y: 180*Math.sin(b/180*Math.PI/3) }; };
+      case 4: return (l, b) => { return { x: l * (2.0 * Math.cos(2 * b / 180 * Math.PI / 3) - 1), y: 180 * Math.sin(b / 180 * Math.PI / 3) }; };
       // Mollweide projection
       case 5: return (l, b) => {
-         const theta0 = b * Math.PI/180;
+         const theta0 = b * Math.PI / 180;
          let theta = theta0, num, den;
          for (let i = 0; i < 100; i++) {
             num = 2 * theta + Math.sin(2 * theta) - Math.PI * Math.sin(theta0);
-            den = 4 * (Math.cos(theta)**2);
+            den = 4 * (Math.cos(theta) ** 2);
             if (den < 1e-20) {
                theta = theta0;
                break;
@@ -137,17 +137,17 @@ function addDragHandler(_painter, arg) {
       }
 
       addElement('nw-resize', 'M2,2h15v-5h-20v20h5Z');
-      addElement('ne-resize', `M${arg.width-2},2h-15v-5h20v20h-5 Z`);
-      addElement('sw-resize', `M2,${arg.height-2}h15v5h-20v-20h5Z`);
-      addElement('se-resize', `M${arg.width-2},${arg.height-2}h-15v5h20v-20h-5Z`);
+      addElement('ne-resize', `M${arg.width - 2},2h-15v-5h20v20h-5 Z`);
+      addElement('sw-resize', `M2,${arg.height - 2}h15v5h-20v-20h5Z`);
+      addElement('se-resize', `M${arg.width - 2},${arg.height - 2}h-15v5h20v-20h-5Z`);
 
       if (!arg.no_change_x) {
-         addElement('w-resize', `M-3,18h5v${Math.max(0, arg.height-2*18)}h-5Z`);
-         addElement('e-resize', `M${arg.width+3},18h-5v${Math.max(0, arg.height-2*18)}h5Z`);
+         addElement('w-resize', `M-3,18h5v${Math.max(0, arg.height - 2 * 18)}h-5Z`);
+         addElement('e-resize', `M${arg.width + 3},18h-5v${Math.max(0, arg.height - 2 * 18)}h5Z`);
       }
       if (!arg.no_change_y) {
-         addElement('n-resize', `M18,-3v5h${Math.max(0, arg.width-2*18)}v-5Z`);
-         addElement('s-resize', `M18,${arg.height+3}v-5h${Math.max(0, arg.width-2*18)}v5Z`);
+         addElement('n-resize', `M18,-3v5h${Math.max(0, arg.width - 2 * 18)}v-5Z`);
+         addElement('s-resize', `M18,${arg.height + 3}v-5h${Math.max(0, arg.width - 2 * 18)}v5Z`);
       }
    }
 
@@ -1305,13 +1305,13 @@ class FrameInteractive extends TooltipHandler {
          if (!this.can_zoom_y)
             return;
          kind = this.swap_xy() ? 'x' : 'y';
-         if ((m[0] > fw) && this[kind+'2_handle'])
+         if ((m[0] > fw) && this[kind + '2_handle'])
             kind += '2'; // let unzoom second axis
       } else if (!valid_y) {
          if (!this.can_zoom_x)
             return;
          kind = this.swap_xy() ? 'y' : 'x';
-         if ((m[1] < 0) && this[kind+'2_handle'])
+         if ((m[1] < 0) && this[kind + '2_handle'])
             kind += '2'; // let unzoom second axis
       }
       return this.unzoom(kind).then(changed => {
@@ -1972,16 +1972,16 @@ class TFramePainter extends FrameInteractive {
       if (name === 'x') {
          if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2 - 1) > eps)) {
             const dx = pad.fX2 - pad.fX1;
-            umin = pad.fX1 + dx*pad.fLeftMargin;
-            umax = pad.fX2 - dx*pad.fRightMargin;
+            umin = pad.fX1 + dx * pad.fLeftMargin;
+            umax = pad.fX2 - dx * pad.fRightMargin;
          }
       } else if ((Math.abs(pad.fY1) > eps) || (Math.abs(pad.fY2 - 1) > eps)) {
          const dy = pad.fY2 - pad.fY1;
-         umin = pad.fY1 + dy*pad.fBottomMargin;
-         umax = pad.fY2 - dy*pad.fTopMargin;
+         umin = pad.fY1 + dy * pad.fBottomMargin;
+         umax = pad.fY2 - dy * pad.fTopMargin;
       }
 
-      if ((umin >= umax) || (Math.abs(umin) < eps && Math.abs(umax-1) < eps))
+      if ((umin >= umax) || (Math.abs(umin) < eps && Math.abs(umax - 1) < eps))
          return;
 
       if (pad[`fLog${name}`] > 0) {
@@ -2056,9 +2056,9 @@ class TFramePainter extends FrameInteractive {
       if (opts.extra_y_space) {
          const log_scale = this.#swap_xy ? pad_logx : pad_logy;
          if (log_scale && (this.scale_ymax > 0))
-            this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
+            this.scale_ymax = Math.exp(Math.log(this.scale_ymax) * 1.1);
          else
-            this.scale_ymax += (this.scale_ymax - this.scale_ymin)*0.1;
+            this.scale_ymax += (this.scale_ymax - this.scale_ymin) * 0.1;
       }
 
       if (opts.check_pad_range) {
@@ -2113,7 +2113,7 @@ class TFramePainter extends FrameInteractive {
          noexp_changed: this.x_noexp_changed,
          fixed_ticks: opts.xticks,
          symlog: this.#swap_xy ? opts.symlog_y : opts.symlog_x,
-         log_min_nz: opts.xmin_nz && (opts.xmin_nz <= this.xmax) ? 0.9*opts.xmin_nz : 0,
+         log_min_nz: opts.xmin_nz && (opts.xmin_nz <= this.xmax) ? 0.9 * opts.xmin_nz : 0,
          logcheckmin: (opts.ndim > 1) || !this.#swap_xy,
          logminfactor: logminfactorX
       });
@@ -2131,7 +2131,7 @@ class TFramePainter extends FrameInteractive {
          noexp_changed: this.y_noexp_changed,
          fixed_ticks: opts.yticks,
          symlog: this.#swap_xy ? opts.symlog_x : opts.symlog_y,
-         log_min_nz: opts.ymin_nz && (opts.ymin_nz <= this.ymax) ? 0.5*opts.ymin_nz : 0,
+         log_min_nz: opts.ymin_nz && (opts.ymin_nz <= this.ymax) ? 0.5 * opts.ymin_nz : 0,
          logcheckmin: (opts.ndim > 1) || this.#swap_xy,
          logminfactor: logminfactorY
       });
@@ -2168,9 +2168,9 @@ class TFramePainter extends FrameInteractive {
       if (opts.extra_y_space && opts.second_y) {
          const log_scale = this.#swap_xy ? pad.fLogx : pad.fLogy;
          if (log_scale && (this.scale_y2max > 0))
-            this.scale_y2max = Math.exp(Math.log(this.scale_y2max)*1.1);
+            this.scale_y2max = Math.exp(Math.log(this.scale_y2max) * 1.1);
          else
-            this.scale_y2max += (this.scale_y2max - this.scale_y2min)*0.1;
+            this.scale_y2max += (this.scale_y2max - this.scale_y2min) * 0.1;
       }
 
       if ((this.zoom_x2min !== this.zoom_x2max) && opts.second_x) {
@@ -2280,10 +2280,10 @@ class TFramePainter extends FrameInteractive {
             mx = Math.max(0.001, 1 - pad.fLeftMargin - pad.fRightMargin),
             my = Math.max(0.001, 1 - pad.fBottomMargin - pad.fTopMargin);
 
-      pad.fX1 = pad.fUxmin - rx/mx*pad.fLeftMargin;
-      pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;
-      pad.fY1 = pad.fUymin - ry/my*pad.fBottomMargin;
-      pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
+      pad.fX1 = pad.fUxmin - rx / mx * pad.fLeftMargin;
+      pad.fX2 = pad.fUxmax + rx / mx * pad.fRightMargin;
+      pad.fY1 = pad.fUymin - ry / my * pad.fBottomMargin;
+      pad.fY2 = pad.fUymax + ry / my * pad.fTopMargin;
    }
 
    /** @summary Draw axes grids
@@ -2651,7 +2651,7 @@ class TFramePainter extends FrameInteractive {
       this.#frame_y = tm;
       this.#frame_width = rotate ? h : w;
       this.#frame_height = rotate ? w : h;
-      this.#frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})` : makeTranslate(lm, tm);
+      this.#frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm - h},${tm})` : makeTranslate(lm, tm);
       this.$can_drag = !rotate && !pp?.options?.FixFrame;
 
       return this.mode3d ? this : this.createFrameG();
@@ -2767,7 +2767,7 @@ class TFramePainter extends FrameInteractive {
          kind = 'z';
 
       if ((kind === 'x') || (kind === 'y') || (kind === 'z') || (kind === 'x2') || (kind === 'y2')) {
-         const faxis = obj || this[kind+'axis'],
+         const faxis = obj || this[kind + 'axis'],
                handle = this[`${kind}_handle`];
          if (!isFunc(faxis?.TestBit))
             return false;
@@ -2832,8 +2832,8 @@ class TFramePainter extends FrameInteractive {
          menu.endsub();
 
          if (pad) {
-            const member = 'fLog'+kind[0];
-            menu.sub('SetLog '+kind[0], () => {
+            const member = 'fLog' + kind[0];
+            menu.sub('SetLog ' + kind[0], () => {
                menu.input('Enter log kind: 0 - off, 1 - log10, 2 - log2, 3 - ln, ...', pad[member], 'int', 0, 10000).then(v => {
                   this.changeAxisLog(kind[0], v);
                });
@@ -2904,7 +2904,7 @@ class TFramePainter extends FrameInteractive {
       menu.sub('Border');
       menu.addSelectMenu('Mode', ['Down', 'Off', 'Up'], this.#border_mode + 1, v => {
          this.#border_mode = v - 1;
-         this.interactiveRedraw(true, `exec:SetBorderMode(${v-1})`);
+         this.interactiveRedraw(true, `exec:SetBorderMode(${v - 1})`);
       }, 'Frame border mode');
       menu.addSizeMenu('Size', 0, 20, 2, this.#border_size, v => {
          this.#border_size = v;
@@ -3166,12 +3166,12 @@ class TFramePainter extends FrameInteractive {
       if (zoom_v) {
          let cnt = 0;
          vmin = handle?.checkZoomMin(vmin) ?? vmin;
-         if (vmin <= this[name+'min']) {
-            vmin = this[name+'min'];
+         if (vmin <= this[name + 'min']) {
+            vmin = this[name + 'min'];
             cnt++;
          }
-         if (vmax >= this[name+'max']) {
-            vmax = this[name+'max'];
+         if (vmax >= this[name + 'max']) {
+            vmax = this[name + 'max'];
             cnt++;
          }
          if (cnt === 2) {

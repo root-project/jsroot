@@ -463,17 +463,17 @@ class TPadPainter extends ObjectPainter {
             rect = {};
 
       if (this.#pad) {
-         rect.szx = Math.round(Math.max(0, 0.5 - Math.max(this.#pad.fLeftMargin, this.#pad.fRightMargin))*w);
-         rect.szy = Math.round(Math.max(0, 0.5 - Math.max(this.#pad.fBottomMargin, this.#pad.fTopMargin))*h);
+         rect.szx = Math.round(Math.max(0, 0.5 - Math.max(this.#pad.fLeftMargin, this.#pad.fRightMargin)) * w);
+         rect.szy = Math.round(Math.max(0, 0.5 - Math.max(this.#pad.fBottomMargin, this.#pad.fTopMargin)) * h);
       } else {
-         rect.szx = Math.round(0.5*w);
-         rect.szy = Math.round(0.5*h);
+         rect.szx = Math.round(0.5 * w);
+         rect.szy = Math.round(0.5 * h);
       }
 
-      rect.width = 2*rect.szx;
-      rect.height = 2*rect.szy;
-      rect.x = Math.round(w/2 - rect.szx);
-      rect.y = Math.round(h/2 - rect.szy);
+      rect.width = 2 * rect.szx;
+      rect.height = 2 * rect.szy;
+      rect.x = Math.round(w / 2 - rect.szx);
+      rect.y = Math.round(h / 2 - rect.szy);
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
       rect.transform = makeTranslate(rect.x, rect.y) || '';
@@ -895,7 +895,7 @@ class TPadPainter extends ObjectPainter {
          if (!is_batch && (posx < 25))
             posx = 25;
          if (gStyle.fOptDate > 3)
-            date.setTime(gStyle.fOptDate*1000);
+            date.setTime(gStyle.fOptDate * 1000);
 
          makeTranslate(dt, posx, posy)
             .style('text-anchor', 'start')
@@ -1349,7 +1349,7 @@ class TPadPainter extends ObjectPainter {
          if (this.#start_draw_tm) {
             const spenttm = new Date().getTime() - this.#start_draw_tm;
             if (spenttm > 1000)
-               console.log(`Canvas ${this.#pad?.fName || '---'} drawing took ${(spenttm*1e-3).toFixed(2)}s`);
+               console.log(`Canvas ${this.#pad?.fName || '---'} drawing took ${(spenttm * 1e-3).toFixed(2)}s`);
             this.#start_draw_tm = undefined;
          }
 
@@ -1360,14 +1360,14 @@ class TPadPainter extends ObjectPainter {
       const obj = this.#pad.fPrimitives.arr[indx];
 
       if (!obj || obj.$special || ((indx > 0) && (obj._typename === clTFrame) && this.getFramePainter()))
-         return this.drawPrimitives(indx+1);
+         return this.drawPrimitives(indx + 1);
 
       // use of Promise should avoid large call-stack depth when many primitives are drawn
       return this.drawObject(this, obj, this.#pad.fPrimitives.opt[indx]).then(op => {
          if (isObject(op))
             op._primitive = true; // mark painter as belonging to primitives
 
-         return this.drawPrimitives(indx+1);
+         return this.drawPrimitives(indx + 1);
       });
    }
 
@@ -1385,7 +1385,7 @@ class TPadPainter extends ObjectPainter {
 
       if (nx && !ny && use_existing) {
          for (let k = 0; k < nx; ++k) {
-            if (!this.getSubPadPainter(k+1)) {
+            if (!this.getSubPadPainter(k + 1)) {
                use_existing = false;
                break;
             }
@@ -1515,7 +1515,7 @@ class TPadPainter extends ObjectPainter {
       menu.sub('Border');
       menu.addSelectMenu('Mode', ['Down', 'Off', 'Up'], pad.fBorderMode + 1, v => {
          pad.fBorderMode = v - 1;
-         this.interactiveRedraw(true, `exec:SetBorderMode(${v-1})`);
+         this.interactiveRedraw(true, `exec:SetBorderMode(${v - 1})`);
       }, 'Pad border mode');
       menu.addSizeMenu('Size', 0, 20, 2, pad.fBorderSize, v => {
          pad.fBorderSize = v;
@@ -1705,7 +1705,7 @@ class TPadPainter extends ObjectPainter {
             return changed;
          }
 
-         return getPromise(this.#painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
+         return getPromise(this.#painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx + 1));
       };
 
       // return sync_promise.then(() => this.ensureBrowserSize(this.#pad?.fCw, this.#pad?.fCh)).then(() => {
@@ -2251,7 +2251,7 @@ class TPadPainter extends ObjectPainter {
             if (!res || (format === 'svg'))
                return res;
             const separ = res.indexOf('base64,');
-            return (separ > 0) ? res.slice(separ+7) : '';
+            return (separ > 0) ? res.slice(separ + 7) : '';
          });
       }
       return '';
@@ -2386,16 +2386,16 @@ class TPadPainter extends ObjectPainter {
       r.ux1 = func(fp.logx, r.ux1, 0);
       r.ux2 = func(fp.logx, r.ux2, 1);
 
-      let k = (r.ux2 - r.ux1)/(frect.width || 10);
-      r.px1 = r.ux1 - k*frect.x;
-      r.px2 = r.px1 + k*this.getPadWidth();
+      let k = (r.ux2 - r.ux1) / (frect.width || 10);
+      r.px1 = r.ux1 - k * frect.x;
+      r.px2 = r.px1 + k * this.getPadWidth();
 
       r.uy1 = func(fp.logy, r.uy1, 0);
       r.uy2 = func(fp.logy, r.uy2, 1);
 
-      k = (r.uy2 - r.uy1)/(frect.height || 10);
-      r.py1 = r.uy1 - k*frect.y;
-      r.py2 = r.py1 + k*this.getPadHeight();
+      k = (r.uy2 - r.uy1) / (frect.height || 10);
+      r.py1 = r.uy1 - k * frect.y;
+      r.py2 = r.py1 + k * this.getPadHeight();
 
       return true;
    }
@@ -2461,7 +2461,7 @@ class TPadPainter extends ObjectPainter {
             let res = imgdata;
             if (kind !== 'svg') {
                const separ = res.indexOf('base64,');
-               res = (separ > 0) ? res.slice(separ+7) : '';
+               res = (separ > 0) ? res.slice(separ + 7) : '';
             }
             if (res)
                this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);

@@ -245,12 +245,12 @@ class RPadPainter extends RObjectPainter {
             h = this.getPadHeight(),
             rect = {};
 
-      rect.szx = Math.round(0.5*w);
-      rect.szy = Math.round(0.5*h);
-      rect.width = 2*rect.szx;
-      rect.height = 2*rect.szy;
-      rect.x = Math.round(w/2 - rect.szx);
-      rect.y = Math.round(h/2 - rect.szy);
+      rect.szx = Math.round(0.5 * w);
+      rect.szy = Math.round(0.5 * h);
+      rect.width = 2 * rect.szx;
+      rect.height = 2 * rect.szy;
+      rect.x = Math.round(w / 2 - rect.szx);
+      rect.y = Math.round(h / 2 - rect.szy);
       rect.hint_delta_x = rect.szx;
       rect.hint_delta_y = rect.szy;
       rect.transform = makeTranslate(rect.x, rect.y) || '';
@@ -869,7 +869,7 @@ class RPadPainter extends RObjectPainter {
          if (this.#start_draw_tm) {
             const spenttm = new Date().getTime() - this.#start_draw_tm;
             if (spenttm > 3000)
-               console.log(`Canvas drawing took ${(spenttm*1e-3).toFixed(2)}s`);
+               console.log(`Canvas drawing took ${(spenttm * 1e-3).toFixed(2)}s`);
             this.#start_draw_tm = undefined;
          }
 
@@ -882,7 +882,7 @@ class RPadPainter extends RObjectPainter {
          if (isObject(op))
             op._primitive = true;
 
-         return this.drawPrimitives(indx+1);
+         return this.drawPrimitives(indx + 1);
       });
    }
 
@@ -1082,7 +1082,7 @@ class RPadPainter extends RObjectPainter {
             return changed;
          }
 
-         return getPromise(this.#painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx+1));
+         return getPromise(this.#painters[indx].redraw(force ? 'redraw' : 'resize')).then(() => redrawNext(indx + 1));
       };
 
 
@@ -1235,7 +1235,7 @@ class RPadPainter extends RObjectPainter {
             for (let n = 0; n < arr.length; ++n) {
                const name = arr[n].fString, p = name.indexOf('=');
                if (p > 0)
-                  colors[parseInt(name.slice(0, p))] = convertColor(name.slice(p+1));
+                  colors[parseInt(name.slice(0, p))] = convertColor(name.slice(p + 1));
             }
 
             this.setColors(colors);
@@ -1463,7 +1463,7 @@ class RPadPainter extends RObjectPainter {
             if (!res || (format === 'svg'))
                return res;
             const separ = res.indexOf('base64,');
-            return (separ > 0) ? res.slice(separ+7) : '';
+            return (separ > 0) ? res.slice(separ + 7) : '';
          });
       }
       return '';
@@ -1473,7 +1473,7 @@ class RPadPainter extends RObjectPainter {
      * @private */
    itemContextMenu(name) {
       const rrr = this.getPadSvg().node().getBoundingClientRect(),
-            evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
+            evnt = { clientX: rrr.left + 10, clientY: rrr.top + 10 };
 
       // use timeout to avoid conflict with mouse click and automatic menu close
       if (name === 'pad')
@@ -1523,7 +1523,7 @@ class RPadPainter extends RObjectPainter {
             let res = imgdata;
             if (kind !== 'svg') {
                const separ = res.indexOf('base64,');
-               res = (separ > 0) ? res.slice(separ+7) : '';
+               res = (separ > 0) ? res.slice(separ + 7) : '';
             }
             if (res)
                this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
@@ -1795,7 +1795,7 @@ class RPadPainter extends RObjectPainter {
 
       const norm = getV(0, 0), pixel = getV(1, 0);
 
-      res += sign*pixel;
+      res += sign * pixel;
 
       if (norm)
          res += sign * (vertical ? getRect().height : getRect().width) * norm;

@@ -106,7 +106,7 @@ class RFramePainter extends RObjectPainter {
    recalculateRange(Proj) {
       this.#projection = Proj || 0;
 
-      if ((this.#projection === 2) && ((this.scale_ymin <= -90) || (this.scale_ymax >=90))) {
+      if ((this.#projection === 2) && ((this.scale_ymin <= -90) || (this.scale_ymax >= 90))) {
          console.warn(`Mercator Projection: latitude out of range ${this.scale_ymin} ${this.scale_ymax}`);
          this.#projection = 0;
       }
@@ -170,7 +170,7 @@ class RFramePainter extends RObjectPainter {
          let grid = '';
          for (let n = 0; n < this.x_handle.ticks.length; ++n) {
             grid += this.#swap_xy
-                  ? `M0,${h+this.x_handle.ticks[n]}h${w}`
+                  ? `M0,${h + this.x_handle.ticks[n]}h${w}`
                   : `M${this.x_handle.ticks[n]},0v${h}`;
          }
 
@@ -193,7 +193,7 @@ class RFramePainter extends RObjectPainter {
          for (let n = 0; n < this.y_handle.ticks.length; ++n) {
             grid += this.#swap_xy
                      ? `M${this.y_handle.ticks[n]},0v${h}`
-                     : `M0,${h+this.y_handle.ticks[n]}h${w}`;
+                     : `M0,${h + this.y_handle.ticks[n]}h${w}`;
          }
 
          if (grid) {
@@ -302,9 +302,9 @@ class RFramePainter extends RObjectPainter {
       if (opts.extra_y_space) {
          const log_scale = this.#swap_xy ? this.logx : this.logy;
          if (log_scale && (this.scale_ymax > 0))
-            this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
+            this.scale_ymax = Math.exp(Math.log(this.scale_ymax) * 1.1);
          else
-            this.scale_ymax += (this.scale_ymax - this.scale_ymin)*0.1;
+            this.scale_ymax += (this.scale_ymax - this.scale_ymin) * 0.1;
       }
 
       if ((opts.zoom_xmin !== opts.zoom_xmax) && ((this.zoom_xmin === this.zoom_xmax) || !this.zoomChangedInteractive('x'))) {
@@ -621,7 +621,7 @@ class RFramePainter extends RObjectPainter {
       this.cleanupAxes();
 
       const clean = (name) => {
-         this[name+'min'] = this[name+'max'] = 0;
+         this[name + 'min'] = this[name + 'max'] = 0;
          this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
          this[`scale_${name}min`] = this[`scale_${name}max`] = 0;
       };
@@ -692,7 +692,7 @@ class RFramePainter extends RObjectPainter {
       this.#frame_y = tm;
       this.#frame_width = rotate ? h : w;
       this.#frame_height = rotate ? w : h;
-      this.#frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm-h},${tm})` : makeTranslate(lm, tm);
+      this.#frame_trans = rotate ? `rotate(-90,${lm},${tm}) translate(${lm - h},${tm})` : makeTranslate(lm, tm);
       this.$can_drag = !rotate && !pp?.options?.FixFrame;
 
       return this.mode3d ? this : this.createFrameG();
@@ -1002,12 +1002,12 @@ class RFramePainter extends RObjectPainter {
 
       if (zoom_v) {
          let cnt = 0;
-         if (vmin <= this[name+'min']) {
-            vmin = this[name+'min'];
+         if (vmin <= this[name + 'min']) {
+            vmin = this[name + 'min'];
             cnt++;
          }
-         if (vmax >= this[name+'max']) {
-            vmax = this[name+'max'];
+         if (vmax >= this[name + 'max']) {
+            vmax = this[name + 'max'];
             cnt++;
          }
          if (cnt === 2) {
@@ -1037,9 +1037,9 @@ class RFramePainter extends RObjectPainter {
             this[`zoom_${name}max`] = vmax;
             changed = true;
             zoom_v = false;
-            req.values[indx*2] = vmin;
-            req.values[indx*2+1] = vmax;
-            req.flags[indx*2] = req.flags[indx*2+1] = true;
+            req.values[indx * 2] = vmin;
+            req.values[indx * 2 + 1] = vmax;
+            req.flags[indx * 2] = req.flags[indx * 2 + 1] = true;
          }
       };
 
@@ -1055,7 +1055,7 @@ class RFramePainter extends RObjectPainter {
          if (this[`zoom_${name}min`] !== this[`zoom_${name}max`])
             changed = true;
          this[`zoom_${name}min`] = this[`zoom_${name}max`] = 0;
-         req.values[indx*2] = req.values[indx*2+1] = -1;
+         req.values[indx * 2] = req.values[indx * 2 + 1] = -1;
       }
 
       if (!changed)
@@ -1165,8 +1165,8 @@ class RFramePainter extends RObjectPainter {
          kind = 'z';
 
       if ((kind === 'x') || (kind === 'y') || (kind === 'x2') || (kind === 'y2')) {
-         const handle = this[kind+'_handle'],
-               faxis = obj || this[kind+'axis'];
+         const handle = this[kind + '_handle'],
+               faxis = obj || this[kind + 'axis'];
          if (!handle)
             return false;
          menu.header(`${kind.toUpperCase()} axis`, `${urlClassPrefix}ROOT_1_1Experimental_1_1RAxisBase.html`);
@@ -1293,7 +1293,7 @@ class RFramePainter extends RObjectPainter {
 
    /** @summary Toggle log scale on the specified axes */
    toggleAxisLog(axis) {
-      const handle = this[axis+'_handle'];
+      const handle = this[axis + '_handle'];
       return handle?.changeAxisLog('toggle');
    }
 
