@@ -404,9 +404,10 @@ class TAttFillHandler {
                      else
                         lines += `L${x2},${y2}`;
                   }
-               },
+               };
 
-               produce_new = (_aa, _bb, angle, swapx) => {
+               /* eslint-disable-next-line one-var */
+               const produce_new = (_aa, _bb, angle, swapx) => {
                   if ((angle === 0) || (angle === 90)) {
                      const dy = i*spacing_original*3,
                            nsteps = Math.round(h / dy),
@@ -459,9 +460,10 @@ class TAttFillHandler {
                      lines += `M${Math.round(x1)},${Math.round(y1)}L${Math.round(x2)},${Math.round(y2)}`;
                      yy -= dyreal;
                   }
-               },
+               };
 
-               func = use_new ? produce_new : produce_old;
+               /* eslint-disable-next-line one-var */
+               const func = use_new ? produce_new : produce_old;
 
                let horiz = false, vertical = false;
 

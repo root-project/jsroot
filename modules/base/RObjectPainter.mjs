@@ -179,8 +179,8 @@ class RObjectPainter extends ObjectPainter {
          const ordinal = parseFloat(val.slice(1, val.length - 1));
          val = 'black';
          if (Number.isFinite(ordinal)) {
-             const pal = this.getPadPainter()?.getHistPalette();
-             if (pal)
+            const pal = this.getPadPainter()?.getHistPalette();
+            if (pal)
                val = pal.getColorOrdinal(ordinal);
          }
       }
@@ -212,27 +212,27 @@ class RObjectPainter extends ObjectPainter {
             font_family = this.v7EvalAttr(name + '_font_family', rfont.fFamily || 'Arial'),
             font_style = this.v7EvalAttr(name + '_font_style', rfont.fStyle || ''),
             font_weight = this.v7EvalAttr(name + '_font_weight', rfont.fWeight || '');
-       let text_size = this.v7EvalAttr(name + '_size', dflts.size || 12);
+      let text_size = this.v7EvalAttr(name + '_size', dflts.size || 12);
 
-       if (isStr(text_size))
+      if (isStr(text_size))
          text_size = parseFloat(text_size);
-       if (!Number.isFinite(text_size) || (text_size <= 0))
+      if (!Number.isFinite(text_size) || (text_size <= 0))
          text_size = 12;
-       if (!fontScale)
+      if (!fontScale)
          fontScale = pp?.getPadHeight() || 100;
 
-       const handler = new FontHandler(null, text_size, fontScale);
-       handler.setNameStyleWeight(font_family, font_style, font_weight);
+      const handler = new FontHandler(null, text_size, fontScale);
+      handler.setNameStyleWeight(font_family, font_style, font_weight);
 
-       if (text_angle)
+      if (text_angle)
          handler.setAngle(360 - text_angle);
-       if (text_align !== 'none')
+      if (text_align !== 'none')
          handler.setAlign(text_align);
-       if (text_color !== 'none')
+      if (text_color !== 'none')
          handler.setColor(text_color);
 
-       return handler;
-    }
+      return handler;
+   }
 
    /** @summary Create this.fillatt object based on v7 fill attributes */
    createv7AttFill(prefix) {
@@ -263,7 +263,7 @@ class RObjectPainter extends ObjectPainter {
          this.lineatt.setBorder(this.v7EvalAttr(prefix + 'rx', 0), this.v7EvalAttr(prefix + 'ry', 0));
    }
 
-    /** @summary Create this.markeratt object based on v7 attributes */
+   /** @summary Create this.markeratt object based on v7 attributes */
    createv7AttMarker(prefix) {
       if (!prefix || !isStr(prefix))
          prefix = 'marker_';
@@ -296,10 +296,10 @@ class RObjectPainter extends ObjectPainter {
       req.names.push(name);
 
       if ((value === null) || (value === undefined)) {
-        if (!kind)
-         kind = 'none';
-        if (kind !== 'none')
-         console.error(`Trying to set ${kind} for none value`);
+         if (!kind)
+            kind = 'none';
+         if (kind !== 'none')
+            console.error(`Trying to set ${kind} for none value`);
       }
 
       if (!kind) {

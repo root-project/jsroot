@@ -1108,8 +1108,8 @@ class ObjectPainter extends BasePainter {
             // adjust x position when scale into specified rectangle
             if (arg.align[0] === 'middle')
                arg.x += arg.width / 2;
-             else if (arg.align[0] === 'end')
-                arg.x += arg.width;
+            else if (arg.align[0] === 'end')
+               arg.x += arg.width;
          }
 
          if (arg.height) {
@@ -1512,8 +1512,7 @@ class ObjectPainter extends BasePainter {
 
          _resolveFunc(_menu);
       },
-
-      reqid = this.getSnapId(kind);
+            reqid = this.getSnapId(kind);
 
       menu._got_menu = false;
 
@@ -1554,7 +1553,7 @@ class ObjectPainter extends BasePainter {
       }
    }
 
-    /** @summary Configure user-defined click handler
+   /** @summary Configure user-defined click handler
       * @desc Function will be called every time when frame click was performed
       * As argument, tooltip object with selected bins will be provided
       * If handler function returns true, default handling of click will be disabled
