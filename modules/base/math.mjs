@@ -62,28 +62,28 @@ function lgam(x) {
    let p, q, u, w, z;
    const kMAXLGM = 2.556348e305,
          LS2PI = 0.91893853320467274178,
-   A = [
-      8.11614167470508450300E-4,
-      -5.95061904284301438324E-4,
-      7.93650340457716943945E-4,
-      -2.77777777730099687205E-3,
-      8.33333333333331927722E-2
-   ], B = [
-      -1.37825152569120859100E3,
-      -3.88016315134637840924E4,
-      -3.31612992738871184744E5,
-      -1.16237097492762307383E6,
-      -1.72173700820839662146E6,
-      -8.53555664245765465627E5
-   ], C = [
-   /* 1.00000000000000000000E0, */
-      -3.51815701436523470549E2,
-      -1.70642106651881159223E4,
-      -2.20528590553854454839E5,
-      -1.13933444367982507207E6,
-      -2.53252307177582951285E6,
-      -2.01889141433532773231E6
-   ];
+         A = [
+            8.11614167470508450300E-4,
+            -5.95061904284301438324E-4,
+            7.93650340457716943945E-4,
+            -2.77777777730099687205E-3,
+            8.33333333333331927722E-2
+         ], B = [
+            -1.37825152569120859100E3,
+            -3.88016315134637840924E4,
+            -3.31612992738871184744E5,
+            -1.16237097492762307383E6,
+            -1.72173700820839662146E6,
+            -8.53555664245765465627E5
+         ], C = [
+            /* 1.00000000000000000000E0, */
+            -3.51815701436523470549E2,
+            -1.70642106651881159223E4,
+            -2.20528590553854454839E5,
+            -1.13933444367982507207E6,
+            -2.53252307177582951285E6,
+            -2.01889141433532773231E6
+         ];
 
    if ((x >= Number.MAX_VALUE) || (x == Number.POSITIVE_INFINITY))
       return Number.POSITIVE_INFINITY;
@@ -165,7 +165,7 @@ function stirf(x) {
    w = 1.0 + w * Polynomialeval( w, STIR, 4 );
    y = Math.exp(x);
 
-/*   #define kMAXSTIR kMAXLOG/log(kMAXLOG)  */
+   /*   #define kMAXSTIR kMAXLOG/log(kMAXLOG)  */
 
    if ( x > kMAXSTIR )
    { /* Avoid overflow in pow() */
@@ -271,9 +271,7 @@ function erf(x) {
       4.59432382970980127987E3,
       2.26290000613890934246E4,
       4.92673942608635921086E4
-   ],
-
-   z = x * x;
+   ], z = x * x;
 
    return x * Polynomialeval(z, erfT, 4) / Polynomial1eval(z, erfU, 5);
 }
@@ -383,7 +381,7 @@ function gamma(x) {
       z *= x;
    }
 
-  let small = false;
+   let small = false;
 
    while (( x < 0.0 ) && !small) {
       if ( x > -1.E-9 )
@@ -446,58 +444,58 @@ function ndtri(y0) {
       return Number.POSITIVE_INFINITY;
 
    const P0 = [
-        -5.99633501014107895267E1,
-         9.80010754185999661536E1,
-        -5.66762857469070293439E1,
-         1.39312609387279679503E1,
-        -1.23916583867381258016E0
+      -5.99633501014107895267E1,
+      9.80010754185999661536E1,
+      -5.66762857469070293439E1,
+      1.39312609387279679503E1,
+      -1.23916583867381258016E0
    ], Q0 = [
-         1.95448858338141759834E0,
-         4.67627912898881538453E0,
-         8.63602421390890590575E1,
-        -2.25462687854119370527E2,
-         2.00260212380060660359E2,
-        -8.20372256168333339912E1,
-         1.59056225126211695515E1,
-        -1.18331621121330003142E0
+      1.95448858338141759834E0,
+      4.67627912898881538453E0,
+      8.63602421390890590575E1,
+      -2.25462687854119370527E2,
+      2.00260212380060660359E2,
+      -8.20372256168333339912E1,
+      1.59056225126211695515E1,
+      -1.18331621121330003142E0
    ], P1 = [
-         4.05544892305962419923E0,
-         3.15251094599893866154E1,
-         5.71628192246421288162E1,
-         4.40805073893200834700E1,
-         1.46849561928858024014E1,
-         2.18663306850790267539E0,
-        -1.40256079171354495875E-1,
-        -3.50424626827848203418E-2,
-        -8.57456785154685413611E-4
+      4.05544892305962419923E0,
+      3.15251094599893866154E1,
+      5.71628192246421288162E1,
+      4.40805073893200834700E1,
+      1.46849561928858024014E1,
+      2.18663306850790267539E0,
+      -1.40256079171354495875E-1,
+      -3.50424626827848203418E-2,
+      -8.57456785154685413611E-4
    ], Q1 = [
-         1.57799883256466749731E1,
-         4.53907635128879210584E1,
-         4.13172038254672030440E1,
-         1.50425385692907503408E1,
-         2.50464946208309415979E0,
-        -1.42182922854787788574E-1,
-        -3.80806407691578277194E-2,
-        -9.33259480895457427372E-4
+      1.57799883256466749731E1,
+      4.53907635128879210584E1,
+      4.13172038254672030440E1,
+      1.50425385692907503408E1,
+      2.50464946208309415979E0,
+      -1.42182922854787788574E-1,
+      -3.80806407691578277194E-2,
+      -9.33259480895457427372E-4
    ], P2 = [
-         3.23774891776946035970E0,
-         6.91522889068984211695E0,
-         3.93881025292474443415E0,
-         1.33303460815807542389E0,
-         2.01485389549179081538E-1,
-         1.23716634817820021358E-2,
-         3.01581553508235416007E-4,
-         2.65806974686737550832E-6,
-         6.23974539184983293730E-9
+      3.23774891776946035970E0,
+      6.91522889068984211695E0,
+      3.93881025292474443415E0,
+      1.33303460815807542389E0,
+      2.01485389549179081538E-1,
+      1.23716634817820021358E-2,
+      3.01581553508235416007E-4,
+      2.65806974686737550832E-6,
+      6.23974539184983293730E-9
    ], Q2 = [
-         6.02427039364742014255E0,
-         3.67983563856160859403E0,
-         1.37702099489081330271E0,
-         2.16236993594496635890E-1,
-         1.34204006088543189037E-2,
-         3.28014464682127739104E-4,
-         2.89247864745380683936E-6,
-         6.79019408009981274425E-9
+      6.02427039364742014255E0,
+      3.67983563856160859403E0,
+      1.37702099489081330271E0,
+      2.16236993594496635890E-1,
+      1.34204006088543189037E-2,
+      3.28014464682127739104E-4,
+      2.89247864745380683936E-6,
+      6.79019408009981274425E-9
    ], s2pi = 2.50662827463100050242e0, dd = 0.13533528323661269189;
 
    let code = 1, y = y0, x, y2, x1;
@@ -836,14 +834,14 @@ function lgamma(z) {
 /** @summary Probability density function of the beta distribution.
   * @memberof Math */
 function beta_pdf(x, a, b) {
-  if (x < 0 || x > 1.0)
-   return 0;
-  if (x == 0 ) {
-     if (a < 1)
-        return Number.POSITIVE_INFINITY;
-     else if (a > 1)
-        return 0;
-     else if ( a == 1)
+   if (x < 0 || x > 1.0)
+      return 0;
+   if (x == 0 ) {
+      if (a < 1)
+         return Number.POSITIVE_INFINITY;
+      else if (a > 1)
+         return 0;
+      else if ( a == 1)
          return b; // to avoid a nan from log(0)*0
    }
    if (x == 1 ) {
@@ -949,7 +947,7 @@ function incbcf(a,b,x) {
    }
    while ( ++n < 300 );
 
-// cdone:
+   // cdone:
    return ans;
 }
 
@@ -1032,7 +1030,7 @@ function incbd(a,b,x) {
       }
    }
    while ( ++n < 300 );
-// cdone:
+   // cdone:
    return ans;
 }
 
@@ -1092,7 +1090,7 @@ function incbet(aa,bb,xx) {
 
    flag = 0;
 
-/* - to test if that way is better for large b/  (comment out from Cephes version)
+   /* - to test if that way is better for large b/  (comment out from Cephes version)
    if ( (bb * xx) <= 1.0 && xx <= 0.95)
    {
    t = pseries(aa, bb, xx);
@@ -1102,8 +1100,8 @@ function incbet(aa,bb,xx) {
 **/
    w = 1.0 - xx;
 
-/* Reverse a and b if x is greater than the mean. */
-/* aa,bb > 1 -> sharp rise at x=aa/(aa+bb) */
+   /* Reverse a and b if x is greater than the mean. */
+   /* aa,bb > 1 -> sharp rise at x=aa/(aa+bb) */
    if (xx > (aa/(aa+bb)))
    {
       flag = 1;
@@ -1131,7 +1129,7 @@ function incbet(aa,bb,xx) {
       else
          w = incbd( a, b, x ) / xc;
 
-   /* Multiply w by the factor
+      /* Multiply w by the factor
       a      b   _             _     _
       x  (1-x)   | (a+b) / (a | (a) | (b)) .   */
 
@@ -1156,7 +1154,7 @@ function incbet(aa,bb,xx) {
       }
    }
 
-// done:
+   // done:
 
    if (flag == 1) {
       if ( t <= kMACHEP )
@@ -1218,7 +1216,7 @@ function incbi(aa,bb,yy0) {
    else
    {
       dithresh = 1.0e-4;
-/* approximation to inverse function */
+      /* approximation to inverse function */
 
       yp = -ndtri(yy0);
 
@@ -1257,10 +1255,10 @@ function incbi(aa,bb,yy0) {
          ihalve = false; // instead goto newt; exclude ihalve for the first time
    }
 
-  let mainloop = 1000;
+   let mainloop = 1000;
 
-  // endless loop until coverage
-  while (mainloop-- > 0) {
+   // endless loop until coverage
+   while (mainloop-- > 0) {
    /* Resort to interval halving if not close enough. */
    // ihalve:
       if (ihalve) {
@@ -1367,7 +1365,7 @@ function incbi(aa,bb,yy0) {
 
       ihalve = true; // enter loop next time
 
-   // newt:
+      // newt:
 
       if ( nflg )
          return process_done(); // goto done;
@@ -1433,7 +1431,7 @@ function incbi(aa,bb,yy0) {
       dithresh = 256.0 * kMACHEP;
    } // endless loop instead of // goto ihalve;
 
-// done:
+   // done:
 
    return process_done();
 }
@@ -1710,7 +1708,7 @@ function LogNormal(x, sigma, theta = 0, m = 1) {
   * @memberof Math */
 function BetaDist(x, p, q) {
    if ((x < 0) || (x > 1) || (p <= 0) || (q <= 0))
-     return 0;
+      return 0;
    const beta = Beta(p, q);
    return Math.pow(x, p-1) * Math.pow(1-x, q-1) / beta;
 }
@@ -1775,7 +1773,7 @@ function crystalball_function(x, alpha, n, sigma, mean = 0) {
          AA = Math.exp(-0.5*abs_alpha*abs_alpha),
          B = nDivAlpha - abs_alpha,
          arg = nDivAlpha/(B-z);
-  return AA * Math.pow(arg,n);
+   return AA * Math.pow(arg,n);
 }
 
 /** @summary pdf definition of the crystal_ball which is defined only for n > 1 otherwise integral is diverging
@@ -1995,10 +1993,10 @@ function eff_AgrestiCoull(total,passed,level,bUpper) {
          mode = (passed + 0.5 * kappa * kappa) / (total + kappa * kappa),
          delta = kappa * Math.sqrt(mode * (1 - mode) / (total + kappa * kappa));
 
-  if (bUpper)
-     return ((mode + delta) > 1) ? 1.0 : (mode + delta);
+   if (bUpper)
+      return ((mode + delta) > 1) ? 1.0 : (mode + delta);
 
-  return ((mode - delta) < 0) ? 0.0 : (mode - delta);
+   return ((mode - delta) < 0) ? 0.0 : (mode - delta);
 }
 
 /** @summary Calculates the boundaries using the  mid-P binomial
@@ -2041,7 +2039,7 @@ function eff_MidPInterval(total,passed,level,bUpper) {
   * @memberof Math */
 function eff_Bayesian(total,passed,level,bUpper,alpha,beta) {
    const a = passed + alpha,
-          b = total - passed + beta;
+         b = total - passed + beta;
    if (bUpper) {
       if ((a > 0) && (b > 0))
          return beta_quantile((1+level)/2,a,b);
