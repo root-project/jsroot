@@ -131,7 +131,7 @@ export default [
         }],
         '@stylistic/js/quote-props': ['warn', 'as-needed'],
         '@stylistic/js/padded-blocks': ['warn', { blocks: 'never', classes: 'always', switches: 'never' }],
-        '@stylistic/js/space-infix-ops': 'off',
+        '@stylistic/js/space-infix-ops': 'warn',
         '@stylistic/js/space-in-parens': 'warn',
         '@stylistic/js/space-before-blocks': 'warn',
         '@stylistic/js/space-before-function-paren': ['warn', 'never'],
