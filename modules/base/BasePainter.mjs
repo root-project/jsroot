@@ -930,11 +930,11 @@ function convertDate(dt) {
    let res = '';
 
    if (settings.TimeZone && isStr(settings.TimeZone)) {
-     try {
-        res = dt.toLocaleString('en-GB', { timeZone: settings.TimeZone });
-     } catch {
-        res = '';
-     }
+      try {
+         res = dt.toLocaleString('en-GB', { timeZone: settings.TimeZone });
+      } catch {
+         res = '';
+      }
    }
    return res || dt.toLocaleString('en-GB');
 }

@@ -224,7 +224,7 @@ class ColorPalette {
    calcColorIndex(i, len) {
       const plen = this.palette.length, theColor = Math.floor((i + 0.99) * plen / (len - 1));
       return (theColor > plen - 1) ? plen - 1 : theColor;
-    }
+   }
 
    /** @summary Returns color with provided index */
    getColor(indx) { return this.palette[indx]; }
@@ -303,8 +303,8 @@ function getColorPalette(id, grayscale) {
       // Bird (default, keep float for backward compatibility)
       case 57:
          rgb = [[53.091,15.096,19.89,5.916,45.951,135.1755,208.743,253.878,248.982],
-               [42.432,91.7745,128.5455,163.6845,183.039,191.046,186.864,200.481,250.716],
-               [134.9715,221.442,213.8175,201.807,163.8375,118.881,89.2245,50.184,13.7445]];
+                [42.432,91.7745,128.5455,163.6845,183.039,191.046,186.864,200.481,250.716],
+                [134.9715,221.442,213.8175,201.807,163.8375,118.881,89.2245,50.184,13.7445]];
          break;
       // Cubehelix
       case 58: rgb = [[0,24,2,54,176,236,202,194,255],[0,29,92,129,117,120,176,236,255],[0,68,80,34,57,172,252,245,255]]; break;
@@ -433,9 +433,9 @@ function getColorPalette(id, grayscale) {
                               toDec(Blue[g-1] + c * (Blue[g] - Blue[g-1]) / nColorsGradient, 1) + ')';
          palette.push(col);
       }
-    }
+   }
 
-    return new ColorPalette(palette, grayscale);
+   return new ColorPalette(palette, grayscale);
 }
 
 
