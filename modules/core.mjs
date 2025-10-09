@@ -1,3 +1,5 @@
+/* eslint-disable @stylistic/js/indent */
+
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
 const version_id = 'dev',
