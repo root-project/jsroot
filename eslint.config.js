@@ -84,7 +84,16 @@ export default [
         // moved to @stylistic/js
         '@stylistic/js/semi': 'warn',
         '@stylistic/js/quotes': ['warn', 'single'],
-        '@stylistic/js/indent': 'off',
+        '@stylistic/js/indent': ['warn', 3, {
+          ignoredNodes: ['ConditionalExpression', 'ExportNamedDeclaration'],
+          ImportDeclaration: 'off',
+          VariableDeclarator: 'first',
+          ArrayExpression: 'first',
+          MemberExpression: 'off',
+          FunctionDeclaration: { parameters: 'first' },
+          CallExpression: { arguments: 'first' },
+          SwitchCase: 1
+        }],
         '@stylistic/js/eol-last': ['warn', 'always' ],
         '@stylistic/js/array-bracket-spacing': 'warn',
         '@stylistic/js/comma-spacing': 'warn',
