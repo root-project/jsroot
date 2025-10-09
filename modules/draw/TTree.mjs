@@ -283,7 +283,7 @@ function createTreePlayer(player) {
 
       if (pos < 0)
          expr += `>>${hname}`;
-       else {
+      else {
          hname = expr.slice(pos+2);
          if (hname[0] === '+')
             hname = hname.slice(1);
@@ -432,7 +432,7 @@ async function drawTree(dom, obj, opt) {
       // if generic object tried to be drawn without specifying any options, it will be just dump
       if (!opt && obj.fStreamerType && (obj.fStreamerType !== kTString) &&
           (obj.fStreamerType >= kObject) && (obj.fStreamerType <= kAnyP))
-          opt = 'dump';
+         opt = 'dump';
 
       args = { expr: opt, branch: obj };
       tree = obj.$tree;
@@ -484,7 +484,7 @@ async function drawTree(dom, obj, opt) {
       pr = treeIOTest(tree, args);
    } else if (args.expr || args.branch)
       pr = treeDraw(tree, args);
-    else
+   else
       return painter;
 
    return pr.then(res => args.progress(res, true));

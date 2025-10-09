@@ -62,26 +62,26 @@ class TTextPainter extends ObjectPainter {
                .then(() => this.drawText(arg))
                .then(() => this.finishTextDrawing())
                .then(() => {
-         if (this.isBatchMode())
-            return this;
+                  if (this.isBatchMode())
+                     return this;
 
-         if (pp.isButton() && !pp.isEditable()) {
-            g.on('click', () => this.getCanvPainter().selectActivePad(pp));
-            return this;
-         }
+                  if (pp.isButton() && !pp.isEditable()) {
+                     g.on('click', () => this.getCanvPainter().selectActivePad(pp));
+                     return this;
+                  }
 
-         Object.assign(this, { pos_x: x, pos_y: y, pos_dx: 0, pos_dy: 0 });
+                  Object.assign(this, { pos_x: x, pos_y: y, pos_dx: 0, pos_dy: 0 });
 
-         if (annot !== '3d')
-            addMoveHandler(this, true, is_url);
+                  if (annot !== '3d')
+                     addMoveHandler(this, true, is_url);
 
-         assignContextMenu(this);
+                  assignContextMenu(this);
 
-         if (this.matchObjectType(clTLink))
-            g.style('cursor', 'pointer').on('click', () => this.submitCanvExec('ExecuteEvent(kButton1Up, 0, 0);;'));
+                  if (this.matchObjectType(clTLink))
+                     g.style('cursor', 'pointer').on('click', () => this.submitCanvExec('ExecuteEvent(kButton1Up, 0, 0);;'));
 
-         return this;
-      });
+                  return this;
+               });
    }
 
    async redraw() {

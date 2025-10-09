@@ -126,7 +126,7 @@ class TSplinePainter extends ObjectPainter {
 
       if ((pnt === null) || !spline || !funcs)
          cleanup = true;
-       else {
+      else {
          xx = funcs.revertAxis('x', pnt.x);
          indx = this.findX(xx);
          knot = spline.fPoly[indx];
@@ -162,13 +162,15 @@ class TSplinePainter extends ObjectPainter {
                            .call(this.lineatt.func);
       }
 
-      const res = { name: this.getObject().fName,
-                  title: this.getObject().fTitle,
-                  x: funcs.grx(xx),
-                  y: funcs.gry(yy),
-                  color1: this.lineatt.color,
-                  lines: [],
-                  exact: (knot !== null) || (Math.abs(funcs.gry(yy) - pnt.y) < radius) };
+      const res = {
+         name: this.getObject().fName,
+         title: this.getObject().fTitle,
+         x: funcs.grx(xx),
+         y: funcs.gry(yy),
+         color1: this.lineatt.color,
+         lines: [],
+         exact: (knot !== null) || (Math.abs(funcs.gry(yy) - pnt.y) < radius)
+      };
 
       res.changed = gbin.property('current_xx') !== xx;
       res.menu = res.exact;
@@ -283,14 +285,14 @@ class TSplinePainter extends ObjectPainter {
    decodeOptions(opt) {
       const d = new DrawOptions(opt),
             o = this.setOptions({
-         Same: d.check('SAME'),
-         Line: d.check('L'),
-         Curve: d.check('C'),
-         Mark: d.check('P'),
-         Hopt: '',
-         second_x: false,
-         second_y: false
-      });
+               Same: d.check('SAME'),
+               Line: d.check('L'),
+               Curve: d.check('C'),
+               Mark: d.check('P'),
+               Hopt: '',
+               second_x: false,
+               second_y: false
+            });
 
       if (!o.Line && !o.Curve && !o.Mark)
          o.Curve = true;

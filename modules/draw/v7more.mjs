@@ -11,11 +11,11 @@ import { createMenu } from '../gui/menu.mjs';
   * @private */
 function drawText() {
    const text = this.getObject(),
-       pp = this.getPadPainter(),
-       onframe = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
-       clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
-       p = pp.getCoordinate(text.fPos, onframe),
-       textFont = this.v7EvalFont('text', { size: 12, color: 'black', align: 22 });
+         pp = this.getPadPainter(),
+         onframe = this.v7EvalAttr('onFrame', false) ? pp.getFramePainter() : null,
+         clipping = onframe ? this.v7EvalAttr('clipping', false) : false,
+         p = pp.getCoordinate(text.fPos, onframe),
+         textFont = this.v7EvalFont('text', { size: 12, color: 'black', align: 22 });
 
    this.createG(clipping ? 'main_layer' : (onframe ? 'upper_layer' : false));
 
@@ -187,13 +187,12 @@ class RPalettePainter extends RObjectPainter {
          const z0 = Math.round(fp.z_handle.gr(contour[i])),
                z1 = Math.round(fp.z_handle.gr(contour[i+1])),
                col = palette.getContourColor((contour[i] + contour[i+1]) / 2),
-
-         r = g_btns.append('svg:path')
-                   .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
-                   .style('fill', col)
-                   .style('stroke', col)
-                   .property('fill0', col)
-                   .property('fill1', d3_rgb(col).darker(0.5).formatRgb());
+               r = g_btns.append('svg:path')
+                         .attr('d', vertical ? `M0,${z1}H${palette_width}V${z0}H0Z` : `M${z0},0V${palette_height}H${z1}V0Z`)
+                         .style('fill', col)
+                         .style('stroke', col)
+                         .property('fill0', col)
+                         .property('fill1', d3_rgb(col).darker(0.5).formatRgb());
 
          if (this.isBatchMode())
             continue;
@@ -234,8 +233,10 @@ class RPalettePainter extends RObjectPainter {
             });
          }
 
-         addDragHandler(this, { x: palette_x, y: palette_y, width: palette_width, height: palette_height,
-                                minwidth: 20, minheight: 20, no_change_x: !vertical, no_change_y: vertical, redraw: d => this.drawPalette(d) });
+         addDragHandler(this, {
+            x: palette_x, y: palette_y, width: palette_width, height: palette_height,
+            minwidth: 20, minheight: 20, no_change_x: !vertical, no_change_y: vertical, redraw: d => this.drawPalette(d)
+         });
 
          if (!settings.Zooming)
             return;
@@ -281,7 +282,7 @@ class RPalettePainter extends RObjectPainter {
 
             if (moving_labels)
                fp.z_handle.processLabelsMove('stop', last_pos);
-             else {
+            else {
                const z = fp.z_handle.func, z1 = z.invert(sel1), z2 = z.invert(sel2);
                fp.zoomSingle('z', Math.min(z1, z2), Math.max(z1, z2));
             }
@@ -326,9 +327,9 @@ class RPalettePainter extends RObjectPainter {
                   evnt.preventDefault();
 
                   const pos = d3_pointer(evnt, this.getG().node()),
-                      coord = vertical ? (1 - pos[1] / palette_height) : pos[0] / palette_width,
+                        coord = vertical ? (1 - pos[1] / palette_height) : pos[0] / palette_width,
 
-                   item = fp.z_handle.analyzeWheelEvent(evnt, coord);
+                        item = fp.z_handle.analyzeWheelEvent(evnt, coord);
                   if (item.changed)
                      fp.zoomSingle('z', item.min, item.max);
                });

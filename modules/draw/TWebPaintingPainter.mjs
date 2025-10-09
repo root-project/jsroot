@@ -57,9 +57,10 @@ class TWebPaintingPainter extends ObjectPainter {
       let indx = 0, attr = {}, lastpath = null, lastkind = 'none', d = '',
           oper, npoints, n;
 
+      /* eslint-disable one-var */
       const g = this.createG(),
-            arr = obj.fOper.split(';'),
-      check_attributes = kind => {
+            arr = obj.fOper.split(';');
+      const check_attributes = kind => {
          if (kind === lastkind)
             return;
 
@@ -86,7 +87,8 @@ class TWebPaintingPainter extends ObjectPainter {
                lastpath.call(this.markeratt.func);
                break;
          }
-      }, read_attr = (str, names) => {
+      };
+      const read_attr = (str, names) => {
          let lastp = 0;
          const obj2 = { _typename: 'any' };
          for (let k = 0; k < names.length; ++k) {
@@ -95,7 +97,8 @@ class TWebPaintingPainter extends ObjectPainter {
             lastp = p;
          }
          return obj2;
-      }, process = k => {
+      };
+      const process = k => {
          while (++k < arr.length) {
             oper = arr[k][0];
             switch (oper) {
@@ -178,13 +181,15 @@ class TWebPaintingPainter extends ObjectPainter {
                         }
 
                         // todo - correct support of angle
-                        this.drawText({ align: attr.fTextAlign,
-                                        x: func.x(obj.fBuf[indx++]),
-                                        y: func.y(obj.fBuf[indx++]),
-                                        rotate: -angle,
-                                        text,
-                                        color: getColor(attr.fTextColor),
-                                        latex: 0, draw_g: group });
+                        this.drawText({
+                           align: attr.fTextAlign,
+                           x: func.x(obj.fBuf[indx++]),
+                           y: func.y(obj.fBuf[indx++]),
+                           rotate: -angle,
+                           text,
+                           color: getColor(attr.fTextColor),
+                           latex: 0, draw_g: group
+                        });
 
                         return this.finishTextDrawing(group);
                      }).then(() => process(k));
