@@ -89,14 +89,14 @@ function buildCompositeVolume(comp, maxlvl, side) {
    setGeoBit(node1, geoBITS.kVisDaughters, true);
    node1.fName = 'Left';
    node1.fMatrix = comp.fNode.fLeftMat;
-   node1.fVolume = buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + 'Left');
+   node1.fVolume = buildCompositeVolume(comp.fNode.fLeft, maxlvl - 1, side + 'Left');
 
    const node2 = create(clTGeoNodeMatrix);
    setGeoBit(node2, geoBITS.kVisThis, true);
    setGeoBit(node2, geoBITS.kVisDaughters, true);
    node2.fName = 'Right';
    node2.fMatrix = comp.fNode.fRightMat;
-   node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl-1, side + 'Right');
+   node2.fVolume = buildCompositeVolume(comp.fNode.fRight, maxlvl - 1, side + 'Right');
 
    vol.fNodes = create(clTList);
    vol.fNodes.Add(node1);
@@ -118,17 +118,17 @@ function getHistPainter3DCfg(painter) {
           offset_x = 0, offset_y = 0, offset_z = 0;
 
       if (main.scale_xmax > main.scale_xmin) {
-         scale_x = 2 * main.size_x3d/(main.scale_xmax - main.scale_xmin);
+         scale_x = 2 * main.size_x3d / (main.scale_xmax - main.scale_xmin);
          offset_x = (main.scale_xmax + main.scale_xmin) / 2 * scale_x;
       }
 
       if (main.scale_ymax > main.scale_ymin) {
-         scale_y = 2 * main.size_y3d/(main.scale_ymax - main.scale_ymin);
+         scale_y = 2 * main.size_y3d / (main.scale_ymax - main.scale_ymin);
          offset_y = (main.scale_ymax + main.scale_ymin) / 2 * scale_y;
       }
 
       if (main.scale_zmax > main.scale_zmin) {
-         scale_z = 2 * main.size_z3d/(main.scale_zmax - main.scale_zmin);
+         scale_z = 2 * main.size_z3d / (main.scale_zmax - main.scale_zmin);
          offset_z = (main.scale_zmax + main.scale_zmin) / 2 * scale_z - main.size_z3d;
       }
 
@@ -848,7 +848,7 @@ class TGeoPainter extends ObjectPainter {
       this.#vr_camera_rotation = this.#camera.rotation.clone();
       this.#vrDisplay.requestPresent([{ source: this.#renderer.domElement }]).then(() => {
          this.#vr_camera_near = this.#camera.near;
-         this.#dolly.position.set(this.#camera.position.x/4, -this.#camera.position.y/8, -this.#camera.position.z/4);
+         this.#dolly.position.set(this.#camera.position.x / 4, -this.#camera.position.y / 8, -this.#camera.position.z / 4);
          this.#camera.position.set(0, 0, 0);
          this.#dolly.add(this.#camera);
          this.#camera.near = 0.1;
@@ -901,7 +901,7 @@ class TGeoPainter extends ObjectPainter {
 
       // arg.node.fVolume
       if (name.indexOf('*') < 0) {
-         regexp = new RegExp('^'+name+'$');
+         regexp = new RegExp('^' + name + '$');
          exact = true;
       } else {
          regexp = new RegExp('^' + name.split('*').join('.*') + '$');
@@ -943,12 +943,12 @@ class TGeoPainter extends ObjectPainter {
             sign = '-';
          }
 
-         let p2 = p1+1;
+         let p2 = p1 + 1;
          const regexp = /[,; .]/;
          while ((p2 < opt.length) && !regexp.test(opt[p2]) && (opt[p2] !== '+') && (opt[p2] !== '-'))
             p2++;
 
-         const name = opt.substring(p1+1, p2);
+         const name = opt.substring(p1 + 1, p2);
          opt = opt.slice(0, p1) + opt.slice(p2);
 
          this.modifyVisisbility(name, sign);
@@ -1167,10 +1167,10 @@ class TGeoPainter extends ObjectPainter {
          res._count = true;
 
       if (d.check('TRANSP', true))
-         res.transparency = d.partAsInt(0, 100)/100;
+         res.transparency = d.partAsInt(0, 100) / 100;
 
       if (d.check('OPACITY', true))
-         res.transparency = 1 - d.partAsInt(0, 100)/100;
+         res.transparency = 1 - d.partAsInt(0, 100) / 100;
 
       if (d.check('AXISCENTER') || d.check('AXISC') || d.check('AC'))
          res._axis = 2;
@@ -1178,9 +1178,9 @@ class TGeoPainter extends ObjectPainter {
          res._axis = 1;
 
       if (d.check('TRR', true))
-         res.trans_radial = d.partAsInt()/100;
+         res.trans_radial = d.partAsInt() / 100;
       if (d.check('TRZ', true))
-         res.trans_z = d.partAsInt()/100;
+         res.trans_z = d.partAsInt() / 100;
 
       if (d.check('W'))
          res.wireframe = true;
@@ -1277,7 +1277,7 @@ class TGeoPainter extends ObjectPainter {
 
       const tm2 = new Date().getTime();
 
-      console.log(`Compare matrixes total ${totalcnt} errors ${errcnt} takes ${tm2-tm1} maxdiff ${totalmax}`);
+      console.log(`Compare matrixes total ${totalcnt} errors ${errcnt} takes ${tm2 - tm1} maxdiff ${totalmax}`);
    }
 
    /** @summary Fill context menu */
@@ -1636,7 +1636,7 @@ class TGeoPainter extends ObjectPainter {
                axis = this.ctrl.project;
 
          if (this.ctrl.projectPos === undefined)
-            this.ctrl.projectPos = (bound.min[axis] + bound.max[axis])/2;
+            this.ctrl.projectPos = (bound.min[axis] + bound.max[axis]) / 2;
 
          this.#gui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
              .name(axis.toUpperCase() + ' projection')
@@ -1949,7 +1949,7 @@ class TGeoPainter extends ObjectPainter {
                   itemname = obj.geo_name;
                   if (itemname.indexOf('<prnt>') === 0)
                      itemname = (this.getItemName() || 'top') + itemname.slice(6);
-                  name = itemname.slice(itemname.lastIndexOf('/')+1);
+                  name = itemname.slice(itemname.lastIndexOf('/') + 1);
                   if (!name)
                      name = itemname;
                   hdr = name;
@@ -2756,8 +2756,8 @@ class TGeoPainter extends ObjectPainter {
 
       if (scalar === 'original') {
          box3.translate(new THREE.Vector3(-topitem.position.x, -topitem.position.y, -topitem.position.z));
-         box3.min.multiply(new THREE.Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
-         box3.max.multiply(new THREE.Vector3(1/topitem.scale.x, 1/topitem.scale.y, 1/topitem.scale.z));
+         box3.min.multiply(new THREE.Vector3(1 / topitem.scale.x, 1 / topitem.scale.y, 1 / topitem.scale.z));
+         box3.max.multiply(new THREE.Vector3(1 / topitem.scale.x, 1 / topitem.scale.y, 1 / topitem.scale.z));
       } else if (scalar !== undefined)
          box3.expandByVector(box3.getSize(new THREE.Vector3()).multiplyScalar(scalar));
 
@@ -2778,9 +2778,9 @@ class TGeoPainter extends ObjectPainter {
       if (this.ctrl.projectPos === undefined) {
          const bound = this.getGeomBoundingBox(toplevel),
                min = bound.min[this.ctrl.project], max = bound.max[this.ctrl.project];
-         let mean = (min + max)/2;
+         let mean = (min + max) / 2;
 
-         if ((min < 0) && (max > 0) && (Math.abs(mean) < 0.2*Math.max(-min, max)))
+         if ((min < 0) && (max > 0) && (Math.abs(mean) < 0.2 * Math.max(-min, max)))
             mean = 0; // if middle is around 0, use 0
 
          this.ctrl.projectPos = mean;
@@ -2852,37 +2852,37 @@ class TGeoPainter extends ObjectPainter {
             continue;
          switch (light._id) {
             case 0:
-               light.position.set(sizex/5, sizey/5, sizez/5);
+               light.position.set(sizex / 5, sizey / 5, sizez / 5);
                enabled = this.ctrl.light.specular;
                break;
             case 1:
-               light.position.set(0, 0, sizez/2);
+               light.position.set(0, 0, sizez / 2);
                enabled = this.ctrl.light.front;
                break;
             case 2:
-               light.position.set(0, 2*sizey, 0);
+               light.position.set(0, 2 * sizey, 0);
                enabled = this.ctrl.light.top;
                break;
             case 3:
-               light.position.set(0, -2*sizey, 0);
+               light.position.set(0, -2 * sizey, 0);
                enabled = this.ctrl.light.bottom;
                break;
             case 4:
-               light.position.set(-2*sizex, 0, 0);
+               light.position.set(-2 * sizex, 0, 0);
                enabled = this.ctrl.light.left;
                break;
             case 5:
-               light.position.set(2*sizex, 0, 0);
+               light.position.set(2 * sizex, 0, 0);
                enabled = this.ctrl.light.right;
                break;
          }
-         light.power = enabled ? p*Math.PI*4 : 0;
+         light.power = enabled ? p * Math.PI * 4 : 0;
          if (enabled)
             plights.push(light);
       }
 
       // keep light power of all sources constant
-      plights.forEach(ll => { ll.power = p*4*Math.PI/plights.length; });
+      plights.forEach(ll => { ll.power = p * 4 * Math.PI / plights.length; });
 
       if (need_render)
          this.render3D();
@@ -2902,7 +2902,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if (this.isOrthoCamera())
-         this.#camera = new THREE.OrthographicCamera(-this.#scene_width/2, this.#scene_width/2, this.#scene_height/2, -this.#scene_height/2, 1, 10000);
+         this.#camera = new THREE.OrthographicCamera(-this.#scene_width / 2, this.#scene_width / 2, this.#scene_height / 2, -this.#scene_height / 2, 1, 10000);
       else {
          this.#camera = new THREE.PerspectiveCamera(25, this.#scene_width / this.#scene_height, 1, 10000);
          this.#camera.up = this.ctrl._yup ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(0, 0, 1);
@@ -3203,16 +3203,16 @@ class TGeoPainter extends ObjectPainter {
       const sizex = box.max.x - box.min.x,
             sizey = box.max.y - box.min.y,
             sizez = box.max.z - box.min.z,
-            midx = (box.max.x + box.min.x)/2,
-            midy = (box.max.y + box.min.y)/2,
-            midz = (box.max.z + box.min.z)/2,
+            midx = (box.max.x + box.min.x) / 2,
+            midy = (box.max.y + box.min.y) / 2,
+            midz = (box.max.z + box.min.z) / 2,
             more = this.ctrl._axis || (this.ctrl.camera_overlay === 'bar') ? 0.2 : 0.1;
 
       if (this.#scene_size && !force) {
          const test = (v1, v2, scale) => {
             if (!scale)
-               scale = Math.abs((v1+v2)/2);
-            return scale <= 1e-20 ? true : Math.abs(v2-v1)/scale > 0.01;
+               scale = Math.abs((v1 + v2) / 2);
+            return scale <= 1e-20 ? true : Math.abs(v2 - v1) / scale > 0.01;
          }, d = this.#scene_size;
          if (!test(sizex, d.sizex) && !test(sizey, d.sizey) && !test(sizez, d.sizez) &&
              !test(midx, d.midx, d.sizex) && !test(midy, d.midy, d.sizey) && !test(midz, d.midz, d.sizez)) {
@@ -3237,8 +3237,8 @@ class TGeoPainter extends ObjectPainter {
             cc.min = box.min[cc.name];
             cc.max = box.max[cc.name];
             const sz = cc.max - cc.min;
-            cc.max += sz*0.01;
-            cc.min -= sz*0.01;
+            cc.max += sz * 0.01;
+            cc.min -= sz * 0.01;
             if (sz > 100)
                cc.step = 0.1;
             else if (sz > 1)
@@ -3255,12 +3255,12 @@ class TGeoPainter extends ObjectPainter {
          }
       }
 
-      let k = 2*this.ctrl.zoom;
+      let k = 2 * this.ctrl.zoom;
       const max_all = Math.max(sizex, sizey, sizez),
             sign = this.ctrl.camera_kind.indexOf('N') > 0 ? -1 : 1;
 
       this.#lookat = new THREE.Vector3(midx, midy, midz);
-      this.#camera0pos = new THREE.Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
+      this.#camera0pos = new THREE.Vector3(-2 * max_all, 0, 0); // virtual 0 position, where rotation starts
 
       this.#camera.updateMatrixWorld();
       this.#camera.updateProjectionMatrix();
@@ -3268,19 +3268,19 @@ class TGeoPainter extends ObjectPainter {
       if ((this.ctrl.rotatey || this.ctrl.rotatez) && this.ctrl.can_rotate) {
          const prev_zoom = this.calculateZoom();
          if (keep_zoom && prev_zoom)
-            k = 2*prev_zoom;
+            k = 2 * prev_zoom;
 
-         const euler = new THREE.Euler(0, this.ctrl.rotatey/180*Math.PI, this.ctrl.rotatez/180*Math.PI, 'YZX');
+         const euler = new THREE.Euler(0, this.ctrl.rotatey / 180 * Math.PI, this.ctrl.rotatez / 180 * Math.PI, 'YZX');
 
-         this.#camera.position.set(-k*max_all, 0, 0);
+         this.#camera.position.set(-k * max_all, 0, 0);
          this.#camera.position.applyEuler(euler);
          this.#camera.position.add(new THREE.Vector3(midx, midy, midz));
 
          if (keep_zoom && prev_zoom) {
             const actual_zoom = this.calculateZoom();
-            k *= prev_zoom/actual_zoom;
+            k *= prev_zoom / actual_zoom;
 
-            this.#camera.position.set(-k*max_all, 0, 0);
+            this.#camera.position.set(-k * max_all, 0, 0);
             this.#camera.position.applyEuler(euler);
             this.#camera.position.add(new THREE.Vector3(midx, midy, midz));
          }
@@ -3290,79 +3290,79 @@ class TGeoPainter extends ObjectPainter {
          this.ctrl.camx = this.ctrl.camy = this.ctrl.camz = this.ctrl.camlx = this.ctrl.camly = this.ctrl.camlz = undefined;
       } else if ((this.ctrl.camera_kind === 'orthoXOY') || (this.ctrl.camera_kind === 'orthoXNOY')) {
          this.#camera.up.set(0, 1, 0);
-         this.#camera.position.set(sign < 0 ? midx*2 : 0, 0, midz + sign*sizez*2);
-         this.#lookat.set(sign < 0 ? midx*2 : 0, 0, midz);
-         this.#camera.left = box.min.x - more*sizex;
-         this.#camera.right = box.max.x + more*sizex;
-         this.#camera.top = box.max.y + more*sizey;
-         this.#camera.bottom = box.min.y - more*sizey;
+         this.#camera.position.set(sign < 0 ? midx * 2 : 0, 0, midz + sign * sizez * 2);
+         this.#lookat.set(sign < 0 ? midx * 2 : 0, 0, midz);
+         this.#camera.left = box.min.x - more * sizex;
+         this.#camera.right = box.max.x + more * sizex;
+         this.#camera.top = box.max.y + more * sizey;
+         this.#camera.bottom = box.min.y - more * sizey;
          if (!keep_zoom)
             this.#camera.zoom = this.ctrl.zoom || 1;
          this.#camera.orthoSign = sign;
-         this.#camera.orthoZ = [midz, sizez/2];
+         this.#camera.orthoZ = [midz, sizez / 2];
       } else if ((this.ctrl.camera_kind === 'orthoXOZ') || (this.ctrl.camera_kind === 'orthoXNOZ')) {
          this.#camera.up.set(0, 0, 1);
-         this.#camera.position.set(sign < 0 ? midx*2 : 0, midy - sign*sizey*2, 0);
-         this.#lookat.set(sign < 0 ? midx*2 : 0, midy, 0);
-         this.#camera.left = box.min.x - more*sizex;
-         this.#camera.right = box.max.x + more*sizex;
-         this.#camera.top = box.max.z + more*sizez;
-         this.#camera.bottom = box.min.z - more*sizez;
+         this.#camera.position.set(sign < 0 ? midx * 2 : 0, midy - sign * sizey * 2, 0);
+         this.#lookat.set(sign < 0 ? midx * 2 : 0, midy, 0);
+         this.#camera.left = box.min.x - more * sizex;
+         this.#camera.right = box.max.x + more * sizex;
+         this.#camera.top = box.max.z + more * sizez;
+         this.#camera.bottom = box.min.z - more * sizez;
          if (!keep_zoom)
             this.#camera.zoom = this.ctrl.zoom || 1;
          this.#camera.orthoIndicies = [0, 2, 1];
-         this.#camera.orthoRotation = geom => geom.rotateX(Math.PI/2);
+         this.#camera.orthoRotation = geom => geom.rotateX(Math.PI / 2);
          this.#camera.orthoSign = sign;
-         this.#camera.orthoZ = [midy, -sizey/2];
+         this.#camera.orthoZ = [midy, -sizey / 2];
       } else if ((this.ctrl.camera_kind === 'orthoZOY') || (this.ctrl.camera_kind === 'orthoZNOY')) {
          this.#camera.up.set(0, 1, 0);
-         this.#camera.position.set(midx - sign*sizex*2, 0, sign < 0 ? midz*2 : 0);
-         this.#lookat.set(midx, 0, sign < 0 ? midz*2 : 0);
-         this.#camera.left = box.min.z - more*sizez;
-         this.#camera.right = box.max.z + more*sizez;
-         this.#camera.top = box.max.y + more*sizey;
-         this.#camera.bottom = box.min.y - more*sizey;
+         this.#camera.position.set(midx - sign * sizex * 2, 0, sign < 0 ? midz * 2 : 0);
+         this.#lookat.set(midx, 0, sign < 0 ? midz * 2 : 0);
+         this.#camera.left = box.min.z - more * sizez;
+         this.#camera.right = box.max.z + more * sizez;
+         this.#camera.top = box.max.y + more * sizey;
+         this.#camera.bottom = box.min.y - more * sizey;
          if (!keep_zoom)
             this.#camera.zoom = this.ctrl.zoom || 1;
          this.#camera.orthoIndicies = [2, 1, 0];
-         this.#camera.orthoRotation = geom => geom.rotateY(-Math.PI/2);
+         this.#camera.orthoRotation = geom => geom.rotateY(-Math.PI / 2);
          this.#camera.orthoSign = sign;
-         this.#camera.orthoZ = [midx, -sizex/2];
+         this.#camera.orthoZ = [midx, -sizex / 2];
       } else if ((this.ctrl.camera_kind === 'orthoZOX') || (this.ctrl.camera_kind === 'orthoZNOX')) {
          this.#camera.up.set(1, 0, 0);
-         this.#camera.position.set(0, midy - sign*sizey*2, sign > 0 ? midz*2 : 0);
-         this.#lookat.set(0, midy, sign > 0 ? midz*2 : 0);
-         this.#camera.left = box.min.z - more*sizez;
-         this.#camera.right = box.max.z + more*sizez;
-         this.#camera.top = box.max.x + more*sizex;
-         this.#camera.bottom = box.min.x - more*sizex;
+         this.#camera.position.set(0, midy - sign * sizey * 2, sign > 0 ? midz * 2 : 0);
+         this.#lookat.set(0, midy, sign > 0 ? midz * 2 : 0);
+         this.#camera.left = box.min.z - more * sizez;
+         this.#camera.right = box.max.z + more * sizez;
+         this.#camera.top = box.max.x + more * sizex;
+         this.#camera.bottom = box.min.x - more * sizex;
          if (!keep_zoom)
             this.#camera.zoom = this.ctrl.zoom || 1;
          this.#camera.orthoIndicies = [2, 0, 1];
-         this.#camera.orthoRotation = geom => geom.rotateX(Math.PI/2).rotateY(Math.PI/2);
+         this.#camera.orthoRotation = geom => geom.rotateX(Math.PI / 2).rotateY(Math.PI / 2);
          this.#camera.orthoSign = sign;
-         this.#camera.orthoZ = [midy, -sizey/2];
+         this.#camera.orthoZ = [midy, -sizey / 2];
       } else if (this.ctrl.project) {
          switch (this.ctrl.project) {
-            case 'x': this.#camera.position.set(k*1.5*Math.max(sizey, sizez), 0, 0); break;
-            case 'y': this.#camera.position.set(0, k*1.5*Math.max(sizex, sizez), 0); break;
-            case 'z': this.#camera.position.set(0, 0, k*1.5*Math.max(sizex, sizey)); break;
+            case 'x': this.#camera.position.set(k * 1.5 * Math.max(sizey, sizez), 0, 0); break;
+            case 'y': this.#camera.position.set(0, k * 1.5 * Math.max(sizex, sizez), 0); break;
+            case 'z': this.#camera.position.set(0, 0, k * 1.5 * Math.max(sizex, sizey)); break;
          }
       } else if (this.ctrl.camera_kind === 'perspXOZ') {
          this.#camera.up.set(0, 1, 0);
-         this.#camera.position.set(midx - 3*max_all, midy, midz);
+         this.#camera.position.set(midx - 3 * max_all, midy, midz);
       } else if (this.ctrl.camera_kind === 'perspYOZ') {
          this.#camera.up.set(1, 0, 0);
-         this.#camera.position.set(midx, midy - 3*max_all, midz);
+         this.#camera.position.set(midx, midy - 3 * max_all, midz);
       } else if (this.ctrl.camera_kind === 'perspXOY') {
          this.#camera.up.set(0, 0, 1);
-         this.#camera.position.set(midx - 3*max_all, midy, midz);
+         this.#camera.position.set(midx - 3 * max_all, midy, midz);
       } else if (this.ctrl._yup) {
          this.#camera.up.set(0, 1, 0);
-         this.#camera.position.set(midx-k*Math.max(sizex, sizez), midy+k*sizey, midz-k*Math.max(sizex, sizez));
+         this.#camera.position.set(midx - k * Math.max(sizex, sizez), midy + k * sizey, midz - k * Math.max(sizex, sizez));
       } else {
          this.#camera.up.set(0, 0, 1);
-         this.#camera.position.set(midx-k*Math.max(sizex, sizey), midy-k*Math.max(sizex, sizey), midz+k*sizez);
+         this.#camera.position.set(midx - k * Math.max(sizex, sizey), midy - k * Math.max(sizex, sizey), midz + k * sizez);
       }
 
       if (this.#camera.isOrthographicCamera && this.isOrthoCamera() && this.#scene_width && this.#scene_height) {
@@ -3461,15 +3461,15 @@ class TGeoPainter extends ObjectPainter {
       const sizex = box.max.x - box.min.x,
             sizey = box.max.y - box.min.y,
             sizez = box.max.z - box.min.z,
-            midx = (box.max.x + box.min.x)/2,
-            midy = (box.max.y + box.min.y)/2,
-            midz = (box.max.z + box.min.z)/2;
+            midx = (box.max.x + box.min.x) / 2,
+            midy = (box.max.y + box.min.y) / 2,
+            midz = (box.max.z + box.min.z) / 2;
 
       let position, frames = 50, step = 0;
       if (this.ctrl._yup)
-         position = new THREE.Vector3(midx-2*Math.max(sizex, sizez), midy+2*sizey, midz-2*Math.max(sizex, sizez));
+         position = new THREE.Vector3(midx - 2 * Math.max(sizex, sizez), midy + 2 * sizey, midz - 2 * Math.max(sizex, sizez));
       else
-         position = new THREE.Vector3(midx-2*Math.max(sizex, sizey), midy-2*Math.max(sizex, sizey), midz+2*sizez);
+         position = new THREE.Vector3(midx - 2 * Math.max(sizex, sizey), midy - 2 * Math.max(sizex, sizey), midz + 2 * sizez);
 
       const target = new THREE.Vector3(midx, midy, midz),
             oldTarget = this.#controls.target,
@@ -3503,7 +3503,7 @@ class TGeoPainter extends ObjectPainter {
             requestAnimationFrame(animate);
          else if (!this.#geom_viewer)
             this.startDrawGeometry();
-         const smoothFactor = -Math.cos((2.0*Math.PI*step)/frames) + 1.0;
+         const smoothFactor = -Math.cos((2.0 * Math.PI * step) / frames) + 1.0;
          this.#camera.position.add(posIncrement.clone().multiplyScalar(smoothFactor));
          oldTarget.add(targetIncrement.clone().multiplyScalar(smoothFactor));
          this.#lookat = oldTarget;
@@ -3519,7 +3519,7 @@ class TGeoPainter extends ObjectPainter {
             this.render3D(0);
 
          const tm2 = new Date().getTime();
-         if ((step === 0) && (tm2-tm1 > 200))
+         if ((step === 0) && (tm2 - tm1 > 200))
             frames = 20;
          step++;
          this.#animating = step < frames;
@@ -3599,7 +3599,7 @@ class TGeoPainter extends ObjectPainter {
             res.push(`  lvl${lvl}: ${arg.cnt[lvl]}`);
       }
 
-      res.push(`Time to scan: ${makeTime(tm2-tm1)}`, '', 'Check timing for matrix calculations ...');
+      res.push(`Time to scan: ${makeTime(tm2 - tm1)}`, '', 'Check timing for matrix calculations ...');
 
       const elem = this.selectDom().style('overflow', 'auto');
 
@@ -3614,7 +3614,7 @@ class TGeoPainter extends ObjectPainter {
          numvis = this.#clones.scanVisible(arg);
          tm2 = new Date().getTime();
 
-         const last_str = `Time to scan with matrix: ${makeTime(tm2-tm1)}`;
+         const last_str = `Time to scan with matrix: ${makeTime(tm2 - tm1)}`;
          if (this.isBatchMode())
             res.push(last_str);
          else
@@ -3637,7 +3637,7 @@ class TGeoPainter extends ObjectPainter {
 
          if (opt && opt.indexOf('$') > 0) {
             funcname = opt.slice(0, opt.indexOf('$'));
-            opt = opt.slice(opt.indexOf('$')+1);
+            opt = opt.slice(opt.indexOf('$') + 1);
          }
 
          const func = findFunction(funcname);
@@ -3880,20 +3880,20 @@ class TGeoPainter extends ObjectPainter {
 
       const linewidth = browser.isWin ? 1 : (track.fLineWidth || 1), // line width not supported on windows
             color = getColor(track.fLineColor) || '#ff00ff',
-            npoints = Math.round(track.fNpoints/4), // each track point has [x,y,z,t] coordinate
-            buf = new Float32Array((npoints-1)*6),
+            npoints = Math.round(track.fNpoints / 4), // each track point has [x,y,z,t] coordinate
+            buf = new Float32Array((npoints - 1) * 6),
             projv = this.ctrl.projectPos,
             projx = (this.ctrl.project === 'x'),
             projy = (this.ctrl.project === 'y'),
             projz = (this.ctrl.project === 'z');
 
-      for (let k = 0, pos = 0; k < npoints-1; ++k, pos+=6) {
-         buf[pos] = projx ? projv : track.fPoints[k*4];
-         buf[pos+1] = projy ? projv : track.fPoints[k*4+1];
-         buf[pos+2] = projz ? projv : track.fPoints[k*4+2];
-         buf[pos+3] = projx ? projv : track.fPoints[k*4+4];
-         buf[pos+4] = projy ? projv : track.fPoints[k*4+5];
-         buf[pos+5] = projz ? projv : track.fPoints[k*4+6];
+      for (let k = 0, pos = 0; k < npoints - 1; ++k, pos += 6) {
+         buf[pos] = projx ? projv : track.fPoints[k * 4];
+         buf[pos + 1] = projy ? projv : track.fPoints[k * 4 + 1];
+         buf[pos + 2] = projz ? projv : track.fPoints[k * 4 + 2];
+         buf[pos + 3] = projx ? projv : track.fPoints[k * 4 + 4];
+         buf[pos + 4] = projy ? projv : track.fPoints[k * 4 + 5];
+         buf[pos + 5] = projz ? projv : track.fPoints[k * 4 + 6];
       }
 
       const lineMaterial = new THREE.LineBasicMaterial({ color, linewidth }),
@@ -3921,19 +3921,19 @@ class TGeoPainter extends ObjectPainter {
             color = getColor(line.fLineColor) || '#ff00ff',
             npoints = line.fN,
             fP = line.fP,
-            buf = new Float32Array((npoints-1)*6),
+            buf = new Float32Array((npoints - 1) * 6),
             projv = this.ctrl.projectPos,
             projx = (this.ctrl.project === 'x'),
             projy = (this.ctrl.project === 'y'),
             projz = (this.ctrl.project === 'z');
 
-      for (let k = 0, pos = 0; k < npoints-1; ++k, pos += 6) {
-         buf[pos] = projx ? projv : fP[k*3];
-         buf[pos+1] = projy ? projv : fP[k*3+1];
-         buf[pos+2] = projz ? projv : fP[k*3+2];
-         buf[pos+3] = projx ? projv : fP[k*3+3];
-         buf[pos+4] = projy ? projv : fP[k*3+4];
-         buf[pos+5] = projz ? projv : fP[k*3+5];
+      for (let k = 0, pos = 0; k < npoints - 1; ++k, pos += 6) {
+         buf[pos] = projx ? projv : fP[k * 3];
+         buf[pos + 1] = projy ? projv : fP[k * 3 + 1];
+         buf[pos + 2] = projz ? projv : fP[k * 3 + 2];
+         buf[pos + 3] = projx ? projv : fP[k * 3 + 3];
+         buf[pos + 4] = projy ? projv : fP[k * 3 + 4];
+         buf[pos + 5] = projz ? projv : fP[k * 3 + 5];
       }
 
       const lineMaterial = new THREE.LineBasicMaterial({ color, linewidth }),
@@ -3956,19 +3956,19 @@ class TGeoPainter extends ObjectPainter {
 
       const linewidth = browser.isWin ? 1 : (track.fLineWidth || 1),
             color = getColor(track.fLineColor) || '#ff00ff',
-            buf = new Float32Array((track.fN-1)*6),
+            buf = new Float32Array((track.fN - 1) * 6),
             projv = this.ctrl.projectPos,
             projx = (this.ctrl.project === 'x'),
             projy = (this.ctrl.project === 'y'),
             projz = (this.ctrl.project === 'z');
 
-      for (let k = 0, pos = 0; k < track.fN-1; ++k, pos+=6) {
-         buf[pos] = projx ? projv : track.fP[k*3];
-         buf[pos+1] = projy ? projv : track.fP[k*3+1];
-         buf[pos+2] = projz ? projv : track.fP[k*3+2];
-         buf[pos+3] = projx ? projv : track.fP[k*3+3];
-         buf[pos+4] = projy ? projv : track.fP[k*3+4];
-         buf[pos+5] = projz ? projv : track.fP[k*3+5];
+      for (let k = 0, pos = 0; k < track.fN - 1; ++k, pos += 6) {
+         buf[pos] = projx ? projv : track.fP[k * 3];
+         buf[pos + 1] = projy ? projv : track.fP[k * 3 + 1];
+         buf[pos + 2] = projz ? projv : track.fP[k * 3 + 2];
+         buf[pos + 3] = projx ? projv : track.fP[k * 3 + 3];
+         buf[pos + 4] = projy ? projv : track.fP[k * 3 + 4];
+         buf[pos + 5] = projz ? projv : track.fP[k * 3 + 5];
       }
 
       const lineMaterial = new THREE.LineBasicMaterial({ color, linewidth }),
@@ -4000,9 +4000,9 @@ class TGeoPainter extends ObjectPainter {
             pnts = new PointsCreator(nhits, this.#webgl, hit_scale);
 
       for (let i = 0; i < nhits; i++) {
-         pnts.addPoint(projx ? projv : hit.fP[i*3],
-                       projy ? projv : hit.fP[i*3+1],
-                       projz ? projv : hit.fP[i*3+2]);
+         pnts.addPoint(projx ? projv : hit.fP[i * 3],
+                       projy ? projv : hit.fP[i * 3 + 1],
+                       projz ? projv : hit.fP[i * 3 + 2]);
       }
 
       return pnts.createPoints({ color: getColor(hit.fMarkerColor) || '#0000ff', style: hit.fMarkerStyle }).then(mesh => {
@@ -4099,7 +4099,7 @@ class TGeoPainter extends ObjectPainter {
 
       const mgr = {
          GetVolume: name => {
-            const regexp = new RegExp('^'+name+'$'),
+            const regexp = new RegExp('^' + name + '$'),
                   currnode = this.findNodeWithVolume(regexp, arg => arg);
 
             if (!currnode)
@@ -4382,7 +4382,7 @@ class TGeoPainter extends ObjectPainter {
       if (!msg)
          info?.remove();
       else {
-         const spent = (new Date().getTime() - this.#start_drawing_time)*1e-3;
+         const spent = (new Date().getTime() - this.#start_drawing_time) * 1e-3;
          if (!info) {
             info = getDocument().createElement('p');
             info.setAttribute('class', 'geo_info');
@@ -4425,7 +4425,7 @@ class TGeoPainter extends ObjectPainter {
 
             this.showDrawInfo(this.#drawing_log);
 
-            if (this.#first_drawing && this.#webgl && (this.ctrl.info.num_meshes - this.#last_render_meshes > 100) && (now - this.#last_render_tm > 2.5*interval)) {
+            if (this.#first_drawing && this.#webgl && (this.ctrl.info.num_meshes - this.#last_render_meshes > 100) && (now - this.#last_render_tm > 2.5 * interval)) {
                this.adjustCameraPosition();
                this.render3D(-1);
                this.#last_render_meshes = this.ctrl.info.num_meshes;
@@ -4462,7 +4462,7 @@ class TGeoPainter extends ObjectPainter {
       if (!force && this.#last_camera_position) {
          // if camera position does not changed a lot, ignore such change
          const dist = this.#last_camera_position.distanceTo(origin);
-         if (dist < (this.#overall_size || 1000)*1e-4)
+         if (dist < (this.#overall_size || 1000) * 1e-4)
             return;
       }
 
@@ -4648,7 +4648,7 @@ class TGeoPainter extends ObjectPainter {
       }
 
       if ('shapes' in job) {
-         for (let n=0; n<job.shapes.length; ++n) {
+         for (let n = 0; n < job.shapes.length; ++n) {
             const item = job.shapes[n],
                   origin = this.#build_shapes[n];
 
@@ -4734,9 +4734,9 @@ class TGeoPainter extends ObjectPainter {
          gridZ = midZ = this.#camera.orthoZ[0];
 
       const addPoint = (x, y, z) => {
-         buf[pos+ii[0]] = x;
-         buf[pos+ii[1]] = y;
-         buf[pos+ii[2]] = z ?? gridZ;
+         buf[pos + ii[0]] = x;
+         buf[pos + ii[1]] = y;
+         buf[pos + ii[2]] = z ?? gridZ;
          pos += 3;
       }, createText = (lbl, size) => {
          const text3d = createTextGeometry(lbl, size);
@@ -4744,7 +4744,7 @@ class TGeoPainter extends ObjectPainter {
          text3d._width = text3d.boundingBox.max.x - text3d.boundingBox.min.x;
          text3d._height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
 
-         text3d.translate(-text3d._width/2, -text3d._height/2, 0);
+         text3d.translate(-text3d._width / 2, -text3d._height / 2, 0);
          if (this.#camera.orthoSign < 0)
             text3d.rotateY(Math.PI);
 
@@ -4776,7 +4776,7 @@ class TGeoPainter extends ObjectPainter {
             ox2 = ticks.major.at(-1);
          }
 
-         buf = new Float32Array(3*6);
+         buf = new Float32Array(3 * 6);
          pos = 0;
 
          addPoint(ox1, oy1, midZ);
@@ -4820,19 +4820,19 @@ class TGeoPainter extends ObjectPainter {
             const x = xticks.tick, k = (xticks.kind === 1) ? 1.0 : 0.6;
 
             if (show_grid) {
-               buf = new Float32Array(2*3);
+               buf = new Float32Array(2 * 3);
                pos = 0;
-               addPoint(x, ymax - k*tick_size - grid_gap);
-               addPoint(x, ymin + k*tick_size + grid_gap);
+               addPoint(x, ymax - k * tick_size - grid_gap);
+               addPoint(x, ymin + k * tick_size + grid_gap);
                container.add(createLineSegments(buf, xticks.kind === 1 ? gridMaterial1 : gridMaterial2));
             }
 
-            buf = new Float32Array(4*3);
+            buf = new Float32Array(4 * 3);
             pos = 0;
             addPoint(x, ymax);
-            addPoint(x, ymax - k*tick_size);
+            addPoint(x, ymax - k * tick_size);
             addPoint(x, ymin);
-            addPoint(x, ymin + k*tick_size);
+            addPoint(x, ymin + k * tick_size);
 
             container.add(createLineSegments(buf, lineMaterial));
 
@@ -4841,9 +4841,9 @@ class TGeoPainter extends ObjectPainter {
 
             const text3d = createText(x_handle.format(x, true), text_size);
 
-            container.add(createTextMesh(text3d, textMaterial, x, ymax - tick_size - text_size/2 - text3d._height/2));
+            container.add(createTextMesh(text3d, textMaterial, x, ymax - tick_size - text_size / 2 - text3d._height / 2));
 
-            container.add(createTextMesh(text3d, textMaterial, x, ymin + tick_size + text_size/2 + text3d._height/2));
+            container.add(createTextMesh(text3d, textMaterial, x, ymin + tick_size + text_size / 2 + text3d._height / 2));
          }
 
          const yticks = y_handle.createTicks();
@@ -4852,19 +4852,19 @@ class TGeoPainter extends ObjectPainter {
             const y = yticks.tick, k = (yticks.kind === 1) ? 1.0 : 0.6;
 
             if (show_grid) {
-               buf = new Float32Array(2*3);
+               buf = new Float32Array(2 * 3);
                pos = 0;
-               addPoint(xmin + k*tick_size + grid_gap, y);
-               addPoint(xmax - k*tick_size - grid_gap, y);
+               addPoint(xmin + k * tick_size + grid_gap, y);
+               addPoint(xmax - k * tick_size - grid_gap, y);
                container.add(createLineSegments(buf, yticks.kind === 1 ? gridMaterial1 : gridMaterial2));
             }
 
-            buf = new Float32Array(4*3);
+            buf = new Float32Array(4 * 3);
             pos = 0;
             addPoint(xmin, y);
-            addPoint(xmin + k*tick_size, y);
+            addPoint(xmin + k * tick_size, y);
             addPoint(xmax, y);
-            addPoint(xmax - k*tick_size, y);
+            addPoint(xmax - k * tick_size, y);
 
             container.add(createLineSegments(buf, lineMaterial));
 
@@ -4873,9 +4873,9 @@ class TGeoPainter extends ObjectPainter {
 
             const text3d = createText(y_handle.format(y, true), text_size);
 
-            container.add(createTextMesh(text3d, textMaterial, xmin + tick_size + text_size/2 + text3d._width/2, y));
+            container.add(createTextMesh(text3d, textMaterial, xmin + tick_size + text_size / 2 + text3d._width / 2, y));
 
-            container.add(createTextMesh(text3d, textMaterial, xmax - tick_size - text_size/2 - text3d._width/2, y));
+            container.add(createTextMesh(text3d, textMaterial, xmax - tick_size - text_size / 2 - text3d._width / 2, y));
          }
 
          return true;
@@ -4906,7 +4906,7 @@ class TGeoPainter extends ObjectPainter {
             const name = names[naxis];
             if ((box.min[name] <= 0) && (box.max[name] >= 0))
                continue;
-            center[naxis] = (box.min[name] + box.max[name])/2;
+            center[naxis] = (box.min[name] + box.max[name]) / 2;
          }
       }
 
@@ -4954,7 +4954,7 @@ class TGeoPainter extends ObjectPainter {
          if (this.ctrl._axis === 2) {
             for (let k = 0; k < 6; ++k) {
                if ((k % 3) !== naxis)
-                  buf[k] = center[k%3];
+                  buf[k] = center[k % 3];
             }
          }
 
@@ -4969,7 +4969,7 @@ class TGeoPainter extends ObjectPainter {
 
          if ((center[naxis] === 0) && (center[naxis] >= box.min[name]) && (center[naxis] <= box.max[name])) {
             if ((this.ctrl._axis !== 2) || (naxis === 0)) {
-               const geom = ortho ? new THREE.CircleGeometry(text_size*0.25) : new THREE.SphereGeometry(text_size*0.25);
+               const geom = ortho ? new THREE.CircleGeometry(text_size * 0.25) : new THREE.SphereGeometry(text_size * 0.25);
                mesh = new THREE.Mesh(geom, textMaterial);
                mesh.translateX(naxis === 0 ? center[0] : buf[0]);
                mesh.translateY(naxis === 1 ? center[1] : buf[1]);
@@ -5006,7 +5006,7 @@ class TGeoPainter extends ObjectPainter {
                }
                angle = Math.round(angle / Math.PI * 2 + 2) % 4;
                if (this._last_angle !== angle) {
-                  this.rotateX((angle - this._last_angle) * Math.PI/2);
+                  this.rotateX((angle - this._last_angle) * Math.PI / 2);
                   this._last_angle = angle;
                }
             };
@@ -5014,7 +5014,7 @@ class TGeoPainter extends ObjectPainter {
 
          let textbox = new THREE.Box3().setFromObject(mesh);
 
-         text3d.translate(-textbox.max.x*0.5, -textbox.max.y/2, 0);
+         text3d.translate(-textbox.max.x * 0.5, -textbox.max.y / 2, 0);
 
          mesh.translateX(buf[3]);
          mesh.translateY(buf[4]);
@@ -5029,35 +5029,35 @@ class TGeoPainter extends ObjectPainter {
                setSideRotation(mesh, new THREE.Vector3(0, 0, -1));
             else {
                setSideRotation(mesh, new THREE.Vector3(0, 1, 0));
-               mesh.rotateX(Math.PI/2);
+               mesh.rotateX(Math.PI / 2);
             }
 
-            mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
+            mesh.translateX(text_size * 0.5 + textbox.max.x * 0.5);
          } else if (naxis === 1) {
             if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
                setTopRotation(mesh, 2);
-               mesh.rotateX(-Math.PI/2);
-               mesh.rotateY(-Math.PI/2);
-               mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
+               mesh.rotateX(-Math.PI / 2);
+               mesh.rotateY(-Math.PI / 2);
+               mesh.translateX(text_size * 0.5 + textbox.max.x * 0.5);
             } else {
                setSideRotation(mesh);
-               mesh.rotateX(Math.PI/2);
-               mesh.rotateY(-Math.PI/2);
-               mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
+               mesh.rotateX(Math.PI / 2);
+               mesh.rotateY(-Math.PI / 2);
+               mesh.translateX(-textbox.max.x * 0.5 - text_size * 0.5);
             }
          } else if (naxis === 2) {
             if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
                const zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
                setSideRotation(mesh, zox ? new THREE.Vector3(0, -1, 0) : undefined);
-               mesh.rotateY(-Math.PI/2);
+               mesh.rotateY(-Math.PI / 2);
                if (zox)
-                  mesh.rotateX(-Math.PI/2);
+                  mesh.rotateX(-Math.PI / 2);
             } else {
                setTopRotation(mesh);
-               mesh.rotateX(Math.PI/2);
-               mesh.rotateZ(Math.PI/2);
+               mesh.rotateX(Math.PI / 2);
+               mesh.rotateZ(Math.PI / 2);
             }
-            mesh.translateX(text_size*0.5 + textbox.max.x*0.5);
+            mesh.translateX(text_size * 0.5 + textbox.max.x * 0.5);
          }
 
          container.add(mesh);
@@ -5068,7 +5068,7 @@ class TGeoPainter extends ObjectPainter {
          mesh._no_clip = true; // skip from clipping
          textbox = new THREE.Box3().setFromObject(mesh);
 
-         text3d.translate(-textbox.max.x*0.5, -textbox.max.y/2, 0);
+         text3d.translate(-textbox.max.x * 0.5, -textbox.max.y / 2, 0);
 
          mesh._axis_name = name;
 
@@ -5083,34 +5083,34 @@ class TGeoPainter extends ObjectPainter {
                setSideRotation(mesh, new THREE.Vector3(0, 0, -1));
             else {
                setSideRotation(mesh, new THREE.Vector3(0, 1, 0));
-               mesh.rotateX(Math.PI/2);
+               mesh.rotateX(Math.PI / 2);
             }
-            mesh.translateX(-text_size*0.5 - textbox.max.x*0.5);
+            mesh.translateX(-text_size * 0.5 - textbox.max.x * 0.5);
          } else if (naxis === 1) {
             if (ortho ? ckind.indexOf('OY') > 0 : this.ctrl._yup) {
                setTopRotation(mesh, 2);
-               mesh.rotateX(-Math.PI/2);
-               mesh.rotateY(-Math.PI/2);
-               mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
+               mesh.rotateX(-Math.PI / 2);
+               mesh.rotateY(-Math.PI / 2);
+               mesh.translateX(-textbox.max.x * 0.5 - text_size * 0.5);
             } else {
                setSideRotation(mesh);
-               mesh.rotateX(Math.PI/2);
-               mesh.rotateY(-Math.PI/2);
-               mesh.translateX(textbox.max.x*0.5 + text_size*0.5);
+               mesh.rotateX(Math.PI / 2);
+               mesh.rotateY(-Math.PI / 2);
+               mesh.translateX(textbox.max.x * 0.5 + text_size * 0.5);
             }
          } else if (naxis === 2) {
             if (ortho ? ckind.indexOf('OZ') < 0 : this.ctrl._yup) {
                const zox = ortho && (ckind.indexOf('ZOX') > 0 || ckind.indexOf('ZNOX') > 0);
                setSideRotation(mesh, zox ? new THREE.Vector3(0, -1, 0) : undefined);
-               mesh.rotateY(-Math.PI/2);
+               mesh.rotateY(-Math.PI / 2);
                if (zox)
-                  mesh.rotateX(-Math.PI/2);
+                  mesh.rotateX(-Math.PI / 2);
             } else {
                setTopRotation(mesh);
-               mesh.rotateX(Math.PI/2);
-               mesh.rotateZ(Math.PI/2);
+               mesh.rotateX(Math.PI / 2);
+               mesh.rotateZ(Math.PI / 2);
             }
-            mesh.translateX(-textbox.max.x*0.5 - text_size*0.5);
+            mesh.translateX(-textbox.max.x * 0.5 - text_size * 0.5);
          }
 
          container.add(mesh);
@@ -5471,7 +5471,7 @@ class TGeoPainter extends ObjectPainter {
       this.#toplevel = null;
       this.#fullgeom_proj = undefined;
       this.#fog = undefined;
-      this.#camera= undefined;
+      this.#camera = undefined;
       this.#camera0pos = undefined;
       this.#lookat = undefined;
       this.#selected_mesh = undefined;

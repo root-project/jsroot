@@ -73,7 +73,7 @@ class Vertex {
 
 
    normalize() {
-      const length = Math.sqrt(this.x**2 + this.y**2 + this.z**2);
+      const length = Math.sqrt(this.x ** 2 + this.y ** 2 + this.z ** 2);
 
       this.x /= length;
       this.y /= length;
@@ -83,16 +83,16 @@ class Vertex {
    }
 
    dot(vertex) {
-      return this.x*vertex.x + this.y*vertex.y + this.z*vertex.z;
+      return this.x * vertex.x + this.y * vertex.y + this.z * vertex.z;
    }
 
    diff(vertex) {
       const dx = (this.x - vertex.x),
             dy = (this.y - vertex.y),
             dz = (this.z - vertex.z),
-            len2 = this.x**2 + this.y**2 + this.z**2;
+            len2 = this.x ** 2 + this.y ** 2 + this.z ** 2;
 
-      return (dx**2 + dy**2 + dz**2) / (len2 > 0 ? len2 : 1e-10);
+      return (dx ** 2 + dy ** 2 + dz ** 2) / (len2 > 0 ? len2 : 1e-10);
    }
 
    /*
@@ -119,8 +119,8 @@ class Vertex {
 
    interpolate(a, t) {
       const t1 = 1 - t;
-      return new Vertex(this.x*t1 + a.x*t, this.y*t1 + a.y*t, this.z*t1 + a.z*t,
-                        this.nx*t1 + a.nx*t, this.ny*t1 + a.ny*t, this.nz*t1 + a.nz*t);
+      return new Vertex(this.x * t1 + a.x * t, this.y * t1 + a.y * t, this.z * t1 + a.z * t,
+                        this.nx * t1 + a.nx * t, this.ny * t1 + a.ny * t, this.nz * t1 + a.nz * t);
    }
 
    applyMatrix4(m) {
@@ -277,7 +277,7 @@ class Polygon {
                // t = (this.w - this.normal.dot(vi))/this.normal.dot(vj.clone().subtract(vi));
                // v = vi.clone().lerp( vj, t );
 
-               t = (this.w - (nnx*vi.x + nny*vi.y + nnz*vi.z)) / (nnx*(vj.x-vi.x) + nny*(vj.y-vi.y) + nnz*(vj.z-vi.z));
+               t = (this.w - (nnx * vi.x + nny * vi.y + nnz * vi.z)) / (nnx * (vj.x - vi.x) + nny * (vj.y - vi.y) + nnz * (vj.z - vi.z));
 
                v = vi.interpolate(vj, t);
                f.push(v);
@@ -457,20 +457,20 @@ function createBufferGeometry(polygons) {
 
    function CopyVertex(vertex) {
       positions_buf[iii] = vertex.x;
-      positions_buf[iii+1] = vertex.y;
-      positions_buf[iii+2] = vertex.z;
+      positions_buf[iii + 1] = vertex.y;
+      positions_buf[iii + 2] = vertex.z;
 
       normals_buf[iii] = polygon.nsign * vertex.nx;
-      normals_buf[iii+1] = polygon.nsign * vertex.ny;
-      normals_buf[iii+2] = polygon.nsign * vertex.nz;
-      iii+=3;
+      normals_buf[iii + 1] = polygon.nsign * vertex.ny;
+      normals_buf[iii + 2] = polygon.nsign * vertex.nz;
+      iii += 3;
    }
 
    for (i = 0; i < polygon_count; ++i) {
       polygon = polygons[i];
       for (j = 2; j < polygon.vertices.length; ++j) {
          CopyVertex(polygon.vertices[0]);
-         CopyVertex(polygon.vertices[j-1]);
+         CopyVertex(polygon.vertices[j - 1]);
          CopyVertex(polygon.vertices[j]);
       }
    }
@@ -504,18 +504,18 @@ class Geometry {
                polygons = [];
          let polygon, vert1, vert2, vert3;
 
-         for (let i=0; i < pos_buf.length; i+=9) {
+         for (let i = 0; i < pos_buf.length; i += 9) {
             polygon = new Polygon();
 
-            vert1 = new Vertex(pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
+            vert1 = new Vertex(pos_buf[i], pos_buf[i + 1], pos_buf[i + 2], norm_buf[i], norm_buf[i + 1], norm_buf[i + 2]);
             if (transfer_matrix)
                vert1.applyMatrix4(transfer_matrix);
 
-            vert2 = new Vertex(pos_buf[i+3], pos_buf[i+4], pos_buf[i+5], norm_buf[i+3], norm_buf[i+4], norm_buf[i+5]);
+            vert2 = new Vertex(pos_buf[i + 3], pos_buf[i + 4], pos_buf[i + 5], norm_buf[i + 3], norm_buf[i + 4], norm_buf[i + 5]);
             if (transfer_matrix)
                vert2.applyMatrix4(transfer_matrix);
 
-            vert3 = new Vertex(pos_buf[i+6], pos_buf[i+7], pos_buf[i+8], norm_buf[i+6], norm_buf[i+7], norm_buf[i+8]);
+            vert3 = new Vertex(pos_buf[i + 6], pos_buf[i + 7], pos_buf[i + 8], norm_buf[i + 6], norm_buf[i + 7], norm_buf[i + 8]);
             if (transfer_matrix)
                vert3.applyMatrix4(transfer_matrix);
 
@@ -683,11 +683,11 @@ class Geometry {
          while (foundpair) {
             foundpair = false;
 
-            for (i1 = 0; i1 < len-1; ++i1) {
+            for (i1 = 0; i1 < len - 1; ++i1) {
                p1 = parts[i1];
                if (!p1?.parent)
                   continue;
-               for (i2 = i1+1; i2 < len; ++i2) {
+               for (i2 = i1 + 1; i2 < len; ++i2) {
                   p2 = parts[i2];
                   if (p2 && (p1.parent === p2.parent) && (p1.nsign === p2.nsign)) {
                      if (p1.nsign !== p1.parent.nsign)
@@ -830,19 +830,19 @@ function createNormal(axis_name, pos, size) {
 
    switch (axis_name) {
       case 'x':
-         vertices = [new Vertex(pos, -3*size, size, 1, 0, 0),
-                     new Vertex(pos, size, -3*size, 1, 0, 0),
+         vertices = [new Vertex(pos, -3 * size, size, 1, 0, 0),
+                     new Vertex(pos, size, -3 * size, 1, 0, 0),
                      new Vertex(pos, size, size, 1, 0, 0)];
          break;
       case 'y':
-         vertices = [new Vertex(-3*size, pos, size, 0, 1, 0),
+         vertices = [new Vertex(-3 * size, pos, size, 0, 1, 0),
                      new Vertex(size, pos, size, 0, 1, 0),
-                     new Vertex(size, pos, -3*size, 0, 1, 0)];
+                     new Vertex(size, pos, -3 * size, 0, 1, 0)];
          break;
       // case 'z':
       default:
-         vertices = [new Vertex(-3*size, size, pos, 0, 0, 1),
-                     new Vertex(size, -3*size, pos, 0, 0, 1),
+         vertices = [new Vertex(-3 * size, size, pos, 0, 0, 1),
+                     new Vertex(size, -3 * size, pos, 0, 0, 1),
                      new Vertex(size, size, pos, 0, 0, 1)];
    }
 

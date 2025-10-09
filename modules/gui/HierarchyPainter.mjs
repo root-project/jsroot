@@ -91,17 +91,17 @@ function getSizeStr(sz) {
    if (sz < 10000)
       return sz.toFixed(0) + 'B';
    if (sz < 1e6)
-      return (sz/1e3).toFixed(2) + 'KiB';
+      return (sz / 1e3).toFixed(2) + 'KiB';
    if (sz < 1e9)
-      return (sz/1e6).toFixed(2) + 'MiB';
-   return (sz/1e9).toFixed(2) + 'GiB';
+      return (sz / 1e6).toFixed(2) + 'MiB';
+   return (sz / 1e9).toFixed(2) + 'GiB';
 }
 
 /** @summary Return ROOT version as string
   * @private */
 function getVersionStr(v) {
    const major = Math.floor(v / 10000);
-   let minor = Math.floor((v - major*10000)/100).toString(),
+   let minor = Math.floor((v - major * 10000) / 100).toString(),
        patch = (v % 100).toString();
    if (minor.length < 2)
       minor = '0' + minor;
@@ -271,7 +271,7 @@ function keysHierarchy(folder, keys, file, dirname) {
    for (let i = 0; i < keys.length; ++i) {
       const key = keys[i];
 
-      if (settings.OnlyLastCycle && (i > 0) && (key.fName === keys[i-1].fName) && (key.fCycle < keys[i-1].fCycle))
+      if (settings.OnlyLastCycle && (i > 0) && (key.fName === keys[i - 1].fName) && (key.fCycle < keys[i - 1].fCycle))
          continue;
 
       const item = {
@@ -351,7 +351,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
          let val = obj.getUint8(k).toString(16);
          while (val.length < 2)
-            val = '0'+val;
+            val = '0' + val;
          if (item._value)
             item._value += (k % 4 === 0) ? ' | ' : ' ';
 
@@ -403,7 +403,7 @@ function objectHierarchy(top, obj, args = undefined) {
 
    if (arrcompress) {
       for (let k = 0; k < obj.length;) {
-         let nextk = Math.min(k+10, obj.length), allsame = true, prevk = k;
+         let nextk = Math.min(k + 10, obj.length), allsame = true, prevk = k;
 
          while (allsame) {
             allsame = true;
@@ -416,7 +416,7 @@ function objectHierarchy(top, obj, args = undefined) {
                if (nextk === obj.length)
                   break;
                prevk = nextk;
-               nextk = Math.min(nextk+10, obj.length);
+               nextk = Math.min(nextk + 10, obj.length);
             } else if (prevk !== k) {
                // last block with similar
                nextk = prevk;
@@ -425,14 +425,14 @@ function objectHierarchy(top, obj, args = undefined) {
             }
          }
 
-         const item = { _parent: top, _name: k+'..'+(nextk-1), _vclass: cssValueNum };
+         const item = { _parent: top, _name: k + '..' + (nextk - 1), _vclass: cssValueNum };
 
          if (allsame)
             item._value = obj[k].toString();
          else {
             item._value = '';
             for (let d = k; d < nextk; ++d)
-               item._value += ((d===k) ? '[ ' : ', ') + obj[d].toString();
+               item._value += ((d === k) ? '[ ' : ', ') + obj[d].toString();
             item._value += ' ]';
          }
 
@@ -765,7 +765,7 @@ function parseAsArray(val) {
                if ((sub.length > 1) && (sub.at(0) === sub.at(-1)) && ((sub[0] === '"') || (sub[0] === '\'')))
                   sub = sub.slice(1, sub.length - 1);
                res.push(sub);
-               last = indx+1;
+               last = indx + 1;
             }
             break;
       }
@@ -984,7 +984,7 @@ class HierarchyPainter extends BasePainter {
 
             const len = top._name.length;
             if (fullname[len] === '/') {
-               fullname = fullname.slice(len+1);
+               fullname = fullname.slice(len + 1);
                pos = fullname.length;
             }
          }
@@ -1140,7 +1140,7 @@ class HierarchyPainter extends BasePainter {
 
          let urlargs = '';
          for (let k = 0; k < args.length; ++k)
-            urlargs += `${k>0?'&':'?'}arg${k+1}=${args[k]}`;
+            urlargs += `${k > 0 ? '&' : '?'}arg${k + 1}=${args[k]}`;
 
          if (!d3node.empty()) {
             d3node.style('background', 'yellow');
@@ -2616,7 +2616,7 @@ class HierarchyPainter extends BasePainter {
             items_wait[n] = true; // if same item specified, one should wait first drawing before start next
          const p = options[n].indexOf('frameid:');
          if (p >= 0) {
-            fname = options[n].slice(p+8);
+            fname = options[n].slice(p + 8);
             options[n] = options[n].slice(0, p);
          } else {
             while (frame_names.indexOf(fname) >= 0)
@@ -3055,11 +3055,11 @@ class HierarchyPainter extends BasePainter {
          const h = { _name: 'Files', _kind: kTopFolder, _childs: [], _isopen: true }, fmap = {};
          let p = 0;
          while (p < res.length) {
-            p = res.indexOf('a href="', p+1);
+            p = res.indexOf('a href="', p + 1);
             if (p < 0)
                break;
             p += 8;
-            const p2 = res.indexOf('"', p+1);
+            const p2 = res.indexOf('"', p + 1);
             if (p2 < 0)
                break;
 
@@ -3708,7 +3708,7 @@ class HierarchyPainter extends BasePainter {
                   const separ = opt.indexOf(';');
                   let part = (separ > 0) ? opt.slice(0, separ) : opt;
 
-                  opt = (separ > 0) ? opt.slice(separ+1) : '';
+                  opt = (separ > 0) ? opt.slice(separ + 1) : '';
 
                   let canarray = true;
                   if (part[0] === '#') {
@@ -3733,7 +3733,7 @@ class HierarchyPainter extends BasePainter {
                while (opt) {
                   const separ = opt.indexOf(';');
                   let part = separ > 0 ? opt.slice(0, separ) : opt;
-                  opt = separ > 0 ? opt.slice(separ+1) : '';
+                  opt = separ > 0 ? opt.slice(separ + 1) : '';
 
                   let canarray = true;
                   if (part[0] === '#') {
@@ -4052,7 +4052,7 @@ class HierarchyPainter extends BasePainter {
                     '<div style="display:inline; vertical-align:middle; white-space: nowrap;">' +
                     '<label style="margin-right:5px"><input type="checkbox" name="monitoring" class="gui_monitoring"/>Monitoring</label>';
       } else if (!this.no_select) {
-         const myDiv = d3_select('#'+this.gui_div),
+         const myDiv = d3_select('#' + this.gui_div),
                files = myDiv.attr('files') || '../files/hsimple.root',
                path = decodeUrl().get('path') || myDiv.attr('path') || '',
                arrFiles = files.split(';');

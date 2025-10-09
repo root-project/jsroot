@@ -153,7 +153,7 @@ class CustomDisplay extends MDIDisplay {
    forEachFrame(userfunc) {
       const ks = Object.keys(this.frames);
       for (let k = 0; k < ks.length; ++k) {
-         const node = d3_select('#'+ks[k]);
+         const node = d3_select('#' + ks[k]);
          if (!node.empty())
             userfunc(node.node());
       }
@@ -165,8 +165,8 @@ class CustomDisplay extends MDIDisplay {
       const ks = Object.keys(this.frames);
       for (let k = 0; k < ks.length; ++k) {
          const items = this.frames[ks[k]];
-         if (items.indexOf(title+';') >= 0)
-            return d3_select('#'+ks[k]).node();
+         if (items.indexOf(title + ';') >= 0)
+            return d3_select('#' + ks[k]).node();
       }
       return null;
    }
@@ -271,13 +271,13 @@ class GridDisplay extends MDIDisplay {
       }
 
       if (kind && kind.indexOf('_') > 0) {
-         let arg = parseInt(kind.slice(kind.indexOf('_')+1), 10);
+         let arg = parseInt(kind.slice(kind.indexOf('_') + 1), 10);
          if (Number.isInteger(arg) && (arg > 10)) {
             kind = kind.slice(0, kind.indexOf('_'));
             sizes = [];
             while (arg > 0) {
                sizes.unshift(Math.max(arg % 10, 1));
-               arg = Math.round((arg-sizes[0])/10);
+               arg = Math.round((arg - sizes[0]) / 10);
                if (sizes[0] === 0)
                   sizes[0] = 1;
             }
@@ -292,7 +292,7 @@ class GridDisplay extends MDIDisplay {
             arr = [];
             while (kind > 0) {
                arr.unshift(kind % 10);
-               kind = Math.round((kind-arr[0])/10);
+               kind = Math.round((kind - arr[0]) / 10);
                if (arr[0] === 0)
                   arr[0] = 1;
             }
@@ -320,14 +320,14 @@ class GridDisplay extends MDIDisplay {
       for (let n = 0; n < num; ++n) {
          sizes[n] = Math.round(100 * (sizes[n] || 1) / sum1);
          sum2 += sizes[n];
-         if (n === num-1)
-            sizes[n] += (100-sum2); // make 100%
+         if (n === num - 1)
+            sizes[n] += (100 - sum2); // make 100%
       }
 
       for (let cnt = 0; cnt < num; ++cnt) {
          const group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt], parent: handle };
          if (cnt > 0)
-            group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
+            group.position = handle.groups[cnt - 1].position + handle.groups[cnt - 1].size;
          group.position0 = group.position;
 
          if (!childs || !childs[cnt] || childs[cnt] < 2)
@@ -342,9 +342,9 @@ class GridDisplay extends MDIDisplay {
             group.node = elem.node();
 
          if (handle.vertical)
-            elem.style('float', 'bottom').style('height', group.size.toFixed(2)+'%').style('width', '100%');
+            elem.style('float', 'bottom').style('height', group.size.toFixed(2) + '%').style('width', '100%');
          else
-            elem.style('float', 'left').style('width', group.size.toFixed(2)+'%').style('height', '100%');
+            elem.style('float', 'left').style('width', group.size.toFixed(2) + '%').style('height', '100%');
 
          if (group.drawid >= 0) {
             elem.classed('jsroot_newgrid', true);
@@ -381,7 +381,7 @@ class GridDisplay extends MDIDisplay {
          return d3_select(node).select(`[groupid='${grid}']`);
       }, setGroupSize = (h, node, grid) => {
          const name = h.vertical ? 'height' : 'width',
-               size = h.groups[grid].size.toFixed(2)+'%';
+               size = h.groups[grid].size.toFixed(2) + '%';
          findGroup(node, grid).style(name, size)
                               .selectAll('.jsroot_separator').style(name, size);
       }, resizeGroup = (node, grid) => {
@@ -424,10 +424,10 @@ class GridDisplay extends MDIDisplay {
          }
 
          const diff = group.position - pos;
-         if ((Math.abs(diff) < 0.3) || (Math.min(handle.groups[id-1].size - diff, group.size + diff) < 3))
+         if ((Math.abs(diff) < 0.3) || (Math.min(handle.groups[id - 1].size - diff, group.size + diff) < 3))
             return; // if no significant change, do nothing
 
-         handle.groups[id-1].size -= diff;
+         handle.groups[id - 1].size -= diff;
          group.size += diff;
          group.position = pos;
 
@@ -438,12 +438,12 @@ class GridDisplay extends MDIDisplay {
       }
 
       if (needSetSize) {
-         setGroupSize(handle, parent, id-1);
+         setGroupSize(handle, parent, id - 1);
          setGroupSize(handle, parent, id);
       }
 
       if (needResize) {
-         resizeGroup(parent, id-1);
+         resizeGroup(parent, id - 1);
          resizeGroup(parent, id);
       }
 
@@ -457,19 +457,19 @@ class GridDisplay extends MDIDisplay {
             continue;
          hh.groups[id].size = handle.groups[id].size;
          hh.groups[id].position = handle.groups[id].position;
-         hh.groups[id-1].size = handle.groups[id-1].size;
-         hh.groups[id-1].position = handle.groups[id-1].position;
+         hh.groups[id - 1].size = handle.groups[id - 1].size;
+         hh.groups[id - 1].position = handle.groups[id - 1].position;
          if (needSetSize) {
             d3_select(hh.node).selectAll('.jsroot_separator').each(function() {
                const s = d3_select(this);
                if (s.property('separator_id') === id)
                   posSepar(hh, hh.groups[id], s);
             });
-            setGroupSize(hh, hh.node, id-1);
+            setGroupSize(hh, hh.node, id - 1);
             setGroupSize(hh, hh.node, id);
          }
          if (needResize) {
-            resizeGroup(hh.node, id-1);
+            resizeGroup(hh.node, id - 1);
             resizeGroup(hh.node, id);
          }
       }
@@ -485,7 +485,7 @@ class GridDisplay extends MDIDisplay {
            .property('separator_id', group.id)
            .attr('style', 'pointer-events: all; border: 0; margin: 0; padding: 0; position: absolute;')
            .style(handle.vertical ? 'top' : 'left', `calc(${group.position.toFixed(2)}% - 2px)`)
-           .style(handle.vertical ? 'width' : 'height', (handle.size?.toFixed(2) || 100)+'%')
+           .style(handle.vertical ? 'width' : 'height', (handle.size?.toFixed(2) || 100) + '%')
            .style(handle.vertical ? 'height' : 'width', '5px')
            .style('cursor', handle.vertical ? 'ns-resize' : 'ew-resize')
            .append('div').attr('style', 'position: absolute;' + (handle.vertical
@@ -550,7 +550,7 @@ class GridDisplay extends MDIDisplay {
       while (!frame && maxloop--) {
          frame = this.getGridFrame(this.getcnt);
          if (!this.simple_layout && this.framecnt)
-            this.getcnt = (this.getcnt+1) % this.framecnt;
+            this.getcnt = (this.getcnt + 1) % this.framecnt;
 
          if (d3_select(frame).classed('jsroot_fixed_frame'))
             frame = null;
@@ -691,9 +691,9 @@ class TabsDisplay extends MDIDisplay {
       if (lbl.length > 15) {
          let p = lbl.lastIndexOf('/');
          if (p === lbl.length - 1)
-            p = lbl.lastIndexOf('/', p-1);
+            p = lbl.lastIndexOf('/', p - 1);
          if ((p > 0) && (lbl.length - p < 20) && (lbl.length - p > 1))
-            lbl = lbl.slice(p+1);
+            lbl = lbl.slice(p + 1);
          else
             lbl = '...' + lbl.slice(lbl.length - 17);
       }
@@ -702,7 +702,7 @@ class TabsDisplay extends MDIDisplay {
          .attr('tabindex', 0)
          .append('label')
          .attr('class', 'jsroot_tabs_label')
-         .attr('style', 'border: 1px solid; display: inline-block; font-size: 1rem; left: 1px;'+
+         .attr('style', 'border: 1px solid; display: inline-block; font-size: 1rem; left: 1px;' +
                         'margin-left: 3px; padding: 0px 5px 1px 5px; position: relative; vertical-align: bottom;')
          .property('frame_id', frame_id)
          .text(lbl)
@@ -959,14 +959,14 @@ class FlexibleDisplay extends MDIDisplay {
             main = top.append('div');
 
       main.html('<div class=\'jsroot_flex_header\' style=\'height: 23px; overflow: hidden; background-color: lightblue\'>' +
-                `<p style='margin: 1px; float: left; font-size: 14px; padding-left: 5px'>${title}</p></div>`+
-                `<div id='${this.frameid}_cont${this.cnt}' class='jsroot_flex_draw' style='overflow: hidden; width: 100%; height: calc(100% - 24px); background: white'></div>`+
+                `<p style='margin: 1px; float: left; font-size: 14px; padding-left: 5px'>${title}</p></div>` +
+                `<div id='${this.frameid}_cont${this.cnt}' class='jsroot_flex_draw' style='overflow: hidden; width: 100%; height: calc(100% - 24px); background: white'></div>` +
                 '<div class=\'jsroot_flex_resize\' style=\'position: absolute; right: 3px; bottom: 1px; overflow: hidden; cursor: nwse-resize\'>&#x25FF;</div>');
 
       main.attr('class', 'jsroot_flex_frame')
           .style('position', 'absolute')
-          .style('left', Math.round(w * (this.cnt % 5)/10) + 'px')
-          .style('top', Math.round(h * (this.cnt % 5)/10) + 'px')
+          .style('left', Math.round(w * (this.cnt % 5) / 10) + 'px')
+          .style('top', Math.round(h * (this.cnt % 5) / 10) + 'px')
           .style('width', Math.round(w * 0.58) + 'px')
           .style('height', Math.round(h * 0.58) + 'px')
           .style('border', '1px solid black')
@@ -1027,7 +1027,7 @@ class FlexibleDisplay extends MDIDisplay {
                current[i] = parseInt(v.slice(0, v.length - 2));
             }
             current[i] += dd;
-            moving_div.style(name, Math.max(0, current[i])+'px');
+            moving_div.style(name, Math.max(0, current[i]) + 'px');
          };
          if (doing_move) {
             changeProp(0, 'left', evnt.dx);
@@ -1106,12 +1106,12 @@ class FlexibleDisplay extends MDIDisplay {
       const top = this.selectDom(),
             w = top.node().clientWidth,
             h = top.node().clientHeight,
-            dx = Math.min(40, Math.round(w*0.4/arr.length)),
-            dy = Math.min(40, Math.round(h*0.4/arr.length));
+            dx = Math.min(40, Math.round(w * 0.4 / arr.length)),
+            dy = Math.min(40, Math.round(h * 0.4 / arr.length));
       let nx = Math.ceil(Math.sqrt(arr.length)), ny = nx;
 
       // calculate number of divisions for 'tile' sorting
-      if ((nx > 1) && (nx*(nx-1) >= arr.length)) {
+      if ((nx > 1) && (nx * (nx - 1) >= arr.length)) {
          if (w > h)
             ny--;
          else
@@ -1121,15 +1121,15 @@ class FlexibleDisplay extends MDIDisplay {
       arr.forEach((frame, i) => {
          const main = d3_select(frame.parentNode);
          if (kind === 'cascade') {
-            main.style('left', (i*dx) + 'px')
-                .style('top', (i*dy) + 'px')
+            main.style('left', (i * dx) + 'px')
+                .style('top', (i * dy) + 'px')
                 .style('width', Math.round(w * 0.58) + 'px')
                 .style('height', Math.round(h * 0.58) + 'px');
          } else {
-            main.style('left', Math.round(w/nx*(i%nx)) + 'px')
-                .style('top', Math.round(h/ny*((i-i%nx)/nx)) + 'px')
-                .style('width', Math.round(w/nx - 4) + 'px')
-                .style('height', Math.round(h/ny - 4) + 'px');
+            main.style('left', Math.round(w / nx * (i % nx)) + 'px')
+                .style('top', Math.round(h / ny * ((i - i % nx) / nx)) + 'px')
+                .style('width', Math.round(w / nx - 4) + 'px')
+                .style('height', Math.round(h / ny - 4) + 'px');
          }
          resize(frame);
       });
@@ -1169,7 +1169,7 @@ class FlexibleDisplay extends MDIDisplay {
          menu.separator();
 
          arr.forEach((f, i) => {
-            menu.addchk((f===active), ((this.getFrameState(f) === 'min') ? '[min] ' : '') + d3_select(f).attr('frame_title'), i, arg => {
+            menu.addchk((f === active), ((this.getFrameState(f) === 'min') ? '[min] ' : '') + d3_select(f).attr('frame_title'), i, arg => {
                const frame = arr[arg];
                if (this.getFrameState(frame) === 'min')
                   this.changeFrameState(frame, 'normal');
@@ -1372,16 +1372,16 @@ class BrowserLayout {
             input_style = settings.DarkMode ? `background-color: #222; color: ${text_color}` : '';
 
       injectStyle(
-         '.jsroot_browser { pointer-events: none; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; margin: 0px; border: 0px; overflow: hidden; }'+
-         `.jsroot_draw_area { background-color: ${bkgr_color}; overflow: hidden; margin: 0px; border: 0px; }`+
-         `.jsroot_browser_area { color: ${text_color}; background-color: ${bkgr_color}; font-size: 12px; font-family: Verdana; pointer-events: all; box-sizing: initial; }`+
-         `.jsroot_browser_area input { ${input_style} }`+
-         `.jsroot_browser_area select { ${input_style} }`+
-         `.jsroot_browser_title { font-family: Verdana; font-size: 20px; color: ${title_color}; }`+
-         '.jsroot_browser_btns { pointer-events: all; display: flex; flex-direction: column; }'+
-         '.jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }'+
-         '.jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }'+
-         `.jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }`+
+         '.jsroot_browser { pointer-events: none; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; margin: 0px; border: 0px; overflow: hidden; }' +
+         `.jsroot_draw_area { background-color: ${bkgr_color}; overflow: hidden; margin: 0px; border: 0px; }` +
+         `.jsroot_browser_area { color: ${text_color}; background-color: ${bkgr_color}; font-size: 12px; font-family: Verdana; pointer-events: all; box-sizing: initial; }` +
+         `.jsroot_browser_area input { ${input_style} }` +
+         `.jsroot_browser_area select { ${input_style} }` +
+         `.jsroot_browser_title { font-family: Verdana; font-size: 20px; color: ${title_color}; }` +
+         '.jsroot_browser_btns { pointer-events: all; display: flex; flex-direction: column; }' +
+         '.jsroot_browser_area p { margin-top: 5px; margin-bottom: 5px; white-space: nowrap; }' +
+         '.jsroot_browser_hierarchy { flex: 1; margin-top: 2px; }' +
+         `.jsroot_status_area { background-color: ${bkgr_color}; overflow: hidden; font-size: 12px; font-family: Verdana; pointer-events: all; }` +
          '.jsroot_browser_resize { position: absolute; right: 3px; bottom: 3px; margin-bottom: 0px; margin-right: 0px; opacity: 0.5; cursor: se-resize; z-index: 1; }',
          this.main().node(), 'browser_layout_style');
    }
@@ -1501,7 +1501,7 @@ class BrowserLayout {
          return '';
 
       const id = this.gui_div + '_status',
-            line = d3_select('#'+id),
+            line = d3_select('#' + id),
             is_visible = !line.empty();
 
       if (mode === 'toggle')
@@ -1626,8 +1626,8 @@ class BrowserLayout {
             }
 
             this.last_hsepar_height = hsepar;
-            elem.style('bottom', hsepar+'px').style('height', w+'px');
-            this.status().style('height', hsepar+'px');
+            elem.style('bottom', hsepar + 'px').style('height', w + 'px');
+            this.status().style('height', hsepar + 'px');
             hlimit = hsepar + w;
          }
 
@@ -1639,11 +1639,11 @@ class BrowserLayout {
       if (vsepar !== null) {
          vsepar = Math.max(50, Number.parseInt(vsepar));
          this.#vsepar_position = vsepar;
-         main.select('.jsroot_browser_area').style('width', (vsepar-5)+'px');
-         this.drawing().style('left', (vsepar+w)+'px');
-         main.select('.jsroot_h_separator').style('left', (vsepar+w)+'px');
-         this.status().style('left', (vsepar+w)+'px');
-         main.select('.jsroot_v_separator').style('left', vsepar+'px').style('width', w+'px');
+         main.select('.jsroot_browser_area').style('width', (vsepar - 5) + 'px');
+         this.drawing().style('left', (vsepar + w) + 'px');
+         main.select('.jsroot_h_separator').style('left', (vsepar + w) + 'px');
+         this.status().style('left', (vsepar + w) + 'px');
+         main.select('.jsroot_v_separator').style('left', vsepar + 'px').style('width', w + 'px');
       }
 
       if (redraw)
@@ -1664,7 +1664,7 @@ class BrowserLayout {
 
       if (!this.status_layout.first_check) {
          this.status_layout.first_check = true;
-         if ((maxh > 5) && ((maxh > this.last_hsepar_height) || (maxh < this.last_hsepar_height+5)))
+         if ((maxh > 5) && ((maxh > this.last_hsepar_height) || (maxh < this.last_hsepar_height + 5)))
             this.adjustSeparators(null, maxh, true);
       }
    }
@@ -1699,8 +1699,8 @@ class BrowserLayout {
          tgt = (-area.node().clientWidth - 10) + 'px';
          const mainw = main.node().clientWidth;
 
-         if (vsepar.empty() && (area.node().offsetLeft > mainw/2))
-            tgt = (mainw+10) + 'px';
+         if (vsepar.empty() && (area.node().offsetLeft > mainw / 2))
+            tgt = (mainw + 10) + 'px';
 
          tgt_separ = '-10px';
          tgt_drawing = '0px';
@@ -1756,7 +1756,7 @@ class BrowserLayout {
 
       const h1 = cont.node().clientHeight,
             h2 = chld.node().clientHeight;
-      if ((h2 !== undefined) && (h2 < h1*0.7))
+      if ((h2 !== undefined) && (h2 < h1 * 0.7))
          area.style('bottom', '');
    }
 

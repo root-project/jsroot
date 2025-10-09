@@ -222,7 +222,7 @@ class JSRootMenu {
          this.column();
 
          for (let nrow = 0; nrow < 10; nrow++) {
-            let n = ncolumn*10 + nrow;
+            let n = ncolumn * 10 + nrow;
             if (!useid)
                --n; // use -1 as none color
 
@@ -259,7 +259,7 @@ class JSRootMenu {
             values.push(sz);
       }
 
-      const match = v => Math.abs(v-size_value) < (max - min)*1e-5,
+      const match = v => Math.abs(v - size_value) < (max - min) * 1e-5,
             conv = (v, more) => {
                if ((v === size_value) && miss_current)
                   more = true;
@@ -440,7 +440,7 @@ class JSRootMenu {
          opts = {};
       this.addRColorMenu('color', fontHandler.color, value => set_func({ name: 'color', value }));
       if (fontHandler.scaled)
-         this.addSizeMenu('size', 0.01, 0.10, 0.01, fontHandler.size /fontHandler.scale, value => set_func({ name: 'size', value }));
+         this.addSizeMenu('size', 0.01, 0.10, 0.01, fontHandler.size / fontHandler.scale, value => set_func({ name: 'size', value }));
       else
          this.addSizeMenu('size', 6, 20, 2, fontHandler.size, value => set_func({ name: 'size', value }));
 
@@ -515,9 +515,9 @@ class JSRootMenu {
       const prec = value && Number.isInteger(value) ? value % 10 : 2;
 
       this.sub(name, () => {
-         this.input('Enter font id from [0..20]', Math.floor(value/10), 'int', 0, 20).then(id => {
+         this.input('Enter font id from [0..20]', Math.floor(value / 10), 'int', 0, 20).then(id => {
             if ((id >= 0) && (id <= 20))
-               set_func(id*10 + prec);
+               set_func(id * 10 + prec);
          });
       });
 
@@ -526,7 +526,7 @@ class JSRootMenu {
       const doc = getDocument();
 
       for (let n = 1; n < 20; ++n) {
-         const id = n*10 + prec,
+         const id = n * 10 + prec,
                handler = new FontHandler(id, 14),
                txt = d3_select(doc.createElementNS(nsSVG, 'text'));
          let fullname = handler.getFontName(), qual = '';
@@ -565,7 +565,7 @@ class JSRootMenu {
             const id = parseInt(arg);
             if ((id < 11) || (id > 33))
                return;
-            const h = Math.floor(id/10), v = id % 10;
+            const h = Math.floor(id / 10), v = id % 10;
             if ((h > 0) && (h < 4) && (v > 0) && (v < 4))
                set_func(id);
          });
@@ -574,7 +574,7 @@ class JSRootMenu {
       const hnames = ['left', 'middle', 'right'], vnames = ['bottom', 'centered', 'top'];
       for (let h = 1; h < 4; ++h) {
          for (let v = 1; v < 4; ++v)
-            this.addchk(h*10+v === value, `${h*10+v}: ${hnames[h-1]} ${vnames[v-1]}`, h*10+v, arg => set_func(parseInt(arg)));
+            this.addchk(h * 10 + v === value, `${h * 10 + v}: ${hnames[h - 1]} ${vnames[v - 1]}`, h * 10 + v, arg => set_func(parseInt(arg)));
       }
 
       this.endsub();
@@ -667,7 +667,7 @@ class JSRootMenu {
 
          for (let n = 0; n < supported.length; ++n) {
             const clone = new TAttMarkerHandler({ style: supported[n], color: painter.markeratt.color, size: 1.7 }),
-                  svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill?'black':'none'}' d='${clone.create(40, 8)}'></path></svg>`;
+                  svg = `<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>${supported[n].toString()}</text><path stroke='black' fill='${clone.fill ? 'black' : 'none'}' d='${clone.create(40, 8)}'></path></svg>`;
 
             this.addchk(painter.markeratt.style === supported[n], svg, supported[n],
                         arg => { painter.markeratt.change(undefined, parseInt(arg)); painter.interactiveRedraw(redraw_arg, `exec:SetMarkerStyle(${arg})`); });
@@ -1097,8 +1097,8 @@ class JSRootMenu {
       }
 
       const main_content =
-         '<form><fieldset style="padding:0; border:0">'+
-            `<input type="${inp_type}" value="${value}" ${ranges} style="width:98%;display:block" class="jsroot_dlginp"/>`+
+         '<form><fieldset style="padding:0; border:0">' +
+            `<input type="${inp_type}" value="${value}" ${ranges} style="width:98%;display:block" class="jsroot_dlginp"/>` +
          '</fieldset></form>';
 
       return new Promise(resolveFunc => {
@@ -1132,13 +1132,13 @@ class JSRootMenu {
          if (arg.fValue === '""')
             arg.fValue = '';
          main_content += `<label for="${dlg_id}_inp${n}">${arg.fName}</label>
-                          <input type='text' tabindex="${n+1}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
+                          <input type='text' tabindex="${n + 1}" id="${dlg_id}_inp${n}" value="${arg.fValue}" style="width:100%;display:block"/>`;
       }
 
       main_content += '</fieldset></form>';
 
       return new Promise(resolveFunc => {
-         this.runModal(method.fClassName + '::' + method.fName, main_content, { btns: true, height: 100 + method.fArgs.length*60, width: 400, resizable: true }).then(element => {
+         this.runModal(method.fClassName + '::' + method.fName, main_content, { btns: true, height: 100 + method.fArgs.length * 60, width: 400, resizable: true }).then(element => {
             if (!element)
                return;
             let args = '';
@@ -1174,14 +1174,14 @@ class JSRootMenu {
       let main_content = '<form> <fieldset style="padding:0; border:0">';
 
       for (let n = 0; n < args.length; ++n) {
-         main_content += `<label for="${dlg_id}_inp${n}">arg${n+1}</label>`+
+         main_content += `<label for="${dlg_id}_inp${n}">arg${n + 1}</label>` +
                          `<input type='text' id="${dlg_id}_inp${n}" value="${args[n]}" style="width:100%;display:block"/>`;
       }
 
       main_content += '</fieldset></form>';
 
       return new Promise(resolveFunc => {
-         this.runModal('Arguments for command ' + cmdname, main_content, { btns: true, height: 110 + args.length*60, width: 400, resizable: true }).then(element => {
+         this.runModal('Arguments for command ' + cmdname, main_content, { btns: true, height: 110 + args.length * 60, width: 400, resizable: true }).then(element => {
             if (!element)
                return resolveFunc(null);
 
@@ -1289,8 +1289,8 @@ class StandaloneMenu extends JSRootMenu {
             clfocus = 'jsroot_ctxt_focus',
             clcolumn = 'jsroot_ctxt_column',
             container_style =
-         'position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;'+
-         'min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;'+
+         'position: absolute; top: 0; user-select: none; z-index: 100000; background-color: rgb(250, 250, 250); margin: 0; padding: 0px; width: auto;' +
+         'min-width: 100px; box-shadow: 0px 0px 10px rgb(0, 0, 0, 0.2); border: 3px solid rgb(215, 215, 215); font-family: Arial, helvetica, sans-serif, serif;' +
          'font-size: 13px; color: rgb(0, 0, 0, 0.8); line-height: 15px;';
 
       // if loc !== doc.body then its a submenu, so it needs to have position: relative;
@@ -1309,7 +1309,7 @@ class StandaloneMenu extends JSRootMenu {
          // column
          outer.className = clcolumn;
          outer.style.float = 'left';
-         outer.style.width = (100/-left).toFixed(1) + '%';
+         outer.style.width = (100 / -left).toFixed(1) + '%';
       } else {
          outer.className = clname;
          outer.style = container_style;
@@ -1576,7 +1576,7 @@ class StandaloneMenu extends JSRootMenu {
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
 
-      const w = Math.min(args.width || 450, Math.round(0.9*browser.screenWidth));
+      const w = Math.min(args.width || 450, Math.round(0.9 * browser.screenWidth));
       modal.block = d3_select('body').append('div')
                                    .attr('id', `${dlg_id}_block`)
                                    .attr('class', 'jsroot_dialog_block')
@@ -1593,11 +1593,11 @@ class StandaloneMenu extends JSRootMenu {
                       .attr('tabindex', '0');
 
       modal.element.html(
-         '<div style=\'position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white\'>'+
-           `<div style='flex: 0 1 auto; padding: 5px'>${title}</div>`+
-           `<div class='jsroot_dialog_content' style='flex: 1 1 auto; padding: 5px'>${main_content}</div>`+
-           '<div class=\'jsroot_dialog_footer\' style=\'flex: 0 1 auto; padding: 5px\'>'+
-              `<button class='jsroot_dialog_button' style='float: right; width: fit-content; margin-right: 1em'>${args.Ok}</button>`+
+         '<div style=\'position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white\'>' +
+           `<div style='flex: 0 1 auto; padding: 5px'>${title}</div>` +
+           `<div class='jsroot_dialog_content' style='flex: 1 1 auto; padding: 5px'>${main_content}</div>` +
+           '<div class=\'jsroot_dialog_footer\' style=\'flex: 0 1 auto; padding: 5px\'>' +
+              `<button class='jsroot_dialog_button' style='float: right; width: fit-content; margin-right: 1em'>${args.Ok}</button>` +
               (args.btns ? '<button class=\'jsroot_dialog_button\' style=\'float: right; width: fit-content; margin-right: 1em\'>Cancel</button>' : '') +
          '</div></div>'
       );
