@@ -206,15 +206,15 @@ class TASImagePainter extends ObjectPainter {
                   arr2 = imageData2.data;
 
             for (let i = z.ymin; i < z.ymax; ++i) {
-                let dst = (z.ymax - i - 1) * (z.xmax - z.xmin) * 4,
-                    src = ((image.height - i - 1) * image.width + z.xmin) * 4;
-                for (let j = z.xmin; j < z.xmax; ++j) {
-                   // copy rgba value for specified point
-                   arr2[dst++] = arr[src++];
-                   arr2[dst++] = arr[src++];
-                   arr2[dst++] = arr[src++];
-                   arr2[dst++] = arr[src++];
-                }
+               let dst = (z.ymax - i - 1) * (z.xmax - z.xmin) * 4,
+                   src = ((image.height - i - 1) * image.width + z.xmin) * 4;
+               for (let j = z.xmin; j < z.xmax; ++j) {
+                  // copy rgba value for specified point
+                  arr2[dst++] = arr[src++];
+                  arr2[dst++] = arr[src++];
+                  arr2[dst++] = arr[src++];
+                  arr2[dst++] = arr[src++];
+               }
             }
 
             context2.putImageData(imageData2, 0, 0);
@@ -247,15 +247,15 @@ class TASImagePainter extends ObjectPainter {
             obj.fImageCompression = obj._blob[2];
             obj.fConstRatio = obj._blob[3];
             obj.fPalette = {
-                _typename: clTImagePalette,
-                fUniqueID: obj._blob[4],
-                fBits: obj._blob[5],
-                fNumPoints: obj._blob[6],
-                fPoints: obj._blob[7],
-                fColorRed: obj._blob[8],
-                fColorGreen: obj._blob[9],
-                fColorBlue: obj._blob[10],
-                fColorAlpha: obj._blob[11]
+               _typename: clTImagePalette,
+               fUniqueID: obj._blob[4],
+               fBits: obj._blob[5],
+               fNumPoints: obj._blob[6],
+               fPoints: obj._blob[7],
+               fColorRed: obj._blob[8],
+               fColorGreen: obj._blob[9],
+               fColorBlue: obj._blob[10],
+               fColorAlpha: obj._blob[11]
             };
 
             obj.fWidth = obj._blob[12];
@@ -446,8 +446,8 @@ class TASImagePainter extends ObjectPainter {
       return ensureTCanvas(painter, false)
                  .then(() => painter.drawImage())
                  .then(() => {
-                     painter.fillToolbar();
-                     return painter;
+                    painter.fillToolbar();
+                    return painter;
                  });
    }
 

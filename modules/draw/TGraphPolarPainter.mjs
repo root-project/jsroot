@@ -188,8 +188,7 @@ class TGraphPolargramPainter extends TooltipHandler {
       const fontsize = Math.round(polar.fPolarTextSize * this.szy * 2),
             o = this.getOptions();
 
-      return this.startTextDrawingAsync(polar.fPolarLabelFont, fontsize)
-                 .then(() => {
+      return this.startTextDrawingAsync(polar.fPolarLabelFont, fontsize).then(() => {
          const lbls = (nmajor === 8) ? ['0', '#frac{#pi}{4}', '#frac{#pi}{2}', '#frac{3#pi}{4}', '#pi', '#frac{5#pi}{4}', '#frac{3#pi}{2}', '#frac{7#pi}{4}'] : ['0', '#frac{2#pi}{3}', '#frac{4#pi}{3}'],
                aligns = [12, 11, 21, 31, 32, 33, 23, 13];
 
@@ -212,11 +211,13 @@ class TGraphPolargramPainter extends TooltipHandler {
                align = aligns[aindx];
             }
 
-            this.drawText({ align, rotate,
-                           x: Math.round((this.szx + fontsize)*Math.cos(angle)),
-                           y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
-                           text: lbls[n],
-                           color: this.getColor(polar.fPolarLabelColor), latex: 1 });
+            this.drawText({
+               align, rotate,
+               x: Math.round((this.szx + fontsize)*Math.cos(angle)),
+               y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
+               text: lbls[n],
+               color: this.getColor(polar.fPolarLabelColor), latex: 1
+            });
          }
 
          return this.finishTextDrawing();
@@ -282,7 +283,7 @@ class TGraphPolargramPainter extends TooltipHandler {
             lbls = [];
             indx = 0;
             continue;
-          }
+         }
          lbls.push(lbl);
          indx++;
       }
@@ -314,11 +315,13 @@ class TGraphPolargramPainter extends TooltipHandler {
             if ((n < ticks.length - 1) || !exclude_last) {
                const halign = ca > 0.7 ? 1 : (ca > 0 ? 3 : (ca > -0.7 ? 1 : 3)),
                      valign = Math.abs(ca) < 0.7 ? 1 : 3;
-               this.drawText({ align: 10 * halign + valign,
-                               x: Math.round(rx*ca),
-                               y: Math.round(ry*sa),
-                               text: this.format(ticks[n]),
-                               color: this.getColor(polar.fRadialLabelColor), latex: 0 });
+               this.drawText({
+                  align: 10 * halign + valign,
+                  x: Math.round(rx*ca),
+                  y: Math.round(ry*sa),
+                  text: this.format(ticks[n]),
+                  color: this.getColor(polar.fRadialLabelColor), latex: 0
+               });
                if (o.rdot) {
                   g.append('ellipse')
                    .attr('cx', Math.round(rx * ca))
@@ -723,8 +726,10 @@ class TGraphPolarPainter extends ObjectPainter {
       }
 
       pt = create(clTPaveText);
-      Object.assign(pt, { fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
-                           fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22 });
+      Object.assign(pt, {
+         fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+         fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22
+      });
 
       if (draw_title)
          pt.AddText(gr.fTitle);

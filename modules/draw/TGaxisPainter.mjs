@@ -22,14 +22,14 @@ class TGaxisPainter extends TAxisPainter {
             y2 = this.axisToSvg('y', gaxis.fY2);
 
       if (opt === 'ndc') {
-          const pw = this.getPadPainter().getPadWidth(),
-                ph = this.getPadPainter().getPadHeight();
+         const pw = this.getPadPainter().getPadWidth(),
+               ph = this.getPadPainter().getPadHeight();
 
-          gaxis.fX1 = x1 / pw;
-          gaxis.fX2 = x2 / pw;
-          gaxis.fY1 = (ph - y1) / ph;
-          gaxis.fY2 = (ph - y2)/ ph;
-          this.use_ndc = true;
+         gaxis.fX1 = x1 / pw;
+         gaxis.fX2 = x2 / pw;
+         gaxis.fY1 = (ph - y1) / ph;
+         gaxis.fY2 = (ph - y2)/ ph;
+         this.use_ndc = true;
       } else if (opt === 'frame') {
          const rect = this.getFramePainter().getFrameRect();
          gaxis.fX1 = (x1 - rect.x) / rect.width;

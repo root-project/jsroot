@@ -90,7 +90,7 @@ class TArrowPainter extends TLinePainter {
          this.#end = ((p2 >= 0) && (p2 === len-2)) ? 11 : 1;
 
       this.createAttFill({ attr: arrow, enable: (this.#beg > 10) || (this.#end > 10) });
-  }
+   }
 
    /** @summary Add extras to path for TArrow */
    addExtras(elem) {

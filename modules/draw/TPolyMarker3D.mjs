@@ -18,7 +18,7 @@ async function drawPolyMarker3D() {
       if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
           (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
           (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax))
-          continue;
+         continue;
       ++numselect;
    }
 
@@ -34,7 +34,7 @@ async function drawPolyMarker3D() {
       if ((fP[i] < fp.scale_xmin) || (fP[i] > fp.scale_xmax) ||
           (fP[i+1] < fp.scale_ymin) || (fP[i+1] > fp.scale_ymax) ||
           (fP[i+2] < fp.scale_zmin) || (fP[i+2] > fp.scale_zmax))
-          continue;
+         continue;
 
       if (step > 1) {
          select = (select + 1) % step;
@@ -77,12 +77,13 @@ async function drawPolyMarker3D() {
             z1: grz - this.scale0,
             z2: grz + this.scale0,
             color: this.tip_color,
-            lines: [this.tip_name,
-                     'pnt: ' + indx/3,
-                     'x: ' + fp2.axisAsText('x', this.poly.fP[indx]),
-                     'y: ' + fp2.axisAsText('y', this.poly.fP[indx+1]),
-                     'z: ' + fp2.axisAsText('z', this.poly.fP[indx+2])
-                   ]
+            lines: [
+               this.tip_name,
+               'pnt: ' + indx/3,
+               'x: ' + fp2.axisAsText('x', this.poly.fP[indx]),
+               'y: ' + fp2.axisAsText('y', this.poly.fP[indx+1]),
+               'z: ' + fp2.axisAsText('z', this.poly.fP[indx+2])
+            ]
          };
       };
 
