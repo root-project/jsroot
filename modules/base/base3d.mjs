@@ -328,12 +328,12 @@ const Handling3DDrawings = {
       const rect = pp?.getPadRect();
       if (rect) {
          // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
-         const dx = Math.round(size.width*0.07), dy = Math.round(size.height*0.05);
+         const dx = Math.round(size.width * 0.07), dy = Math.round(size.height * 0.05);
 
          size.x = Math.max(0, size.x - dx);
          size.y = Math.max(0, size.y - dy);
-         size.width = Math.min(size.width + 2*dx, rect.width - size.x);
-         size.height = Math.min(size.height + 2*dy, rect.height - size.y);
+         size.width = Math.min(size.width + 2 * dx, rect.width - size.x);
+         size.height = Math.min(size.height + 2 * dy, rect.height - size.y);
       }
 
       if (can3d === constants.Embed3D.Overlay) {
@@ -786,8 +786,8 @@ class TooltipFor3D {
          }
       }
 
-      this.tt.style.top = `${pos.u+15}px`;
-      this.tt.style.left = `${pos.l+3}px`;
+      this.tt.style.top = `${pos.u + 15}px`;
+      this.tt.style.left = `${pos.l + 3}px`;
    }
 
    /** @summary Show tooltip */
@@ -946,13 +946,13 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          // z changes from 0..2*size_z3d, others -size_x3d..+size_x3d
          switch (kind) {
             case 'x':
-               position = (position + control.painter.size_x3d)/2/control.painter.size_x3d;
+               position = (position + control.painter.size_x3d) / 2 / control.painter.size_x3d;
                break;
             case 'y':
-               position = (position + control.painter.size_y3d)/2/control.painter.size_y3d;
+               position = (position + control.painter.size_y3d) / 2 / control.painter.size_y3d;
                break;
             case 'z':
-               position = position/2/control.painter.size_z3d;
+               position = position / 2 / control.painter.size_z3d;
                break;
          }
 
@@ -1105,7 +1105,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
             name: _painter.getObject().fName,
             bin: tip.bin, cont: tip.value,
             binx: tip.ix, biny: tip.iy, binz: tip.iz,
-            grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2
+            grx: (tip.x1 + tip.x2) / 2, gry: (tip.y1 + tip.y2) / 2, grz: (tip.z1 + tip.z2) / 2
          };
       }
    };
@@ -1444,21 +1444,21 @@ function createLineSegments(arr, material, index = undefined, only_geometry = fa
       if (index) {
          distances = new Float32Array(index.length);
          for (let n = 0; n < index.length; n += 2) {
-            const i1 = index[n], i2 = index[n+1];
-            v1.set(arr[i1], arr[i1+1], arr[i1+2]);
-            v2.set(arr[i2], arr[i2+1], arr[i2+2]);
+            const i1 = index[n], i2 = index[n + 1];
+            v1.set(arr[i1], arr[i1 + 1], arr[i1 + 2]);
+            v2.set(arr[i2], arr[i2 + 1], arr[i2 + 2]);
             distances[n] = d;
             d += v2.distanceTo(v1);
-            distances[n+1] = d;
+            distances[n + 1] = d;
          }
       } else {
-         distances = new Float32Array(arr.length/3);
+         distances = new Float32Array(arr.length / 3);
          for (let n = 0; n < arr.length; n += 6) {
-            v1.set(arr[n], arr[n+1], arr[n+2]);
-            v2.set(arr[n+3], arr[n+4], arr[n+5]);
-            distances[n/3] = d;
+            v1.set(arr[n], arr[n + 1], arr[n + 2]);
+            v2.set(arr[n + 3], arr[n + 4], arr[n + 5]);
+            distances[n / 3] = d;
             d += v2.distanceTo(v1);
-            distances[n/3+1] = d;
+            distances[n / 3 + 1] = d;
          }
       }
       geom.setAttribute('lineDistance', new THREE.BufferAttribute(distances, 1));
@@ -1582,7 +1582,7 @@ class PointsControl extends InteractiveControl {
       if (!m.js_special) {
          const geom = new THREE.BufferGeometry();
          geom.setAttribute('position', m.geometry.getAttribute('position'));
-         const material = new THREE.PointsMaterial({ size: m.material.size*2, color });
+         const material = new THREE.PointsMaterial({ size: m.material.size * 2, color });
          material.sizeAttenuation = m.material.sizeAttenuation;
 
          m.js_special = new THREE.Points(geom, material);
@@ -1614,7 +1614,7 @@ class PointsCreator {
       this.webgl = iswebgl;
       this.scale = scale || 1;
 
-      this.pos = new Float32Array(number*3);
+      this.pos = new Float32Array(number * 3);
       this.geom = new THREE.BufferGeometry();
       this.geom.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
       this.indx = 0;
@@ -1623,8 +1623,8 @@ class PointsCreator {
    /** @summary Add point */
    addPoint(x, y, z) {
       this.pos[this.indx] = x;
-      this.pos[this.indx+1] = y;
-      this.pos[this.indx+2] = z;
+      this.pos[this.indx + 1] = y;
+      this.pos[this.indx + 2] = z;
       this.indx += 3;
    }
 
@@ -1648,7 +1648,7 @@ class PointsCreator {
          k = 0.7;
 
       const makePoints = texture => {
-         const material_args = { size: 3*this.scale*k };
+         const material_args = { size: 3 * this.scale * k };
          if (texture) {
             material_args.map = texture;
             material_args.transparent = true;
@@ -1670,7 +1670,7 @@ class PointsCreator {
       const handler = new TAttMarkerHandler({ style: args.style, color: args.color, size: 7 }),
             w = handler.fill ? 1 : 7,
             imgdata = `<svg width="64" height="64" xmlns="${nsSVG}">` +
-                      `<path d="${handler.create(32, 32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${args.fill ?? handler.getFillColor()}"></path>`+
+                      `<path d="${handler.create(32, 32)}" style="stroke: ${handler.getStrokeColor()}; stroke-width: ${w}; fill: ${args.fill ?? handler.getFillColor()}"></path>` +
                       '</svg>',
             dataUrl = prSVG + (isNodeJs() ? imgdata : encodeURIComponent(imgdata));
       let promise;
@@ -1707,9 +1707,9 @@ function create3DLineMaterial(painter, arg, is_v7 = false) {
 
    let color, lstyle, lwidth;
    if (isStr(arg) || is_v7) {
-      color = painter.v7EvalColor(arg+'color', 'black');
-      lstyle = parseInt(painter.v7EvalAttr(arg+'style', 0));
-      lwidth = parseInt(painter.v7EvalAttr(arg+'width', 1));
+      color = painter.v7EvalColor(arg + 'color', 'black');
+      lstyle = parseInt(painter.v7EvalAttr(arg + 'style', 0));
+      lwidth = parseInt(painter.v7EvalAttr(arg + 'width', 1));
    } else {
       color = painter.getColor(arg.fLineColor);
       lstyle = arg.fLineStyle;

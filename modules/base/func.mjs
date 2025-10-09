@@ -67,11 +67,11 @@ function proivdeEvalPar(obj, check_save) {
    if (_func.match(/^pol[0-9]$/) && (parseInt(_func[3]) === obj.fNpar - 1)) {
       _func = '[0]';
       for (let k = 1; k < obj.fNpar; ++k)
-         _func += ` + [${k}] * `+ ((k === 1) ? 'x' : `Math.pow(x,${k})`);
+         _func += ` + [${k}] * ` + ((k === 1) ? 'x' : `Math.pow(x,${k})`);
    }
 
    if (_func.match(/^chebyshev[0-9]$/) && (parseInt(_func[9]) === obj.fNpar - 1)) {
-      _func = `this.$math.ChebyshevN(${obj.fNpar-1}, x, `;
+      _func = `this.$math.ChebyshevN(${obj.fNpar - 1}, x, `;
       for (let k = 0; k < obj.fNpar; ++k)
          _func += (k === 0 ? '[' : ', ') + `[${k}]`;
       _func += '])';

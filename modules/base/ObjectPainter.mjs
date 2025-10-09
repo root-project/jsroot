@@ -454,7 +454,7 @@ class ObjectPainter extends BasePainter {
       if (check_online && this.getSnapId()) {
          const pp = this.getPadPainter();
          if (pp?.getSnapId())
-            this.getCanvPainter()?.sendWebsocket('POPOBJ:'+JSON.stringify([pp.getSnapId(), this.getSnapId()]));
+            this.getCanvPainter()?.sendWebsocket('POPOBJ:' + JSON.stringify([pp.getSnapId(), this.getSnapId()]));
       }
    }
 
@@ -906,7 +906,7 @@ class ObjectPainter extends BasePainter {
       const cl = this.getClassName(),
             name = this.getObjectName(),
             p = cl.lastIndexOf('::'),
-            cl0 = (p > 0) ? cl.slice(p+2) : cl,
+            cl0 = (p > 0) ? cl.slice(p + 2) : cl,
             hdr = (cl0 && name) ? `${cl0}:${name}` : (cl0 || name || 'object'),
             url = cl ? `${urlClassPrefix}${cl.replaceAll('::', '_1_1')}.html` : '';
 
@@ -1126,8 +1126,8 @@ class ObjectPainter extends BasePainter {
 
             if (isNodeJs()) {
                if (arg.scale && (f > 0)) {
-                  arg.box.width *= 1/f;
-                  arg.box.height *= 1/f;
+                  arg.box.width *= 1 / f;
+                  arg.box.height *= 1 / f;
                }
             } else if (!arg.plain && !arg.fast) {
                // exact box dimension only required when complex text was build
@@ -1151,16 +1151,16 @@ class ObjectPainter extends BasePainter {
             // handle latex drawing
             const box = arg.text_rect;
 
-            scale = (f > 0) && (Math.abs(1-f) > 0.01) ? 1/f : 1;
+            scale = (f > 0) && (Math.abs(1 - f) > 0.01) ? 1 / f : 1;
 
             dx = ((arg.align[0] === 'middle') ? -0.5 : ((arg.align[0] === 'end') ? -1 : 0)) * box.width * scale;
 
             if (arg.align[1] === 'top')
-               dy = -box.y1*scale;
+               dy = -box.y1 * scale;
             else if (arg.align[1] === 'bottom')
-               dy = -box.y2*scale;
+               dy = -box.y2 * scale;
             else if (arg.align[1] === 'middle')
-               dy = -0.5*(box.y1 + box.y2)*scale;
+               dy = -0.5 * (box.y1 + box.y2) * scale;
          } else
             console.error('text rect not calcualted - please check code');
 
@@ -1495,7 +1495,7 @@ class ObjectPainter extends BasePainter {
                if (lastclname !== item.fClassName) {
                   lastclname = item.fClassName;
                   const p = lastclname.lastIndexOf('::'),
-                        shortname = (p > 0) ? lastclname.slice(p+2) : lastclname;
+                        shortname = (p > 0) ? lastclname.slice(p + 2) : lastclname;
 
                   _menu.sub(shortname.replace(/[<>]/g, '_'));
                }

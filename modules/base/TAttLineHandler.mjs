@@ -157,7 +157,7 @@ class TAttLineHandler {
       if (plain)
          svg = d3_select(svg);
       svg.append('path')
-         .attr('d', `M0,${height/2}h${width}`)
+         .attr('d', `M0,${height / 2}h${width}`)
          .call(this.func);
    }
 

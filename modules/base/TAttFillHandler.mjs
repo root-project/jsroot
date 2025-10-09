@@ -351,7 +351,7 @@ class TAttFillHandler {
                      hatches_spacing = Math.max(1, Math.round(spacing_original)) * 6,
                      sz = i * hatches_spacing; // axis distance between lines
 
-               id += use_new ? `_hn${Math.round(spacing_original*100)}` : `_ho${hatches_spacing}`;
+               id += use_new ? `_hn${Math.round(spacing_original * 100)}` : `_ho${hatches_spacing}`;
 
                w = h = 6 * sz; // we use at least 6 steps
 
@@ -386,21 +386,21 @@ class TAttFillHandler {
                   }
                   for (let b = 0; b < pos.length; b += 4) {
                      if (swap) {
-                        x1 = pos[b+1];
+                        x1 = pos[b + 1];
                         y1 = pos[b];
-                        x2 = pos[b+3];
-                        y2 = pos[b+2];
+                        x2 = pos[b + 3];
+                        y2 = pos[b + 2];
                      } else {
                         x1 = pos[b];
-                        y1 = pos[b+1];
-                        x2 = pos[b+2];
-                        y2 = pos[b+3];
+                        y1 = pos[b + 1];
+                        x2 = pos[b + 2];
+                        y2 = pos[b + 3];
                      }
                      lines += `M${x1},${y1}`;
                      if (y2 === y1)
-                        lines += `h${x2-x1}`;
+                        lines += `h${x2 - x1}`;
                      else if (x2 === x1)
-                        lines += `v${y2-y1}`;
+                        lines += `v${y2 - y1}`;
                      else
                         lines += `L${x2},${y2}`;
                   }
@@ -409,10 +409,10 @@ class TAttFillHandler {
                /* eslint-disable-next-line one-var */
                const produce_new = (_aa, _bb, angle, swapx) => {
                   if ((angle === 0) || (angle === 90)) {
-                     const dy = i*spacing_original*3,
+                     const dy = i * spacing_original * 3,
                            nsteps = Math.round(h / dy),
                            dyreal = h / nsteps;
-                     let yy = dyreal/2;
+                     let yy = dyreal / 2;
 
                      while (yy < h) {
                         if (angle === 0)
@@ -425,8 +425,8 @@ class TAttFillHandler {
                      return;
                   }
 
-                  const a = angle/180*Math.PI,
-                        dy = i*spacing_original*3/Math.cos(a),
+                  const a = angle / 180 * Math.PI,
+                        dy = i * spacing_original * 3 / Math.cos(a),
                         hside = Math.tan(a) * w,
                         hside_steps = Math.round(hside / dy),
                         dyreal = hside / hside_steps,
@@ -529,10 +529,10 @@ class TAttFillHandler {
             }
             for (let n = 0; n < this.gradient.fColorPositions.length; ++n) {
                const pos = this.gradient.fColorPositions[n],
-                     col = toColor(this.gradient.fColors[n*4], this.gradient.fColors[n*4+1], this.gradient.fColors[n*4+2]);
-               grad.append('svg:stop').attr('offset', `${Math.round(pos*100)}%`)
+                     col = toColor(this.gradient.fColors[n * 4], this.gradient.fColors[n * 4 + 1], this.gradient.fColors[n * 4 + 2]);
+               grad.append('svg:stop').attr('offset', `${Math.round(pos * 100)}%`)
                                       .attr('stop-color', col)
-                                      .attr('stop-opacity', `${Math.round(this.gradient.fColors[n*4+3]*100)}%`);
+                                      .attr('stop-opacity', `${Math.round(this.gradient.fColors[n * 4 + 3] * 100)}%`);
             }
          } else {
             const patt = defs.append('svg:pattern')

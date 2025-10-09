@@ -214,7 +214,7 @@ class FontHandler {
       this.angle = parseInt(this.angle || 0);
       if (!Number.isInteger(this.angle))
          this.angle = 0;
-      this.angle = Math.round(this.angle/step) * step + (offset || 0);
+      this.angle = Math.round(this.angle / step) * step + (offset || 0);
       if (this.angle < 0)
          this.angle += 360;
       else if (this.angle >= 360)

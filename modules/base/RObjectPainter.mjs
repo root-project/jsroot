@@ -95,10 +95,10 @@ class RObjectPainter extends ObjectPainter {
       const value = this.v7EvalAttr(name);
 
       if (value === undefined)
-         return Math.round(dflt*sizepx);
+         return Math.round(dflt * sizepx);
 
       if (typeof value === 'number')
-         return Math.round(value*sizepx);
+         return Math.round(value * sizepx);
 
       if (value === null)
          return 0;
@@ -134,7 +134,7 @@ class RObjectPainter extends ObjectPainter {
          const v = parseFloat(val.slice(0, pos));
          if (!Number.isFinite(v)) {
             console.log(`Fail to parse RPadLength ${value}`);
-            return Math.round(dflt*sizepx);
+            return Math.round(dflt * sizepx);
          }
 
          val = val.slice(pos);
@@ -143,17 +143,17 @@ class RObjectPainter extends ObjectPainter {
             operand = 1;
          if (val && (val[0] === '%')) {
             val = val.slice(1);
-            norm += operand*v*0.01;
+            norm += operand * v * 0.01;
          } else if ((val.length > 1) && (val[0] === 'p') && (val[1] === 'x')) {
             val = val.slice(2);
-            px += operand*v;
+            px += operand * v;
          } else
-            norm += operand*v;
+            norm += operand * v;
 
          operand = 0;
       }
 
-      return Math.round(norm*sizepx + px);
+      return Math.round(norm * sizepx + px);
    }
 
    /** @summary Evaluate RColor using attribute storage and configured RStyle */

@@ -91,19 +91,19 @@ function floatToString(value, fmt, ret_fmt) {
    if (len < 2)
       return ret_fmt ? [value.toFixed(4), '6.4f'] : value.toFixed(4);
 
-   const kind = fmt[len-1].toLowerCase(),
-         compact = (len > 1) && (fmt[len-2] === 'c') ? 'c' : '';
+   const kind = fmt[len - 1].toLowerCase(),
+         compact = (len > 1) && (fmt[len - 2] === 'c') ? 'c' : '';
    fmt = fmt.slice(0, len - (compact ? 2 : 1));
 
    if (kind === 'g') {
-      const se = floatToString(value, fmt+'ce', true),
-            sg = floatToString(value, fmt+'cf', true),
+      const se = floatToString(value, fmt + 'ce', true),
+            sg = floatToString(value, fmt + 'cf', true),
             res = se[0].length < sg[0].length || ((sg[0] === '0') && value) ? se : sg;
       return ret_fmt ? res : res[0];
    }
 
    let isexp, prec = fmt.indexOf('.');
-   prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec+1));
+   prec = (prec < 0) ? 4 : parseInt(fmt.slice(prec + 1));
    if (!Number.isInteger(prec) || (prec <= 0))
       prec = 4;
 
@@ -127,7 +127,7 @@ function floatToString(value, fmt, ret_fmt) {
                pe = se.toLowerCase().indexOf('e');
          if ((pnt > 0) && (pe > pnt)) {
             let p = pe;
-            while ((p > pnt) && (se[p-1] === '0'))
+            while ((p > pnt) && (se[p - 1] === '0'))
                p--;
             if (p === pnt + 1)
                p--;
@@ -136,7 +136,7 @@ function floatToString(value, fmt, ret_fmt) {
          }
       }
 
-      return ret_fmt ? [se, `${prec+2}.${prec}${compact}e`] : se;
+      return ret_fmt ? [se, `${prec + 2}.${prec}${compact}e`] : se;
    }
 
    let sg = value.toFixed(prec);
@@ -162,7 +162,7 @@ function floatToString(value, fmt, ret_fmt) {
       const pnt = sg.indexOf('.');
       if (pnt > 0) {
          let p = sg.length;
-         while ((p > pnt) && (sg[p-1] === '0'))
+         while ((p > pnt) && (sg[p - 1] === '0'))
             p--;
          if (p === pnt + 1)
             p--;
@@ -173,7 +173,7 @@ function floatToString(value, fmt, ret_fmt) {
          sg = '0';
    }
 
-   return ret_fmt ? [sg, `${prec+2}.${prec}${compact}f`] : sg;
+   return ret_fmt ? [sg, `${prec + 2}.${prec}${compact}f`] : sg;
 }
 
 
@@ -261,7 +261,7 @@ class DrawOptions {
          mult = 1e9;
       let val = this.part.replace(/^\D+/g, '');
       val = val ? parseInt(val, 10) : Number.NaN;
-      return !Number.isInteger(val) ? (dflt || 0) : mult*val + (offset || 0);
+      return !Number.isInteger(val) ? (dflt || 0) : mult * val + (offset || 0);
    }
 
    /** @summary Returns remaining part of found option as float. */
@@ -330,19 +330,19 @@ function buildSvgCurve(p, args) {
       args.mindiff = 100;
       for (let i = 1; i < npnts; i++) {
          args.maxy = Math.max(args.maxy, p[i].gry);
-         args.mindiff = Math.min(args.mindiff, Math.abs(p[i].grx - p[i-1].grx), Math.abs(p[i].gry - p[i-1].gry));
+         args.mindiff = Math.min(args.mindiff, Math.abs(p[i].grx - p[i - 1].grx), Math.abs(p[i].gry - p[i - 1].gry));
       }
       if (args.ndig === undefined)
          args.ndig = args.mindiff > 20 ? 0 : (args.mindiff > 5 ? 1 : 2);
    }
 
    const end_point = (pnt1, pnt2, sign) => {
-      const len = Math.sqrt((pnt2.gry - pnt1.gry)**2 + (pnt2.grx - pnt1.grx)**2) * args.t,
+      const len = Math.sqrt((pnt2.gry - pnt1.gry) ** 2 + (pnt2.grx - pnt1.grx) ** 2) * args.t,
             a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
-            a1 = Math.atan2(sign*(pnt2.gry - pnt1.gry), sign*(pnt2.grx - pnt1.grx));
+            a1 = Math.atan2(sign * (pnt2.gry - pnt1.gry), sign * (pnt2.grx - pnt1.grx));
 
-      pnt1.dgrx = len * Math.cos(2*a1 - a2);
-      pnt1.dgry = len * Math.sin(2*a1 - a2);
+      pnt1.dgrx = len * Math.cos(2 * a1 - a2);
+      pnt1.dgry = len * Math.sin(2 * a1 - a2);
    }, conv = val => {
       if (!args.ndig || (Math.round(val) === val))
          return val.toFixed(0);
@@ -351,14 +351,14 @@ function buildSvgCurve(p, args) {
          p1--;
       if (s[p1] === '.')
          p1--;
-      s = s.slice(0, p1+1);
+      s = s.slice(0, p1 + 1);
       return (s === '-0') ? '0' : s;
    };
 
    if (args.calc) {
       for (let i = 1; i < npnts - 1; i++) {
-         p[i].dgrx = (p[i+1].grx - p[i-1].grx) * args.t;
-         p[i].dgry = (p[i+1].gry - p[i-1].gry) * args.t;
+         p[i].dgrx = (p[i + 1].grx - p[i - 1].grx) * args.t;
+         p[i].dgry = (p[i + 1].gry - p[i - 1].gry) * args.t;
       }
 
       if (npnts > 2) {
@@ -378,16 +378,16 @@ function buildSvgCurve(p, args) {
       let i0 = 1;
       if (args.qubic) {
          npnts--; i0++;
-         path += `Q${conv(p[1].grx-p[1].dgrx)},${conv(p[1].gry-p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
+         path += `Q${conv(p[1].grx - p[1].dgrx)},${conv(p[1].gry - p[1].dgry)},${conv(p[1].grx)},${conv(p[1].gry)}`;
       }
-      path += `C${conv(p[i0-1].grx+p[i0-1].dgrx)},${conv(p[i0-1].gry+p[i0-1].dgry)},${conv(p[i0].grx-p[i0].dgrx)},${conv(p[i0].gry-p[i0].dgry)},${conv(p[i0].grx)},${conv(p[i0].gry)}`;
+      path += `C${conv(p[i0 - 1].grx + p[i0 - 1].dgrx)},${conv(p[i0 - 1].gry + p[i0 - 1].dgry)},${conv(p[i0].grx - p[i0].dgrx)},${conv(p[i0].gry - p[i0].dgry)},${conv(p[i0].grx)},${conv(p[i0].gry)}`;
 
       // continue with simpler points
       for (let i = i0 + 1; i < npnts; i++)
-         path += `S${conv(p[i].grx-p[i].dgrx)},${conv(p[i].gry-p[i].dgry)},${conv(p[i].grx)},${conv(p[i].gry)}`;
+         path += `S${conv(p[i].grx - p[i].dgrx)},${conv(p[i].gry - p[i].dgry)},${conv(p[i].grx)},${conv(p[i].gry)}`;
 
       if (args.qubic)
-         path += `Q${conv(p[npnts].grx-p[npnts].dgrx)},${conv(p[npnts].gry-p[npnts].dgry)},${conv(p[npnts].grx)},${conv(p[npnts].gry)}`;
+         path += `Q${conv(p[npnts].grx - p[npnts].dgrx)},${conv(p[npnts].gry - p[npnts].dgry)},${conv(p[npnts].grx)},${conv(p[npnts].gry)}`;
    } else if (npnts < 10000) {
       // build simple curve
 
@@ -445,10 +445,10 @@ function buildSvgCurve(p, args) {
 
          if (cminy !== cmaxy) {
             if (cminy !== curry)
-               path += `v${cminy-curry}`;
-            path += `v${cmaxy-cminy}`;
+               path += `v${cminy - curry}`;
+            path += `v${cmaxy - cminy}`;
             if (cmaxy !== prevy)
-               path += `v${prevy-cmaxy}`;
+               path += `v${prevy - cmaxy}`;
             curry = prevy;
          }
          const dy = lasty - curry;
@@ -463,10 +463,10 @@ function buildSvgCurve(p, args) {
 
       if (cminy !== cmaxy) {
          if (cminy !== curry)
-            path += `v${cminy-curry}`;
-         path += `v${cmaxy-cminy}`;
+            path += `v${cminy - curry}`;
+         path += `v${cmaxy - cminy}`;
          if (cmaxy !== prevy)
-            path += `v${prevy-cmaxy}`;
+            path += `v${prevy - cmaxy}`;
       }
    }
 
@@ -668,8 +668,8 @@ class BasePainter {
       if (!rect.width && !rect.height && !main.empty() && main.attr('style')) {
          const ws = main.style('width'), hs = main.style('height');
          if (isStr(ws) && isStr(hs) && ws.match(/^\d+px$/) && hs.match(/^\d+px$/)) {
-            rect.width = parseInt(ws.slice(0, ws.length-2));
-            rect.height = parseInt(hs.slice(0, hs.length-2));
+            rect.width = parseInt(ws.slice(0, ws.length - 2));
+            rect.height = parseInt(hs.slice(0, hs.length - 2));
          }
       }
 
@@ -863,7 +863,7 @@ async function svgToImage(svg, image_format, args) {
    if (isNodeJs()) {
       svg = encodeURIComponent(doctype + svg);
       svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
-         const c = String.fromCharCode('0x'+p1);
+         const c = String.fromCharCode('0x' + p1);
          return c === '%' ? '%25' : c;
       });
 
@@ -942,8 +942,8 @@ function convertDate(dt) {
 /** @summary Box decorations
   * @private */
 function getBoxDecorations(xx, yy, ww, hh, bmode, pww, phh) {
-   const side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2*pww-ww}v${hh-2*phh}l${-pww},${phh}z`,
-         side2 = `M${xx+ww},${yy+hh}v${-hh}l${-pww},${phh}v${hh-2*phh}h${2*pww-ww}l${-pww},${phh}z`;
+   const side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2 * pww - ww}v${hh - 2 * phh}l${-pww},${phh}z`,
+         side2 = `M${xx + ww},${yy + hh}v${-hh}l${-pww},${phh}v${hh - 2 * phh}h${2 * pww - ww}l${-pww},${phh}z`;
    return bmode > 0 ? [side1, side2] : [side2, side1];
 }
 

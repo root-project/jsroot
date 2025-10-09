@@ -59,13 +59,13 @@ class TextParseWrapper {
       if ((name === 'font-size') && value)
          this.font_size = Number.parseInt(value);
       else if ((name === 'transform') && isStr(value) && (value.indexOf('translate') === 0)) {
-         const arr = value.slice(value.indexOf('(')+1, value.lastIndexOf(')')).split(',');
-         this.x += arr[0] ? Number.parseInt(arr[0])*0.01 : 0;
-         this.y -= arr[1] ? Number.parseInt(arr[1])*0.01 : 0;
+         const arr = value.slice(value.indexOf('(') + 1, value.lastIndexOf(')')).split(',');
+         this.x += arr[0] ? Number.parseInt(arr[0]) * 0.01 : 0;
+         this.y -= arr[1] ? Number.parseInt(arr[1]) * 0.01 : 0;
       } else if ((name === 'x') && (this.kind === 'text'))
-         this.x += Number.parseInt(value)*0.01;
+         this.x += Number.parseInt(value) * 0.01;
       else if ((name === 'y') && (this.kind === 'text'))
-         this.y -= Number.parseInt(value)*0.01;
+         this.y -= Number.parseInt(value) * 0.01;
       else if ((name === 'fill') && (this.kind === 'text'))
          this.fill = value;
       else if ((name === 'd') && (this.kind === 'path') && (value !== 'M0,0')) {
@@ -77,9 +77,9 @@ class TextParseWrapper {
                   dx = 0.5 * this.stroke_width * Math.sin(angle),
                   dy = -0.5 * this.stroke_width * Math.cos(angle);
             // front side
-            pnts.push(x1-dx, y1-dy, 0, x2-dx, y2-dy, 0, x2+dx, y2+dy, 0, x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x1+dx, y1+dy, 0);
+            pnts.push(x1 - dx, y1 - dy, 0, x2 - dx, y2 - dy, 0, x2 + dx, y2 + dy, 0, x1 - dx, y1 - dy, 0, x2 + dx, y2 + dy, 0, x1 + dx, y1 + dy, 0);
             // back side
-            pnts.push(x1-dx, y1-dy, 0, x2+dx, y2+dy, 0, x2-dx, y2-dy, 0, x1-dx, y1-dy, 0, x1+dx, y1+dy, 0, x2+dx, y2+dy, 0);
+            pnts.push(x1 - dx, y1 - dy, 0, x2 + dx, y2 + dy, 0, x2 - dx, y2 - dy, 0, x1 - dx, y1 - dy, 0, x1 + dx, y1 + dy, 0, x2 + dx, y2 + dy, 0);
             x1 = x2;
             y1 = y2;
          };
@@ -106,20 +106,20 @@ class TextParseWrapper {
                   continue;
                case 'a': {
                   const rx = getN(true), ry = getN(true),
-                        angle = getN(true)/180*Math.PI, flag1 = getN(true);
+                        angle = getN(true) / 180 * Math.PI, flag1 = getN(true);
                   getN(true); // skip unused flag2
                   const x2 = x1 + getN(true),
                         y2 = y1 + getN(),
-                        x0 = x1 + rx*Math.cos(angle),
-                        y0 = y1 + ry*Math.sin(angle);
+                        x0 = x1 + rx * Math.cos(angle),
+                        y0 = y1 + ry * Math.sin(angle);
                   let angle2 = Math.atan2(y0 - y2, x0 - x2);
                   if (flag1 && (angle2 < angle))
-                     angle2 += 2*Math.PI;
+                     angle2 += 2 * Math.PI;
                   else if (!flag1 && (angle2 > angle))
-                     angle2 -= 2*Math.PI;
+                     angle2 -= 2 * Math.PI;
 
                   for (let cnt = 0; cnt < 10; ++cnt) {
-                     const a = angle + (angle2 - angle)/ 10 * (cnt + 1);
+                     const a = angle + (angle2 - angle) / 10 * (cnt + 1);
                      add_line(x0 - rx * Math.cos(a), y0 - ry * Math.sin(a));
                   }
                   continue;
@@ -147,13 +147,13 @@ class TextParseWrapper {
 
    collect(geoms, geom_args, as_array) {
       if (this._text) {
-         geom_args.size = Math.round(0.01*this.font_size);
+         geom_args.size = Math.round(0.01 * this.font_size);
          const geom = new THREE.TextGeometry(this._text, geom_args);
          if (as_array) {
             // this is latex parsing
             // while three.js uses full height, make it more like normal fonts
             geom.scale(1, 0.9, 1);
-            geom.translate(0, 0.0005*this.font_size, 0);
+            geom.translate(0, 0.0005 * this.font_size, 0);
          }
          geom.translate(this.x, this.y, 0);
          geom._fill = this.fill;

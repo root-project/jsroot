@@ -114,7 +114,7 @@ class TAttTextHandler {
    setGedFont(value) {
       const v = parseInt(value);
       if ((v > 0) && (v < 17))
-         this.change(v*10 + (this.font % 10));
+         this.change(v * 10 + (this.font % 10));
       return this.font;
    }
 

@@ -235,7 +235,7 @@ function approximateLabelWidth(label, font, fsize) {
          sum += extra_symbols_width[code] || 1000;
    }
 
-   return sum/1000*symbol_width;
+   return sum / 1000 * symbol_width;
 }
 
 /** @summary array defines features supported by latex parser, used by both old and new parsers
@@ -365,7 +365,7 @@ function replaceSymbolsInTextNode(node) {
       const code = txt.charCodeAt(i),
             newcode = remapSymbolTtfCode(code);
       if (code !== newcode) {
-         new_html += txt.slice(lasti+1, i) + `<tspan font-family="${settings.LoadSymbolTtf ? kSymbol : 'symbol'}" font-style="normal" font-weight="normal">${String.fromCharCode(newcode)} </tspan>`;
+         new_html += txt.slice(lasti + 1, i) + `<tspan font-family="${settings.LoadSymbolTtf ? kSymbol : 'symbol'}" font-style="normal" font-weight="normal">${String.fromCharCode(newcode)} </tspan>`;
          lasti = i;
       }
    }
@@ -390,7 +390,7 @@ function replaceSymbols(s, name) {
    let res = '';
    for (let k = 0; k < s.length; ++k) {
       const code = s.charCodeAt(k),
-            new_code = (code > 32) ? m[code-33] : 0;
+            new_code = (code > 32) ? m[code - 33] : 0;
       res += String.fromCodePoint(new_code || code);
    }
    return res;
@@ -489,7 +489,7 @@ function parseLatex(node, arg, label, curr) {
       if (!rbrace)
          rbrace = '}';
 
-      const match = br => (pos + br.length <= label.length) && (label.slice(pos, pos+br.length) === br);
+      const match = br => (pos + br.length <= label.length) && (label.slice(pos, pos + br.length) === br);
 
       if (check_first) {
          if (!match(lbrace)) {
@@ -534,13 +534,13 @@ function parseLatex(node, arg, label, curr) {
       return gg.append('svg:path')
                .attr('d', d || 'M0,0') // provide dummy d value as placeholder, preserve order of attributes
                .style('stroke', dofill ? 'none' : (curr.color || arg.color))
-               .style('stroke-width', dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
+               .style('stroke-width', dofill ? null : Math.max(1, Math.round(curr.fsize * (curr.font.weight ? 0.1 : 0.07))))
                .style('fill', dofill ? (curr.color || arg.color) : 'none');
    };
 
    const createSubPos = fscale => {
       return {
-         lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1),
+         lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize * (fscale || 1),
          color: curr.color, font: curr.font, parent: curr,
          painter: curr.painter, italic: curr.italic, bold: curr.bold
       };
@@ -622,9 +622,9 @@ function parseLatex(node, arg, label, curr) {
                elem.attr('y', curr.y);
 
             // for single symbols like f,l,i,j one gets wrong estimation of total width, use it in sup/sub-scripts
-            const xgap = (s.length === 1) && !curr.font.isMonospace() && ('lfij'.indexOf(s) >= 0) ? 0.1*curr.fsize : 0;
+            const xgap = (s.length === 1) && !curr.font.isMonospace() && ('lfij'.indexOf(s) >= 0) ? 0.1 * curr.fsize : 0;
 
-            extendPosition(curr.x, curr.y - rect.height*0.8, curr.x + rect.width, curr.y + rect.height*0.2);
+            extendPosition(curr.x, curr.y - rect.height * 0.8, curr.x + rect.width, curr.y + rect.height * 0.2);
 
             if (!alone) {
                shiftX(rect.width + xgap);
@@ -659,8 +659,8 @@ function parseLatex(node, arg, label, curr) {
          parseLatex(gg, arg, sublabel, subpos);
 
          const minw = curr.fsize * 0.6,
-               y1 = Math.round(subpos.rect.y1*reduce),
-               dy2 = Math.round(curr.fsize*0.1), dy = dy2*2,
+               y1 = Math.round(subpos.rect.y1 * reduce),
+               dy2 = Math.round(curr.fsize * 0.1), dy = dy2 * 2,
                dot = `a${dy2},${dy2},0,0,1,${dy},0a${dy2},${dy2},0,0,1,${-dy},0z`;
          let xpos = 0, w = subpos.rect.width;
 
@@ -670,21 +670,21 @@ function parseLatex(node, arg, label, curr) {
             xpos = (minw - subpos.rect.width) / 2;
          }
 
-         const w5 = Math.round(w*0.5), w3 = Math.round(w*0.3), w2 = w5-w3, w8 = w5+w3;
-         w = w5*2;
+         const w5 = Math.round(w * 0.5), w3 = Math.round(w * 0.3), w2 = w5 - w3, w8 = w5 + w3;
+         w = w5 * 2;
 
          positionGNode(subpos, xpos, 0, true);
 
          switch (found.name) {
-            case '#check{': createPath(gg, `M${w2},${y1-dy}L${w5},${y1}L${w8},${y1-dy}`); break;
+            case '#check{': createPath(gg, `M${w2},${y1 - dy}L${w5},${y1}L${w8},${y1 - dy}`); break;
             case '#acute{': createPath(gg, `M${w5},${y1}l${dy},${-dy}`); break;
             case '#grave{': createPath(gg, `M${w5},${y1}l${-dy},${-dy}`); break;
-            case '#dot{': createPath(gg, `M${w5-dy2},${y1}${dot}`, true); break;
-            case '#ddot{': createPath(gg, `M${w5-3*dy2},${y1}${dot} M${w5+dy2},${y1}${dot}`, true); break;
+            case '#dot{': createPath(gg, `M${w5 - dy2},${y1}${dot}`, true); break;
+            case '#ddot{': createPath(gg, `M${w5 - 3 * dy2},${y1}${dot} M${w5 + dy2},${y1}${dot}`, true); break;
             case '#tilde{': createPath(gg, `M${w2},${y1} a${w3},${dy},0,0,1,${w3},0 a${w3},${dy},0,0,0,${w3},0`); break;
             case '#slash{': createPath(gg, `M${w},${y1}L0,${Math.round(subpos.rect.y2)}`); break;
-            case '#vec{': createPath(gg, `M${w2},${y1}H${w8}M${w8-dy},${y1-dy}l${dy},${dy}l${-dy},${dy}`); break;
-            default: createPath(gg, `M${w2},${y1}L${w5},${y1-dy}L${w8},${y1}`); // #hat{
+            case '#vec{': createPath(gg, `M${w2},${y1}H${w8}M${w8 - dy},${y1 - dy}l${dy},${dy}l${-dy},${dy}`); break;
+            default: createPath(gg, `M${w2},${y1}L${w5},${y1 - dy}L${w8},${y1}`); // #hat{
          }
 
          shiftX(subpos.rect.width + (subpos.xgap ?? 0));
@@ -713,13 +713,13 @@ function parseLatex(node, arg, label, curr) {
 
          const w = Math.max(subpos1.rect.width, subpos2.rect.width),
                dw = subpos1.rect.width - subpos2.rect.width,
-               dy = -curr.fsize*0.35; // approximate position of middle line
+               dy = -curr.fsize * 0.35; // approximate position of middle line
 
-         positionGNode(subpos1, found.middle && (dw < 0) ? -dw/2 : 0, dy - subpos1.rect.y2, true);
+         positionGNode(subpos1, found.middle && (dw < 0) ? -dw / 2 : 0, dy - subpos1.rect.y2, true);
 
-         positionGNode(subpos2, found.middle && (dw > 0) ? dw/2 : 0, dy - subpos2.rect.y1, true);
+         positionGNode(subpos2, found.middle && (dw > 0) ? dw / 2 : 0, dy - subpos2.rect.y1, true);
 
-         path?.attr('d', `M0,${Math.round(dy)}h${Math.round(w - curr.fsize*0.1)}`);
+         path?.attr('d', `M0,${Math.round(dy)}h${Math.round(w - curr.fsize * 0.1)}`);
 
          shiftX(w);
 
@@ -763,7 +763,7 @@ function parseLatex(node, arg, label, curr) {
          if (!subs)
             return false;
 
-         const x = curr.x, dx = 0.03*curr.fsize, ylow = 0.25*curr.fsize;
+         const x = curr.x, dx = 0.03 * curr.fsize, ylow = 0.25 * curr.fsize;
          let pos_up, pos_low, w1 = 0, w2 = 0, yup = -curr.fsize;
 
          if (subs.up) {
@@ -779,12 +779,12 @@ function parseLatex(node, arg, label, curr) {
          if (pos_up) {
             if (!pos_low && curr.rect)
                yup = Math.min(yup, curr.rect.last_y1);
-            positionGNode(pos_up, x+dx, yup - pos_up.rect.y1 - curr.fsize*0.1);
+            positionGNode(pos_up, x + dx, yup - pos_up.rect.y1 - curr.fsize * 0.1);
             w1 = pos_up.rect.width;
          }
 
          if (pos_low) {
-            positionGNode(pos_low, x+dx, ylow - pos_low.rect.y2 + curr.fsize*0.1);
+            positionGNode(pos_low, x + dx, ylow - pos_low.rect.y2 + curr.fsize * 0.1);
             w2 = pos_low.rect.width;
          }
 
@@ -798,31 +798,31 @@ function parseLatex(node, arg, label, curr) {
 
          const subs = extractLowUp() || {},
                gg = createGG(), path = createPath(gg),
-               h = Math.round(curr.fsize*1.7), w = Math.round(curr.fsize), r = Math.round(h*0.1);
+               h = Math.round(curr.fsize * 1.7), w = Math.round(curr.fsize), r = Math.round(h * 0.1);
          let x_up, x_low;
 
          if (found.name === '#sum') {
-            x_up = x_low = w/2;
-            path.attr('d', `M${w},${Math.round(-0.75*h)}h${-w}l${Math.round(0.4*w)},${Math.round(0.3*h)}l${Math.round(-0.4*w)},${Math.round(0.7*h)}h${w}`);
+            x_up = x_low = w / 2;
+            path.attr('d', `M${w},${Math.round(-0.75 * h)}h${-w}l${Math.round(0.4 * w)},${Math.round(0.3 * h)}l${Math.round(-0.4 * w)},${Math.round(0.7 * h)}h${w}`);
          } else {
-            x_up = 3*r;
+            x_up = 3 * r;
             x_low = r;
-            path.attr('d', `M0,${Math.round(0.25*h-r)}a${r},${r},0,0,0,${2*r},0v${2*r-h}a${r},${r},0,1,1,${2*r},0`);
+            path.attr('d', `M0,${Math.round(0.25 * h - r)}a${r},${r},0,0,0,${2 * r},0v${2 * r - h}a${r},${r},0,1,1,${2 * r},0`);
             // path.attr('transform','skewX(-3)'); could use skewX for italic-like style
          }
 
-         extendPosition(curr.x, curr.y - 0.6*h, curr.x + w, curr.y + 0.4*h);
+         extendPosition(curr.x, curr.y - 0.6 * h, curr.x + w, curr.y + 0.4 * h);
 
          if (subs.low) {
             const subpos1 = createSubPos(0.6);
             parseLatex(gg, arg, subs.low, subpos1);
-            positionGNode(subpos1, (x_low - subpos1.rect.width/2), 0.25*h - subpos1.rect.y1, true);
+            positionGNode(subpos1, (x_low - subpos1.rect.width / 2), 0.25 * h - subpos1.rect.y1, true);
          }
 
          if (subs.up) {
             const subpos2 = createSubPos(0.6);
             parseLatex(gg, arg, subs.up, subpos2);
-            positionGNode(subpos2, (x_up - subpos2.rect.width/2), -0.75*h - subpos2.rect.y2, true);
+            positionGNode(subpos2, (x_up - subpos2.rect.width / 2), -0.75 * h - subpos2.rect.y2, true);
          }
 
          shiftX(w);
@@ -841,33 +841,33 @@ function parseLatex(node, arg, label, curr) {
          parseLatex(gg, arg, sublabel, subpos);
 
          const path2 = createPath(gg),
-               w = Math.max(2, Math.round(curr.fsize*0.2)),
+               w = Math.max(2, Math.round(curr.fsize * 0.2)),
                r = subpos.rect, dy = Math.round(r.y2 - r.y1),
                r_y1 = Math.round(r.y1), r_width = Math.round(r.width);
 
          switch (found.braces) {
             case '||':
                path1.attr('d', `M${w},${r_y1}v${dy}`);
-               path2.attr('d', `M${3*w+r_width},${r_y1}v${dy}`);
+               path2.attr('d', `M${3 * w + r_width},${r_y1}v${dy}`);
                break;
             case '[]':
-               path1.attr('d', `M${2*w},${r_y1}h${-w}v${dy}h${w}`);
-               path2.attr('d', `M${2*w+r_width},${r_y1}h${w}v${dy}h${-w}`);
+               path1.attr('d', `M${2 * w},${r_y1}h${-w}v${dy}h${w}`);
+               path2.attr('d', `M${2 * w + r_width},${r_y1}h${w}v${dy}h${-w}`);
                break;
             case '{}':
-               path1.attr('d', `M${2*w},${r_y1}a${w},${w},0,0,0,${-w},${w}v${dy/2-2*w}a${w},${w},0,0,1,${-w},${w}a${w},${w},0,0,1,${w},${w}v${dy/2-2*w}a${w},${w},0,0,0,${w},${w}`);
-               path2.attr('d', `M${2*w+r_width},${r_y1}a${w},${w},0,0,1,${w},${w}v${dy/2-2*w}a${w},${w},0,0,0,${w},${w}a${w},${w},0,0,0,${-w},${w}v${dy/2-2*w}a${w},${w},0,0,1,${-w},${w}`);
+               path1.attr('d', `M${2 * w},${r_y1}a${w},${w},0,0,0,${-w},${w}v${dy / 2 - 2 * w}a${w},${w},0,0,1,${-w},${w}a${w},${w},0,0,1,${w},${w}v${dy / 2 - 2 * w}a${w},${w},0,0,0,${w},${w}`);
+               path2.attr('d', `M${2 * w + r_width},${r_y1}a${w},${w},0,0,1,${w},${w}v${dy / 2 - 2 * w}a${w},${w},0,0,0,${w},${w}a${w},${w},0,0,0,${-w},${w}v${dy / 2 - 2 * w}a${w},${w},0,0,1,${-w},${w}`);
                break;
             default: // ()
-               path1.attr('d', `M${w},${r_y1}a${4*dy},${4*dy},0,0,0,0,${dy}`);
-               path2.attr('d', `M${3*w+r_width},${r_y1}a${4*dy},${4*dy},0,0,1,0,${dy}`);
+               path1.attr('d', `M${w},${r_y1}a${4 * dy},${4 * dy},0,0,0,0,${dy}`);
+               path2.attr('d', `M${3 * w + r_width},${r_y1}a${4 * dy},${4 * dy},0,0,1,0,${dy}`);
          }
 
-         positionGNode(subpos, 2*w, 0, true);
+         positionGNode(subpos, 2 * w, 0, true);
 
-         extendPosition(curr.x, curr.y + r.y1, curr.x + 4*w + r.width, curr.y + r.y2);
+         extendPosition(curr.x, curr.y + r.y1, curr.x + 4 * w + r.width, curr.y + r.y2);
 
-         shiftX(4*w + r.width);
+         shiftX(4 * w + r.width);
 
          continue;
       }
@@ -890,7 +890,7 @@ function parseLatex(node, arg, label, curr) {
                createPath(gg, `M0,${Math.round(r.y1)}h${Math.round(r.width)}`);
                break;
             case 'line-through':
-               createPath(gg, `M0,${Math.round(0.45*r.y1+0.55*r.y2)}h${Math.round(r.width)}`);
+               createPath(gg, `M0,${Math.round(0.45 * r.y1 + 0.55 * r.y2)}h${Math.round(r.width)}`);
                break;
          }
 
@@ -1036,20 +1036,20 @@ function parseLatex(node, arg, label, curr) {
 
          const r = subpos.rect,
                h = Math.round(r.height),
-               h1 = Math.round(r.height*0.1),
-               w = Math.round(r.width), midy = Math.round((r.y1 + r.y2)/2),
-               f2 = Math.round(curr.fsize*0.2), r_y2 = Math.round(r.y2);
+               h1 = Math.round(r.height * 0.1),
+               w = Math.round(r.width), midy = Math.round((r.y1 + r.y2) / 2),
+               f2 = Math.round(curr.fsize * 0.2), r_y2 = Math.round(r.y2);
 
          if (subpos0)
-            positionGNode(subpos0, 0, midy - subpos0.fsize*0.3, true);
+            positionGNode(subpos0, 0, midy - subpos0.fsize * 0.3, true);
 
-         path.attr('d', `M0,${midy}h${h1}l${h1},${r_y2-midy-f2}l${h1},${f2-h}h${Math.round(h*0.2+w)}v${h1}`);
+         path.attr('d', `M0,${midy}h${h1}l${h1},${r_y2 - midy - f2}l${h1},${f2 - h}h${Math.round(h * 0.2 + w)}v${h1}`);
 
-         positionGNode(subpos, h*0.4, 0, true);
+         positionGNode(subpos, h * 0.4, 0, true);
 
-         extendPosition(curr.x, curr.y + r.y1-curr.fsize*0.1, curr.x + w + h*0.6, curr.y + r.y2);
+         extendPosition(curr.x, curr.y + r.y1 - curr.fsize * 0.1, curr.x + w + h * 0.6, curr.y + r.y2);
 
-         shiftX(w + h*0.6);
+         shiftX(w + h * 0.6);
 
          continue;
       }
@@ -1555,7 +1555,7 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
 
    let trans = makeTranslate(arg.x, arg.y) || '';
    if (arg.rotate)
-      trans += `${trans?' ':''}rotate(${arg.rotate})`;
+      trans += `${trans ? ' ' : ''}rotate(${arg.rotate})`;
 
    mj_node.attr('transform', trans || null).attr('visibility', null);
 }
@@ -1564,7 +1564,7 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
   * @private */
 async function produceMathjax(painter, mj_node, arg) {
    const mtext = translateMath(arg.text, arg.latex, arg.color, painter),
-         options = { em: arg.font.size, ex: arg.font.size/2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
+         options = { em: arg.font.size, ex: arg.font.size / 2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
    return loadMathjax()
           .then(mj => mj.tex2svgPromise(mtext, options))

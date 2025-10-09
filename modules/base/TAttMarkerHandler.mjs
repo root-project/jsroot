@@ -96,7 +96,7 @@ class TAttMarkerHandler {
          if ((xx === this.lastx) && (yy === this.lasty))
             mv = ''; // pathological case, but let exclude it
          else {
-            const m2 = `m${xx-this.lastx},${yy - this.lasty}`;
+            const m2 = `m${xx - this.lastx},${yy - this.lasty}`;
             if (m2.length < mv.length)
                mv = m2;
          }
@@ -165,12 +165,12 @@ class TAttMarkerHandler {
       if (shape === 30)
          this.ndig++; // increase precision for star
       let s1 = size.toFixed(this.ndig);
-      const s2 = (size/2).toFixed(this.ndig),
-            s3 = (size/3).toFixed(this.ndig),
-            s4 = (size/4).toFixed(this.ndig),
-            s8 = (size/8).toFixed(this.ndig),
-            s38 = (size*3/8).toFixed(this.ndig),
-            s34 = (size*3/4).toFixed(this.ndig);
+      const s2 = (size / 2).toFixed(this.ndig),
+            s3 = (size / 3).toFixed(this.ndig),
+            s4 = (size / 4).toFixed(this.ndig),
+            s8 = (size / 8).toFixed(this.ndig),
+            s38 = (size * 3 / 8).toFixed(this.ndig),
+            s34 = (size * 3 / 4).toFixed(this.ndig);
 
       switch (shape) {
          case 1: // dot
@@ -219,7 +219,7 @@ class TAttMarkerHandler {
             break;
          case 30: { // star
             this.y0 = -size / 2;
-            const s56 = (size*5/6).toFixed(this.ndig), s58 = (size*5/8).toFixed(this.ndig);
+            const s56 = (size * 5 / 6).toFixed(this.ndig), s58 = (size * 5 / 8).toFixed(this.ndig);
             this.marker = `l${s3},${s1}l-${s56},-${s58}h${s1}l-${s56},${s58}z`;
             break;
          }
@@ -236,41 +236,41 @@ class TAttMarkerHandler {
             this.marker = `h${s1}v${s1}h-${s1}zl${s1},${s1}m0,-${s1}l-${s1},${s1}`;
             break;
          case 37:
-            this.x0 = -size/2;
+            this.x0 = -size / 2;
             this.marker = `h${s1}l-${s4},-${s2}l-${s2},${s1}h${s2}l-${s2},-${s1}z`;
             break;
          case 38:
-            this.x0 = -size/4;
-            this.y0 = -size/2;
+            this.x0 = -size / 4;
+            this.y0 = -size / 2;
             this.marker = `h${s2}l${s4},${s4}v${s2}l-${s4},${s4}h-${s2}l-${s4},-${s4}v-${s2}zm${s4},0v${s1}m-${s2},-${s2}h${s1}`;
             break;
          case 40:
-            this.x0 = -size/4;
-            this.y0 = -size/2;
+            this.x0 = -size / 4;
+            this.y0 = -size / 2;
             this.marker = `l${s2},${s1}l${s4},-${s4}l-${s1},-${s2}zm${s2},0l-${s2},${s1}l-${s4},-${s4}l${s1},-${s2}z`;
             break;
          case 42:
-            this.y0 = -size/2;
+            this.y0 = -size / 2;
             this.marker = `l${s8},${s38}l${s38},${s8}l-${s38},${s8}l-${s8},${s38}l-${s8},-${s38}l-${s38},-${s8}l${s38},-${s8}z`;
             break;
          case 44:
-            this.x0 = -size/4;
-            this.y0 = -size/2;
+            this.x0 = -size / 4;
+            this.y0 = -size / 2;
             this.marker = `h${s2}l-${s8},${s38}l${s38},-${s8}v${s2}l-${s38},-${s8}l${s8},${s38}h-${s2}l${s8},-${s38}l-${s38},${s8}v-${s2}l${s38},${s8}z`;
             break;
          case 46:
-            this.x0 = -size/4;
-            this.y0 = -size/2;
+            this.x0 = -size / 4;
+            this.y0 = -size / 2;
             this.marker = `l${s4},${s4}l${s4},-${s4}l${s4},${s4}l-${s4},${s4}l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}l-${s4},${s4}l-${s4},-${s4}l${s4},-${s4}l-${s4},-${s4}z`;
             break;
          case 48:
-            this.x0 = -size/4;
-            this.y0 = -size/2;
+            this.x0 = -size / 4;
+            this.y0 = -size / 2;
             this.marker = `l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}zm${s2},0l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}zm0,${s2}l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}zm-${s2},0l${s4},${s4}l-${s4},${s4}l-${s4},-${s4}z`;
             break;
          case 49:
-            this.x0 = -size/6;
-            this.y0 = -size/2;
+            this.x0 = -size / 6;
+            this.y0 = -size / 2;
             this.marker = `h${s3}v${s3}h-${s3}zm${s3},${s3}h${s3}v${s3}h-${s3}zm-${s3},${s3}h${s3}v${s3}h-${s3}zm-${s3},-${s3}h${s3}v${s3}h-${s3}z`;
             break;
          default: // diamond
