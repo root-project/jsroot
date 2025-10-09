@@ -3,6 +3,8 @@ import { getElementRect, _loadJSDOM, makeTranslate } from './BasePainter.mjs';
 import { FontHandler, kSymbol, kWingdings, kTimes } from './FontHandler.mjs';
 
 
+/* eslint-disable one-var */
+
 const symbols_map = {
    // greek letters from symbols.ttf
    '#alpha': '\u03B1',
@@ -60,7 +62,7 @@ const symbols_map = {
    '#varUpsilon': '\u03D2',
    '#epsilon': '\u03B5',
 
-    // second set from symbols.ttf
+   // second set from symbols.ttf
    '#leq': '\u2264',
    '#/': '\u2044',
    '#infty': '\u221E',
@@ -184,34 +186,34 @@ const symbols_map = {
 
    '#P': '\u00B6', // paragraph
 
-    // only required for MathJax to provide correct replacement
+   // only required for MathJax to provide correct replacement
    '#sqrt': '\u221A',
    '#bar': '',
    '#overline': '',
    '#underline': '',
    '#strike': ''
-},
+};
 
 
 /** @summary Create a single regex to detect any symbol to replace, apply longer symbols first
   * @private */
-symbolsRegexCache = new RegExp(Object.keys(symbols_map).sort((a, b) => (a.length < b.length ? 1 : (a.length > b.length ? -1 : 0))).join('|'), 'g'),
+const symbolsRegexCache = new RegExp(Object.keys(symbols_map).sort((a, b) => (a.length < b.length ? 1 : (a.length > b.length ? -1 : 0))).join('|'), 'g');
 
 /** @summary Simple replacement of latex letters
   * @private */
-translateLaTeX = str => {
+function translateLaTeX(str) {
    while ((str.length > 2) && (str.at(0) === '{') && (str.at(-1) === '}'))
       str = str.slice(1, str.length - 1);
 
    return str.replace(symbolsRegexCache, ch => symbols_map[ch]).replace(/\{\}/g, '');
-},
+}
 
 // array with relative width of base symbols from range 32..126
 // eslint-disable-next-line
-base_symbols_width = [453,535,661,973,955,1448,1242,324,593,596,778,1011,200,570,200,492,947,885,947,947,947,947,947,947,947,947,511,495,980,1010,987,893,1624,1185,1147,1193,1216,1080,1028,1270,1274,531,910,1177,1004,1521,1252,1276,1111,1276,1164,1056,1073,1215,1159,1596,1150,1124,1065,540,591,540,837,874,572,929,972,879,973,901,569,967,973,453,458,903,453,1477,973,970,972,976,638,846,548,973,870,1285,884,864,835,656,430,656,1069],
+const base_symbols_width = [453,535,661,973,955,1448,1242,324,593,596,778,1011,200,570,200,492,947,885,947,947,947,947,947,947,947,947,511,495,980,1010,987,893,1624,1185,1147,1193,1216,1080,1028,1270,1274,531,910,1177,1004,1521,1252,1276,1111,1276,1164,1056,1073,1215,1159,1596,1150,1124,1065,540,591,540,837,874,572,929,972,879,973,901,569,967,973,453,458,903,453,1477,973,970,972,976,638,846,548,973,870,1285,884,864,835,656,430,656,1069];
 
 // eslint-disable-next-line
-extra_symbols_width = {945:1002,946:996,967:917,948:953,949:834,966:1149,947:847,951:989,953:516,954:951,955:913,956:1003,957:862,959:967,960:1070,952:954,961:973,963:1017,964:797,965:944,982:1354,969:1359,958:803,968:1232,950:825,913:1194,914:1153,935:1162,916:1178,917:1086,934:1358,915:1016,919:1275,921:539,977:995,922:1189,923:1170,924:1523,925:1253,927:1281,928:1281,920:1285,929:1102,931:1041,932:1069,933:1135,962:848,937:1279,926:1092,936:1334,918:1067,978:1154,8730:986,8804:940,8260:476,8734:1453,402:811,9827:1170,9830:931,9829:1067,9824:965,8596:1768,8592:1761,8593:895,8594:1761,8595:895,710:695,177:955,8243:680,8805:947,215:995,8733:1124,8706:916,8226:626,247:977,8800:969,8801:1031,8776:976,8230:1552,175:883,8629:1454,8501:1095,8465:1002,8476:1490,8472:1493,8855:1417,8853:1417,8709:1205,8745:1276,8746:1404,8839:1426,8835:1426,8836:1426,8838:1426,8834:1426,8747:480,8712:1426,8713:1426,8736:1608,8711:1551,174:1339,169:1339,8482:1469,8719:1364,729:522,172:1033,8743:1383,8744:1383,8660:1768,8656:1496,8657:1447,8658:1496,8659:1447,8721:1182,9115:882,9144:1000,9117:882,8970:749,9127:1322,9128:1322,8491:1150,229:929,8704:1397,8707:1170,8901:524,183:519,10003:1477,732:692,295:984,9725:1780,9744:1581,8741:737,8869:1390,8857:1421};
+const extra_symbols_width = {945:1002,946:996,967:917,948:953,949:834,966:1149,947:847,951:989,953:516,954:951,955:913,956:1003,957:862,959:967,960:1070,952:954,961:973,963:1017,964:797,965:944,982:1354,969:1359,958:803,968:1232,950:825,913:1194,914:1153,935:1162,916:1178,917:1086,934:1358,915:1016,919:1275,921:539,977:995,922:1189,923:1170,924:1523,925:1253,927:1281,928:1281,920:1285,929:1102,931:1041,932:1069,933:1135,962:848,937:1279,926:1092,936:1334,918:1067,978:1154,8730:986,8804:940,8260:476,8734:1453,402:811,9827:1170,9830:931,9829:1067,9824:965,8596:1768,8592:1761,8593:895,8594:1761,8595:895,710:695,177:955,8243:680,8805:947,215:995,8733:1124,8706:916,8226:626,247:977,8800:969,8801:1031,8776:976,8230:1552,175:883,8629:1454,8501:1095,8465:1002,8476:1490,8472:1493,8855:1417,8853:1417,8709:1205,8745:1276,8746:1404,8839:1426,8835:1426,8836:1426,8838:1426,8834:1426,8747:480,8712:1426,8713:1426,8736:1608,8711:1551,174:1339,169:1339,8482:1469,8719:1364,729:522,172:1033,8743:1383,8744:1383,8660:1768,8656:1496,8657:1447,8658:1496,8659:1447,8721:1182,9115:882,9144:1000,9117:882,8970:749,9127:1322,9128:1322,8491:1150,229:929,8704:1397,8707:1170,8901:524,183:519,10003:1477,732:692,295:984,9725:1780,9744:1581,8741:737,8869:1390,8857:1421};
 
 /** @summary Calculate approximate labels width
   * @private */
@@ -277,17 +279,17 @@ const latex_features = [
    { name: '#(){', braces: '()' },
    { name: '#{}{', braces: '{}' },
    { name: '#||{', braces: '||' }
-],
+];
 
 // taken from: https://sites.math.washington.edu/~marshall/cxseminar/symbol.htm, starts from 33
 // eslint-disable-next-line
-symbolsMap = [0,8704,0,8707,0,0,8717,0,0,8727,0,0,8722,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8773,913,914,935,916,917,934,915,919,921,977,922,923,924,925,927,928,920,929,931,932,933,962,937,926,936,918,0,8756,0,8869,0,0,945,946,967,948,949,966,947,951,953,981,954,955,956,957,959,960,952,961,963,964,965,982,969,958,968,950,0,402,0,8764,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,978,8242,8804,8260,8734,0,9827,9830,9829,9824,8596,8592,8593,8594,8595,0,0,8243,8805,0,8733,8706,8729,0,8800,8801,8776,8230,0,0,8629,8501,8465,8476,8472,8855,8853,8709,8745,8746,8835,8839,8836,8834,8838,8712,8713,8736,8711,0,0,8482,8719,8730,8901,0,8743,8744,8660,8656,8657,8658,8659,9674,9001,0,0,8482,8721,0,0,0,0,0,0,0,0,0,0,8364,9002,8747,8992,0,8993],
+const symbolsMap = [0,8704,0,8707,0,0,8717,0,0,8727,0,0,8722,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8773,913,914,935,916,917,934,915,919,921,977,922,923,924,925,927,928,920,929,931,932,933,962,937,926,936,918,0,8756,0,8869,0,0,945,946,967,948,949,966,947,951,953,981,954,955,956,957,959,960,952,961,963,964,965,982,969,958,968,950,0,402,0,8764,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,978,8242,8804,8260,8734,0,9827,9830,9829,9824,8596,8592,8593,8594,8595,0,0,8243,8805,0,8733,8706,8729,0,8800,8801,8776,8230,0,0,8629,8501,8465,8476,8472,8855,8853,8709,8745,8746,8835,8839,8836,8834,8838,8712,8713,8736,8711,0,0,8482,8719,8730,8901,0,8743,8744,8660,8656,8657,8658,8659,9674,9001,0,0,8482,8721,0,0,0,0,0,0,0,0,0,0,8364,9002,8747,8992,0,8993];
 
 // taken from http://www.alanwood.net/demos/wingdings.html, starts from 33
 // eslint-disable-next-line
-wingdingsMap = [128393,9986,9985,128083,128365,128366,128367,128383,9990,128386,128387,128234,128235,128236,128237,128193,128194,128196,128463,128464,128452,8987,128430,128432,128434,128435,128436,128427,128428,9991,9997,128398,9996,128076,128077,128078,9756,9758,9757,9759,128400,9786,128528,9785,128163,9760,127987,127985,9992,9788,128167,10052,128326,10014,128328,10016,10017,9770,9775,2384,9784,9800,9801,9802,9803,9804,9805,9806,9807,9808,9809,9810,9811,128624,128629,9679,128318,9632,9633,128912,10065,10066,11047,10731,9670,10070,11045,8999,11193,8984,127989,127990,128630,128631,0,9450,9312,9313,9314,9315,9316,9317,9318,9319,9320,9321,9471,10102,10103,10104,10105,10106,10107,10108,10109,10110,10111,128610,128608,128609,128611,128606,128604,128605,128607,183,8226,9642,9898,128902,128904,9673,9678,128319,9642,9723,128962,10022,9733,10038,10036,10041,10037,11216,8982,10209,8977,11217,10026,10032,128336,128337,128338,128339,128340,128341,128342,128343,128344,128345,128346,128347,11184,11185,11186,11187,11188,11189,11190,11191,128618,128619,128597,128596,128599,128598,128592,128593,128594,128595,9003,8998,11160,11162,11161,11163,11144,11146,11145,11147,129128,129130,129129,129131,129132,129133,129135,129134,129144,129146,129145,129147,129148,129149,129151,129150,8678,8680,8679,8681,11012,8691,11008,11009,11011,11010,129196,129197,128502,10004,128503,128505],
+const wingdingsMap = [128393,9986,9985,128083,128365,128366,128367,128383,9990,128386,128387,128234,128235,128236,128237,128193,128194,128196,128463,128464,128452,8987,128430,128432,128434,128435,128436,128427,128428,9991,9997,128398,9996,128076,128077,128078,9756,9758,9757,9759,128400,9786,128528,9785,128163,9760,127987,127985,9992,9788,128167,10052,128326,10014,128328,10016,10017,9770,9775,2384,9784,9800,9801,9802,9803,9804,9805,9806,9807,9808,9809,9810,9811,128624,128629,9679,128318,9632,9633,128912,10065,10066,11047,10731,9670,10070,11045,8999,11193,8984,127989,127990,128630,128631,0,9450,9312,9313,9314,9315,9316,9317,9318,9319,9320,9321,9471,10102,10103,10104,10105,10106,10107,10108,10109,10110,10111,128610,128608,128609,128611,128606,128604,128605,128607,183,8226,9642,9898,128902,128904,9673,9678,128319,9642,9723,128962,10022,9733,10038,10036,10041,10037,11216,8982,10209,8977,11217,10026,10032,128336,128337,128338,128339,128340,128341,128342,128343,128344,128345,128346,128347,11184,11185,11186,11187,11188,11189,11190,11191,128618,128619,128597,128596,128599,128598,128592,128593,128594,128595,9003,8998,11160,11162,11161,11163,11144,11146,11145,11147,129128,129130,129129,129131,129132,129133,129135,129134,129144,129146,129145,129147,129148,129149,129151,129150,8678,8680,8679,8681,11012,8691,11008,11009,11011,11010,129196,129197,128502,10004,128503,128505];
 
-symbolsPdfMap = {};
+const symbolsPdfMap = {};
 
 /** @summary Return code for symbols from symbols.ttf
  * @desc Used in PDF generation
@@ -424,11 +426,11 @@ function parseLatex(node, arg, label, curr) {
       if (!curr.g)
          curr.g = node.append('svg:g');
       return curr.g;
-   },
+   };
 
-   shiftX = dx => { curr.x += Math.round(dx); },
+   const shiftX = dx => { curr.x += Math.round(dx); };
 
-   extendPosition = (x1, y1, x2, y2) => {
+   const extendPosition = (x1, y1, x2, y2) => {
       if (!curr.rect)
          curr.rect = { x1, y1, x2, y2 };
       else {
@@ -445,15 +447,15 @@ function parseLatex(node, arg, label, curr) {
 
       if (!curr.parent)
          arg.text_rect = curr.rect;
-   },
+   };
 
-   addSpaces = nspaces => {
+   const addSpaces = nspaces => {
       extendPosition(curr.x, curr.y, curr.x + nspaces * curr.fsize * 0.4, curr.y);
       shiftX(nspaces * curr.fsize * 0.4);
-   },
+   };
 
    /** Position pos.g node which directly attached to curr.g and uses curr.g coordinates */
-   positionGNode = (pos, x, y, inside_gg) => {
+   const positionGNode = (pos, x, y, inside_gg) => {
       x = Math.round(x);
       y = Math.round(y);
 
@@ -467,10 +469,10 @@ function parseLatex(node, arg, label, curr) {
          extendPosition(curr.x + pos.rect.x1, curr.y + pos.rect.y1, curr.x + pos.rect.x2, curr.y + pos.rect.y2);
       else
          extendPosition(pos.rect.x1, pos.rect.y1, pos.rect.x2, pos.rect.y2);
-   },
+   };
 
    /** Create special sub-container for elements like sqrt or braces  */
-   createGG = is_a => {
+   const createGG = is_a => {
       const gg = currG();
 
       // this is indicator that gg element will be the only one, one can use directly main container
@@ -478,9 +480,9 @@ function parseLatex(node, arg, label, curr) {
          return gg;
 
       return makeTranslate(gg.append(is_a ? 'svg:a' : 'svg:g'), curr.x, curr.y);
-   },
+   };
 
-   extractSubLabel = (check_first, lbrace, rbrace) => {
+   const extractSubLabel = (check_first, lbrace, rbrace) => {
       let pos = 0, n = 1, extra_braces = false;
       if (!lbrace)
          lbrace = '{';
@@ -526,17 +528,17 @@ function parseLatex(node, arg, label, curr) {
       label = label.slice(pos);
 
       return sublabel;
-   },
+   };
 
-   createPath = (gg, d, dofill) => {
+   const createPath = (gg, d, dofill) => {
       return gg.append('svg:path')
                .attr('d', d || 'M0,0') // provide dummy d value as placeholder, preserve order of attributes
                .style('stroke', dofill ? 'none' : (curr.color || arg.color))
                .style('stroke-width', dofill ? null : Math.max(1, Math.round(curr.fsize*(curr.font.weight ? 0.1 : 0.07))))
                .style('fill', dofill ? (curr.color || arg.color) : 'none');
-   },
+   };
 
-   createSubPos = fscale => {
+   const createSubPos = fscale => {
       return {
          lvl: curr.lvl + 1, x: 0, y: 0, fsize: curr.fsize*(fscale || 1),
          color: curr.color, font: curr.font, parent: curr,
@@ -797,7 +799,7 @@ function parseLatex(node, arg, label, curr) {
          const subs = extractLowUp() || {},
                gg = createGG(), path = createPath(gg),
                h = Math.round(curr.fsize*1.7), w = Math.round(curr.fsize), r = Math.round(h*0.1);
-          let x_up, x_low;
+         let x_up, x_low;
 
          if (found.name === '#sum') {
             x_up = x_low = w/2;
@@ -1014,7 +1016,7 @@ function parseLatex(node, arg, label, curr) {
          continue;
       }
 
-     if (found.sqrt) {
+      if (found.sqrt) {
          const sublabel = extractSubLabel();
          if (sublabel === -1)
             return false;
@@ -1050,7 +1052,7 @@ function parseLatex(node, arg, label, curr) {
          shiftX(w + h*0.6);
 
          continue;
-     }
+      }
    }
 
    return true;
@@ -1089,19 +1091,19 @@ async function loadMathjax() {
       return promise;
 
    const svg = {
-       scale: 1,                      // global scaling factor for all expressions
-       minScale: 0.5,                 // smallest scaling factor to use
-       mtextInheritFont: false,       // true to make mtext elements use surrounding font
-       merrorInheritFont: true,       // true to make merror text use surrounding font
-       mathmlSpacing: false,          // true for MathML spacing rules, false for TeX rules
-       skipAttributes: {},            // RFDa and other attributes NOT to copy to the output
-       exFactor: 0.5,                 // default size of ex in em units
-       displayAlign: 'center',        // default for indentalign when set to 'auto'
-       displayIndent: '0',            // default for indentshift when set to 'auto'
-       fontCache: 'local',            // or 'global' or 'none'
-       localID: null,                 // ID to use for local font cache (for single equation processing)
-       internalSpeechTitles: true,    // insert <title> tags with speech content
-       titleID: 0                     // initial id number to use for aria-labeledby titles
+      scale: 1,                      // global scaling factor for all expressions
+      minScale: 0.5,                 // smallest scaling factor to use
+      mtextInheritFont: false,       // true to make mtext elements use surrounding font
+      merrorInheritFont: true,       // true to make merror text use surrounding font
+      mathmlSpacing: false,          // true for MathML spacing rules, false for TeX rules
+      skipAttributes: {},            // RFDa and other attributes NOT to copy to the output
+      exFactor: 0.5,                 // default size of ex in em units
+      displayAlign: 'center',        // default for indentalign when set to 'auto'
+      displayIndent: '0',            // default for indentshift when set to 'auto'
+      fontCache: 'local',            // or 'global' or 'none'
+      localID: null,                 // ID to use for local font cache (for single equation processing)
+      internalSpeechTitles: true,    // insert <title> tags with speech content
+      titleID: 0                     // initial id number to use for aria-labeledby titles
    };
 
    if (!isNodeJs()) {
@@ -1145,29 +1147,29 @@ async function loadMathjax() {
       mj0.init({
          loader: {
             load: ['input/tex', 'output/svg', '[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
-          },
-          tex: {
-             packages: { '[+]': ['color', 'upgreek', 'mathtools', 'physics'] }
-          },
-          svg,
-          config: {
-             JSDOM
-          },
-          startup: {
-             typeset: false,
-             ready() {
-                const mj = MathJax;
+         },
+         tex: {
+            packages: { '[+]': ['color', 'upgreek', 'mathtools', 'physics'] }
+         },
+         svg,
+         config: {
+            JSDOM
+         },
+         startup: {
+            typeset: false,
+            ready() {
+               const mj = MathJax;
 
-                mj.startup.registerConstructor('jsdomAdaptor', () => {
-                   return new mj._.adaptors.HTMLAdaptor.HTMLAdaptor(new mj.config.config.JSDOM().window);
-                });
-                mj.startup.useAdaptor('jsdomAdaptor', true);
-                mj.startup.defaultReady();
-                const arr = _mj_loading;
-                _mj_loading = undefined;
-                arr.forEach(func => func(mj));
-             }
-          }
+               mj.startup.registerConstructor('jsdomAdaptor', () => {
+                  return new mj._.adaptors.HTMLAdaptor.HTMLAdaptor(new mj.config.config.JSDOM().window);
+               });
+               mj.startup.useAdaptor('jsdomAdaptor', true);
+               mj.startup.defaultReady();
+               const arr = _mj_loading;
+               _mj_loading = undefined;
+               arr.forEach(func => func(mj));
+            }
+         }
       });
 
       return promise;
@@ -1175,76 +1177,76 @@ async function loadMathjax() {
 }
 
 const math_symbols_map = {
-      '#LT': '\\langle',
-      '#GT': '\\rangle',
-      '#club': '\\clubsuit',
-      '#spade': '\\spadesuit',
-      '#heart': '\\heartsuit',
-      '#diamond': '\\diamondsuit',
-      '#voidn': '\\wp',
-      '#voidb': 'f',
-      '#copyright': '(c)',
-      '#ocopyright': '(c)',
-      '#trademark': 'TM',
-      '#void3': 'TM',
-      '#oright': 'R',
-      '#void1': 'R',
-      '#3dots': '\\ldots',
-      '#lbar': '\\mid',
-      '#void8': '\\mid',
-      '#divide': '\\div',
-      '#Jgothic': '\\Im',
-      '#Rgothic': '\\Re',
-      '#doublequote': '"',
-      '#plus': '+',
-      '#minus': '-',
-      '#/': '/',
-      '#upoint': '.',
-      '#aa': '\\mathring{a}',
-      '#AA': '\\mathring{A}',
-      '#omicron': 'o',
-      '#Alpha': 'A',
-      '#Beta': 'B',
-      '#Epsilon': 'E',
-      '#Zeta': 'Z',
-      '#Eta': 'H',
-      '#Iota': 'I',
-      '#Kappa': 'K',
-      '#Mu': 'M',
-      '#Nu': 'N',
-      '#Omicron': 'O',
-      '#Rho': 'P',
-      '#Tau': 'T',
-      '#Chi': 'X',
-      '#varomega': '\\varpi',
-      '#corner': '?',
-      '#ltbar': '?',
-      '#bottombar': '?',
-      '#notsubset': '?',
-      '#arcbottom': '?',
-      '#cbar': '?',
-      '#arctop': '?',
-      '#topbar': '?',
-      '#arcbar': '?',
-      '#downleftarrow': '?',
-      '#splitline': '\\genfrac{}{}{0pt}{}',
-      '#it': '\\textit',
-      '#bf': '\\textbf',
-      '#frac': '\\frac',
-      '#left{': '\\lbrace',
-      '#right}': '\\rbrace',
-      '#left\\[': '\\lbrack',
-      '#right\\]': '\\rbrack',
-      '#\\[\\]{': '\\lbrack',
-      ' } ': '\\rbrack',
-      '#\\[': '\\lbrack',
-      '#\\]': '\\rbrack',
-      '#{': '\\lbrace',
-      '#}': '\\rbrace',
-      ' ': '\\;'
-},
+   '#LT': '\\langle',
+   '#GT': '\\rangle',
+   '#club': '\\clubsuit',
+   '#spade': '\\spadesuit',
+   '#heart': '\\heartsuit',
+   '#diamond': '\\diamondsuit',
+   '#voidn': '\\wp',
+   '#voidb': 'f',
+   '#copyright': '(c)',
+   '#ocopyright': '(c)',
+   '#trademark': 'TM',
+   '#void3': 'TM',
+   '#oright': 'R',
+   '#void1': 'R',
+   '#3dots': '\\ldots',
+   '#lbar': '\\mid',
+   '#void8': '\\mid',
+   '#divide': '\\div',
+   '#Jgothic': '\\Im',
+   '#Rgothic': '\\Re',
+   '#doublequote': '"',
+   '#plus': '+',
+   '#minus': '-',
+   '#/': '/',
+   '#upoint': '.',
+   '#aa': '\\mathring{a}',
+   '#AA': '\\mathring{A}',
+   '#omicron': 'o',
+   '#Alpha': 'A',
+   '#Beta': 'B',
+   '#Epsilon': 'E',
+   '#Zeta': 'Z',
+   '#Eta': 'H',
+   '#Iota': 'I',
+   '#Kappa': 'K',
+   '#Mu': 'M',
+   '#Nu': 'N',
+   '#Omicron': 'O',
+   '#Rho': 'P',
+   '#Tau': 'T',
+   '#Chi': 'X',
+   '#varomega': '\\varpi',
+   '#corner': '?',
+   '#ltbar': '?',
+   '#bottombar': '?',
+   '#notsubset': '?',
+   '#arcbottom': '?',
+   '#cbar': '?',
+   '#arctop': '?',
+   '#topbar': '?',
+   '#arcbar': '?',
+   '#downleftarrow': '?',
+   '#splitline': '\\genfrac{}{}{0pt}{}',
+   '#it': '\\textit',
+   '#bf': '\\textbf',
+   '#frac': '\\frac',
+   '#left{': '\\lbrace',
+   '#right}': '\\rbrace',
+   '#left\\[': '\\lbrack',
+   '#right\\]': '\\rbrack',
+   '#\\[\\]{': '\\lbrack',
+   ' } ': '\\rbrack',
+   '#\\[': '\\lbrack',
+   '#\\]': '\\rbrack',
+   '#{': '\\lbrace',
+   '#}': '\\rbrace',
+   ' ': '\\;'
+};
 
-mathjax_remap = {
+const mathjax_remap = {
    upDelta: 'Updelta',
    upGamma: 'Upgamma',
    upLambda: 'Uplambda',
@@ -1272,9 +1274,9 @@ mathjax_remap = {
    iiintop: 'iiint',
    iintop: 'iint',
    ointop: 'oint'
-},
+};
 
-mathjax_unicode = {
+const mathjax_unicode = {
    Digamma: 0x3DC,
    upDigamma: 0x3DC,
    digamma: 0x3DD,
@@ -1370,9 +1372,9 @@ mathjax_unicode = {
    oiint: 0x222F,
    slashintop: 0x2A0F,
    slashint: 0x2A0F
-},
+};
 
-mathjax_asis = ['"', '\'', '`', '=', '~'];
+const mathjax_asis = ['"', '\'', '`', '=', '~'];
 
 /** @summary Function translates ROOT TLatex into MathJax format
   * @private */
@@ -1567,16 +1569,16 @@ async function produceMathjax(painter, mj_node, arg) {
    return loadMathjax()
           .then(mj => mj.tex2svgPromise(mtext, options))
           .then(elem => {
-              // when adding element to new node, it will be removed from original parent
-              const svg = elem.querySelector('svg');
+             // when adding element to new node, it will be removed from original parent
+             const svg = elem.querySelector('svg');
 
-              mj_node.append(() => svg);
+             mj_node.append(() => svg);
 
-              repairMathJaxSvgSize(painter, mj_node, svg, arg);
+             repairMathJaxSvgSize(painter, mj_node, svg, arg);
 
-              arg.mj_func = applyAttributesToMathJax;
-              return true;
-           });
+             arg.mj_func = applyAttributesToMathJax;
+             return true;
+          });
 }
 
 /** @summary Just typeset HTML node with MathJax
