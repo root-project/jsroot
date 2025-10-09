@@ -29,11 +29,12 @@ let import_v7 = null, import_geo = null;
 
 const clTGraph2D = 'TGraph2D', clTH2Poly = 'TH2Poly', clTEllipse = 'TEllipse',
       clTSpline3 = 'TSpline3', clTCanvasWebSnapshot = 'TCanvasWebSnapshot',
-      fPrimitives = 'fPrimitives', fFunctions = 'fFunctions',
+      fPrimitives = 'fPrimitives', fFunctions = 'fFunctions';
 
 /** @summary list of registered draw functions
   * @private */
-drawFuncs = { lst: [
+/* eslint-disable-next-line one-var */
+const drawFuncs = { lst: [
    { name: clTCanvas, icon: 'img_canvas', class: () => import_canvas().then(h => h.TCanvasPainter), opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: fPrimitives, noappend: true },
    { name: clTPad, icon: 'img_canvas', func: TPadPainter.draw, opt: ';grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz', expand_item: fPrimitives, noappend: true },
    { name: 'TSlider', icon: 'img_canvas', func: TPadPainter.draw },
@@ -424,7 +425,7 @@ async function draw(dom, obj, opt) {
          if (painter === false)
             return null;
          if (!painter)
-             throw Error(`Fail to draw object ${type_info}`);
+            throw Error(`Fail to draw object ${type_info}`);
          if (isObject(painter) && !painter.options)
             painter.options = { original: opt || '' }; // keep original draw options
          return painter;
@@ -568,7 +569,7 @@ async function build3d(obj, opt) {
 
    return handle.class().then(cl => {
       if (!isFunc(cl?.build3d))
-        return Promise.reject(Error(`painter class for ${obj._typename} does not implement build3d method`));
+         return Promise.reject(Error(`painter class for ${obj._typename} does not implement build3d method`));
 
       return cl.build3d(obj, opt);
    });
@@ -593,7 +594,7 @@ function addStreamerInfosForPainter(lst) {
 
       let handle = getDrawHandle(getKindForType(element.fName));
       if (handle && !handle.for_derived)
-            handle = null;
+         handle = null;
 
       // now try find that base class of base in the list
       if (handle === null) {
