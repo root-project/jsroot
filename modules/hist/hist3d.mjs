@@ -1577,8 +1577,14 @@ function _meshLegoToolTip(intersect) {
    if ((intersect.faceIndex < 0) || (intersect.faceIndex >= this.face_to_bins_index.length))
       return null;
 
-   const p = this.painter,
-         handle = this.handle,
+   const p = this.tip_painter;
+
+   if (!p) {
+      console.error('painter for tip handling is not there');
+      return null;
+   }
+
+   const handle = this.handle,
          fp = p.getFramePainter(),
          histo = p.getHisto(),
          tip = p.get3DToolTip(this.face_to_bins_index[intersect.faceIndex]),
@@ -1822,7 +1828,7 @@ function drawBinsLego(painter, is_v7 = false) {
             mesh = new THREE.Mesh(geometry, material);
 
       mesh.face_to_bins_index = face_to_bins_index;
-      mesh.painter = painter;
+      mesh.tip_painter = painter;
       mesh.zmin = axis_zmin;
       mesh.zmax = axis_zmax;
       mesh.baseline = (painter.options.BaseLine !== false) ? painter.options.BaseLine : (painter.options.Zero ? axis_zmin : 0);
@@ -1838,7 +1844,7 @@ function drawBinsLego(painter, is_v7 = false) {
                material2 = new THREE.MeshBasicMaterial({ color: color2, vertexColors: false }),
                mesh2 = new THREE.Mesh(geom2, material2);
          mesh2.face_to_bins_index = face_to_bins_indx2;
-         mesh2.painter = painter;
+         mesh2.tip_painter = painter;
          mesh2.handle = mesh.handle;
          mesh2.tooltip = _meshLegoToolTip;
          mesh2.zmin = mesh.zmin;
