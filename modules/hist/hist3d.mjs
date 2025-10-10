@@ -33,9 +33,12 @@ function testAxisVisibility(camera, toplevel, fb = false, bb = false) {
 
    const pos = camera.position;
    let qudrant = 1;
-   if ((pos.x < 0) && (pos.y >= 0)) qudrant = 2;
-   if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
-   if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
+   if ((pos.x < 0) && (pos.y >= 0))
+      qudrant = 2;
+   else if ((pos.x >= 0) && (pos.y >= 0))
+      qudrant = 3;
+   else if ((pos.x >= 0) && (pos.y < 0))
+      qudrant = 4;
 
    const testVisible = (id, range) => {
       if (id <= qudrant)
