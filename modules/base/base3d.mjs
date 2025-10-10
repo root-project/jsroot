@@ -1423,6 +1423,10 @@ function disposeThreejsObject(obj, only_childs) {
    delete obj.tooltip;
    delete obj.stack; // used in geom painter
    delete obj.drawn_highlight; // special highlight object
+   // used in lego tooltips
+   delete obj.face_to_bins_index;
+   delete obj.tip_painter;
+   delete obj.handle;
 }
 
 
