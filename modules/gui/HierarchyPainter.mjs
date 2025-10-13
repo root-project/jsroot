@@ -1761,7 +1761,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       // special feature - all items with '_expand' function are not drawn by click
-      if ((place === 'item') && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey)
+      if ((place === 'item') && ('_expand' in hitem) && !hitem._expand_miss && !evnt.ctrlKey && !evnt.shiftKey)
          place = kPM;
 
       // special case - one should expand item
@@ -2822,7 +2822,24 @@ class HierarchyPainter extends BasePainter {
       if (!hitem && d3cont)
          return;
 
+      function doneExpandItem(_item) {
+         if (_item._childs === undefined)
+            _item._expand_miss = true;
+         else {
+            _item._isopen = true;
+            if (_item._parent && !_item._parent._isopen) {
+               _item._parent._isopen = true; // also show parent
+               if (!silent)
+                  hpainter.updateTreeNode(_item._parent);
+            } else if (!silent)
+               hpainter.updateTreeNode(_item, d3cont);
+         }
+         return _item;
+      }
+
       async function doExpandItem(_item, _obj) {
+         delete _item._expand_miss;
+
          if (isStr(_item._expand))
             _item._expand = findFunction(_item._expand);
 
@@ -2854,30 +2871,15 @@ class HierarchyPainter extends BasePainter {
          // try to use expand function
          if (_obj && isFunc(_item._expand)) {
             const res = _item._expand(_item, _obj);
-            if (res) {
-               return getPromise(res).then(() => {
-                  _item._isopen = true;
-                  if (_item._parent && !_item._parent._isopen) {
-                     _item._parent._isopen = true; // also show parent
-                     if (!silent)
-                        hpainter.updateTreeNode(_item._parent);
-                  } else if (!silent)
-                     hpainter.updateTreeNode(_item, d3cont);
-                  return _item;
-               });
-            }
+            if (res)
+               return getPromise(res).then(() => doneExpandItem(_item));
          }
 
-         if (_obj && objectHierarchy(_item, _obj)) {
-            _item._isopen = true;
-            if (_item._parent && !_item._parent._isopen) {
-               _item._parent._isopen = true; // also show parent
-               if (!silent) hpainter.updateTreeNode(_item._parent);
-            } else if (!silent)
-               hpainter.updateTreeNode(_item, d3cont);
-            return _item;
-         }
+         if (_obj && objectHierarchy(_item, _obj))
+            return doneExpandItem(_item);
 
+         // mark as expand miss - behaves as normal object
+         _item._expand_miss = true;
          return -1;
       }
 
