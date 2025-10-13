@@ -1497,14 +1497,19 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Expand to specified level
      * @protected */
-   async exapndToLevel(level) {
+   async expandToLevel(level) {
       if (!level || !Number.isFinite(level) || (level < 0))
          return this;
 
       const promises = [];
       this.toggleOpenState(true, this.h, promises);
-      return Promise.all(promises).then(() => this.exapndToLevel(level - 1));
+      return Promise.all(promises).then(() => this.expandToLevel(level - 1));
    }
+
+   /** @summary Expand to specified level
+    * @deprecated will be removed in version 8, kept only for backward compatibility
+     * @protected */
+   async exapndToLevel(level) { return this.expandToLevel(level); }
 
    /** @summary Refresh HTML code of hierarchy painter
      * @return {Promise} when done */
@@ -4299,7 +4304,7 @@ async function drawInspector(dom, obj, opt) {
 
    return painter.refreshHtml().then(() => {
       painter.setTopPainter();
-      return painter.exapndToLevel(expand_level);
+      return painter.expandToLevel(expand_level);
    });
 }
 
