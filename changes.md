@@ -23,13 +23,19 @@
 1. Remove experimental RHist classes, deprecated in ROOT 6.38
 1. Internal - ws members are private, new methods has to be used
 1. Fix - ticks size and labels with kMoreLogLabels axis bit
-1. Fix - reading `TLeafC` leafs
-1. Fix - support BigInt in object inspector
-1. Fix - svg2pdf.js URL bounding box
-1. Fix - TTree::Draw with strings
 1. Fix - first color in palette drawing #365
-1. Fix - toggle vertical/horizontal palette via context menu
 1. Fix - latex parsing error of `#delta_{0}_suffix` string
+
+
+## Changes in 7.9.2
+1. Fix - reading `TLeafC` leafs
+2. Fix - support BigInt in object inspector
+3. Fix - svg2pdf.js URL bounding box
+4. Fix - `TTree::Draw` with strings
+5. Fix - toggle vertical/horizontal palette via context menu
+6. Fix - detect HTML element size from style attribute
+7. Fix - typo in `expandToLevel` method
+8. Fix - handle missed expand in hierarchy painter
 
 
 ## Changes in 7.9.1
