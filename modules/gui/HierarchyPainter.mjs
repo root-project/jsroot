@@ -1813,7 +1813,7 @@ class HierarchyPainter extends BasePainter {
          if (can_draw && can_expand && !drawopt) {
             // if default action specified as expand, disable drawing
             // if already displayed, try to expand
-            if (dflt_expand || (handle?.dflt === kExpand) || (handle?.exapnd_after_draw && this.isItemDisplayed(itemname)))
+            if (dflt_expand || (handle?.dflt === kExpand) || (handle?.expand_after_draw && this.isItemDisplayed(itemname)))
                can_draw = false;
          }
 
@@ -2095,7 +2095,7 @@ class HierarchyPainter extends BasePainter {
 
             if ((sett.expand || sett.get_expand) && (hitem._more || hitem._more === undefined)) {
                if (hitem._childs === undefined)
-                  menu.add('Expand', () => this.expandItem(itemname), 'Exapnd content of object');
+                  menu.add('Expand', () => this.expandItem(itemname), 'Expand content of object');
                else {
                   menu.add('Unexpand', () => {
                      hitem._more = true;
@@ -3078,7 +3078,7 @@ class HierarchyPainter extends BasePainter {
                      return openFile(item._url).then(file => {
                         if (!file)
                            return false;
-                        delete item._exapnd;
+                        delete item._expand;
                         delete item._more;
                         delete item._click_action;
                         delete item._obj;
