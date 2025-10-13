@@ -1369,13 +1369,19 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Expand to specified level
      * @protected */
-   async exapndToLevel(level) {
+   async expandToLevel(level) {
       if (!level || !Number.isFinite(level) || (level < 0)) return this;
 
       const promises = [];
       this.toggleOpenState(true, this.h, promises);
-      return Promise.all(promises).then(() => this.exapndToLevel(level - 1));
+      return Promise.all(promises).then(() => this.expandToLevel(level - 1));
    }
+
+   /** @summary Expand to specified level
+    * @deprecated will be removed in version 8, kept only for backward compatibility
+     * @protected */
+   async exapndToLevel(level) { return this.expandToLevel(level); }
+
 
    /** @summary Refresh HTML code of hierarchy painter
      * @return {Promise} when done */
@@ -1942,7 +1948,7 @@ class HierarchyPainter extends BasePainter {
 
             if ((sett.expand || sett.get_expand) && (hitem._more || hitem._more === undefined)) {
                if (hitem._childs === undefined)
-                  menu.add('Expand', () => this.expandItem(itemname), 'Exapnd content of object');
+                  menu.add('Expand', () => this.expandItem(itemname), 'Expand content of object');
                else {
                   menu.add('Unexpand', () => {
                      hitem._more = true;
@@ -2863,7 +2869,7 @@ class HierarchyPainter extends BasePainter {
                   _expand: item => {
                      return openFile(item._url).then(file => {
                         if (!file) return false;
-                        delete item._exapnd;
+                        delete item._expand;
                         delete item._more;
                         delete item._click_action;
                         delete item._obj;
@@ -4037,7 +4043,7 @@ async function drawInspector(dom, obj, opt) {
 
    return painter.refreshHtml().then(() => {
       painter.setTopPainter();
-      return painter.exapndToLevel(expand_level);
+      return painter.expandToLevel(expand_level);
    });
 }
 
