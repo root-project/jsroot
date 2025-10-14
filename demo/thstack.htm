@@ -27,7 +27,8 @@
            let hist = createHistogram('TH1I', 11);
            hist.fName =`hist${n}`;
            hist.Fill(n*2+1,10);
-           if (loop%5 === n) hist.Fill(n*2+1,2);
+           if (loop%5 === n)
+              hist.Fill(n*2+1,2);
            hist.fLineColor = n+2;
            histos.push(hist);
         }
