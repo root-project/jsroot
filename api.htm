@@ -607,7 +607,8 @@
                aaa = document.createElement('a');
                aaa.textContent = entry.name;
                aaa.href = jsroot_path + url;
-               if (entry.title) aaa.title = entry.title;
+               if (entry.title)
+                  aaa.title = entry.title;
                content.appendChild(aaa);
                SetListener(aaa, shortname, url);
             }
@@ -648,7 +649,7 @@
             content.appendChild(document.createElement('br'));
 
             if ((window.location.hash == '#' + shortname) || (entry.syn && window.location.hash == '#' + entry.syn) || (entry.syn2 && window.location.hash == '#' + entry.syn2)) {
-               if (aaa) aaa.focus();
+               aaa?.focus();
                ProcessClick(url).then(() => document.getElementById('panel').classList.toggle('open'));
             }
          }

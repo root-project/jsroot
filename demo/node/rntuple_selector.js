@@ -36,7 +36,8 @@ if (typeof window === 'undefined') {
   openFile('https://jsroot.gsi.de/files/tmp/ntpl001_staff.root')
     .then(file => file.readObject('Staff'))
     .then(rntuple => {
-      if (!rntuple) throw new Error('myNtuple not found');
+      if (!rntuple)
+        throw new Error('myNtuple not found');
       return rntupleProcess(rntuple, selector);
     })
     .then(() => console.log('RNTuple::Process finished'))
@@ -48,7 +49,8 @@ if (typeof window === 'undefined') {
 //   openFile('./simple.root')
 //     .then(file => file.readObject('myNtuple'))
 //     .then(rntuple => {
-//       if (!rntuple) throw new Error('myNtuple not found');
+//       if (!rntuple)
+//          throw new Error('myNtuple not found');
 //       return rntupleProcess(rntuple, selector);
 //     })
 //     .then(() => console.log('RNTuple::Process finished'))
