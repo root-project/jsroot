@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.9.x
+1. Fix - store large PDF with 3D drawing inside
+
+
 ## Changes in 7.9.2
 1. Fix - reading `TLeafC` leafs
 2. Fix - support BigInt in object inspector
