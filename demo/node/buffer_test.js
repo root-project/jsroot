@@ -51,9 +51,9 @@ import { RBufferReader } from 'jsroot/rntuple';
    // set the 32 bit length of the string
    view.setUint32(0,text.length,true);
    //set each char's ASCII code
-   for(let i = 0; i < text.length; i++){
+   for (let i = 0; i < text.length; i++)
       view.setUint8(4+i,text.charCodeAt(i));
-   }
+
    const reader = new RBufferReader(buffer);
    const result = reader.readString();
 

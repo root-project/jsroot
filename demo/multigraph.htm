@@ -22,9 +22,9 @@
       function updateGUI() {
         // this is just generation of graph
          const npoints = 20;
-         let xpts = [], ypts = [];
-         for (let i=0; i < npoints; i++) {
-            if(cnt % 2 === 1) {
+         const xpts = [], ypts = [];
+         for (let i = 0; i < npoints; i++) {
+            if (cnt % 2 === 1) {
                xpts.push(i);
                ypts.push(5*i);
             } else {
@@ -32,13 +32,13 @@
                ypts.push(i);
             }
          }
-         let graph1 = createTGraph(npoints, xpts, ypts);
+         const graph1 = createTGraph(npoints, xpts, ypts);
          graph1.fLineColor = 2;
          graph1.fMarkerSize = 2;
          xpts = [];
          ypts = [];
          for (let i = 0; i < npoints; i++) {
-            if(cnt%2 === 1) {
+            if (cnt%2 === 1) {
                xpts.push(i);
                ypts.push(i*i);
             } else {
@@ -46,11 +46,11 @@
                ypts.push(Math.sqrt(i));
             }
          }
-         let graph2 = createTGraph(npoints, xpts, ypts);
+         const graph2 = createTGraph(npoints, xpts, ypts);
          graph2.fLineColor = 3;
          graph2.fMarkerSize = 2;
 
-         let mgraph = createTMultiGraph(graph1, graph2);
+         const mgraph = createTMultiGraph(graph1, graph2);
          mgraph.fTitle = 'Drawing ' + cnt++;
 
          // set fixed Y-range if required
