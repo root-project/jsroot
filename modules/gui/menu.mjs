@@ -814,6 +814,8 @@ class JSRootMenu {
    /** @summary Fill menu to edit settings properties
      * @private */
    addSettingsMenu(with_hierarchy, alone, handle_func) {
+      if (!isFunc(handle_func))
+         handle_func = () => {};
       if (alone)
          this.header('Settings');
       else
@@ -824,12 +826,12 @@ class JSRootMenu {
       if (with_hierarchy) {
          this.addchk(settings.OnlyLastCycle, 'Last cycle', flag => {
             settings.OnlyLastCycle = flag;
-            if (handle_func) handle_func('refresh');
+            handle_func('refresh');
          });
 
          this.addchk(!settings.SkipStreamerInfos, 'Streamer infos', flag => {
             settings.SkipStreamerInfos = !flag;
-            if (handle_func) handle_func('refresh');
+            handle_func('refresh');
          });
       }
 
@@ -906,18 +908,18 @@ class JSRootMenu {
          this.sub('Browser');
          this.add('Hierarchy limit:  ' + settings.HierarchyLimit, () => this.input('Max number of items in hierarchy', settings.HierarchyLimit, 'int', 10, 100000).then(val => {
             settings.HierarchyLimit = val;
-            if (handle_func) handle_func('refresh');
+            handle_func('refresh');
          }));
          this.add('Browser width:  ' + settings.BrowserWidth, () => this.input('Browser width in px', settings.BrowserWidth, 'int', 50, 2000).then(val => {
             settings.BrowserWidth = val;
-            if (handle_func) handle_func('width');
+            handle_func('width');
          }));
          this.endsub();
       }
 
       this.add('Dark mode: ' + (settings.DarkMode ? 'On' : 'Off'), () => {
          settings.DarkMode = !settings.DarkMode;
-         if (handle_func) handle_func('dark');
+         handle_func('dark');
       });
 
       const setStyleField = arg => { gStyle[arg.slice(1)] = parseInt(arg[0]); },
