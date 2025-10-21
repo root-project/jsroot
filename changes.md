@@ -2,6 +2,8 @@
 
 ## Changes in 7.8.x
 1. Fix - use draw option also for graph drawing in TTree::Draw
+2. Fix - prevent JS code injection via TObjString drawing
+3. Fix - reduce use of HTML in hpainter, display and menu components
 
 
 ## Changes in 7.8.2
