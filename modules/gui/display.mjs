@@ -1661,7 +1661,7 @@ class BrowserLayout {
       for (let n = 0; n < 4; ++n) {
          const lbl = this.status_layout.getGridFrame(n).querySelector('label');
          maxh = Math.max(maxh, lbl.clientHeight);
-         lbl.innerHTML = msgs[n] || '';
+         lbl.innerText = msgs[n] || '';
       }
 
       if (!this.status_layout.first_check) {
