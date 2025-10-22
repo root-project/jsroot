@@ -1358,13 +1358,13 @@ class StandaloneMenu extends JSRootMenu {
                   title = d.title;
             }
             if (!url)
-               item.innerHTML = d.text;
+               item.innerText = d.text;
             else {
                item.style.display = 'flex';
                item.style['justify-content'] = 'space-between';
 
                const txt = doc.createElement('span');
-               txt.innerHTML = d.text;
+               txt.innerText = d.text;
                txt.style = 'display: inline-block; margin: 0;';
                item.appendChild(txt);
 
