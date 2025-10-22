@@ -1085,20 +1085,21 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    control.getInfoAtMousePosition = function(mouse_pos) {
       const intersects = this.getMouseIntersects(mouse_pos);
-      let tip = null, _painter = null;
+      let tip = null, painter = null;
 
       for (let i = 0; i < intersects.length; ++i) {
-         if (intersects[i].object.tooltip) {
-            tip = intersects[i].object.tooltip(intersects[i]);
-            _painter = intersects[i].object.painter;
+         const obj3d = intersects[i].object;
+         if (isFunc(obj3d?.tooltip)) {
+            tip = obj3d.tooltip(intersects[i]);
+            painter = obj3d.tip_painter || obj3d.painter || tip?.$painter;
             break;
          }
       }
 
-      if (tip && _painter) {
+      if (tip && painter) {
          return {
-            obj: _painter.getObject(),
-            name: _painter.getObject().fName,
+            obj: painter.getObject(),
+            name: painter.getObject().fName,
             bin: tip.bin, cont: tip.value,
             binx: tip.ix, biny: tip.iy, binz: tip.iz,
             grx: (tip.x1 + tip.x2) / 2, gry: (tip.y1 + tip.y2) / 2, grz: (tip.z1 + tip.z2) / 2
