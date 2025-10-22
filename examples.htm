@@ -360,7 +360,7 @@
       import { createRootColors } from 'jsroot/colors';
       import { testInteractivity } from 'jsroot/testing';
 
-      document.getElementById('version').innerHTML = (version_id != 'dev') ? version_id : version;
+      document.getElementById('version').innerText = (version_id != 'dev') ? version_id : version;
       document.getElementById('version').title = `${version}, ${source_dir}`;
 
       document.getElementById('expandButton').addEventListener('click', event => {
@@ -497,7 +497,7 @@
             settings.Latex = constants.Latex.fromString(latex);
 
          if (nobrowser) {
-            document.getElementById('plaindraw').innerHTML = '';
+            document.getElementById('plaindraw').innerText = '';
             hpainter = new HierarchyPainter('root', null);
             hpainter.setDisplay(layout, 'plaindraw');
          } else {
@@ -549,7 +549,7 @@
          hpainter = null;
          setHPainter(null);
          cleanup('plaindraw');
-         document.getElementById('plaindraw').innerHTML = '';
+         document.getElementById('plaindraw').innerText = '';
          document.getElementById('plaindraw').style['background-color'] = '';
 
          if (durl) {

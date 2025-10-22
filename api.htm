@@ -357,7 +357,7 @@
 
       let jsroot_path = './', filepath = '../files/';
 
-      document.getElementById('version').innerHTML = version_id != 'dev' ? version_id : version;
+      document.getElementById('version').innerText = version_id != 'dev' ? version_id : version;
       document.getElementById('version').title = `${version}, ${source_dir}`;
 
       document.getElementById('expandButton').addEventListener('click', event => {
@@ -495,7 +495,7 @@
              srcviewer = document.getElementById('srcviewer');
          viewer.style.display = '';
          srcviewer.style.display = 'none';
-         srcviewer.innerHTML = '';
+         srcviewer.innerText = '';
 
          if (durl.indexOf('http') == 0)
             viewer.src = durl;
@@ -536,10 +536,10 @@
             let viewer = document.getElementById('apiviewer'),
                 srcviewer = document.getElementById('srcviewer');
             viewer.href = '';
-            viewer.innerHTML = '';
+            viewer.innerText = '';
             viewer.style.display = 'none';
             srcviewer.style.display = 'block';
-            srcviewer.innerHTML = '';
+            srcviewer.innerText = '';
 
             let lines = res.split('\n');
             for (let k = 0; k < lines.length; ++k) {

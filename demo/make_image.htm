@@ -68,7 +68,7 @@
                 return;
 
              document.getElementById(`draw_svg${id}`).innerHTML = svg;
-             document.getElementById(`info_svg${id}`).innerHTML = `SVG image size ${svg.length}`;
+             document.getElementById(`info_svg${id}`).innerText = `SVG image size ${svg.length}`;
            });
          makeImage({ format: 'png', object, option, width, height })
             .then(png => {
@@ -79,11 +79,11 @@
                let img = new Image;
                img.src = png;
                document.getElementById(`draw_png${id}`).appendChild(img);
-               document.getElementById(`info_png${id}`).innerHTML = `PNG image base64 ${png.length}`;
+               document.getElementById(`info_png${id}`).innerText = `PNG image base64 ${png.length}`;
                // shows also binary buffer can be generated as well
                makeImage({ format: 'png', as_buffer: true, object, option, width, height }).then(buf => {
                   // such buffer can be stored in the file
-                  document.getElementById(`info_png${id}`).innerHTML += `    buf ${buf.byteLength}`;
+                  document.getElementById(`info_png${id}`).innerText += `    buf ${buf.byteLength}`;
                });
            });
          makeImage({ format: 'jpeg', object, option, width, height })
@@ -95,12 +95,12 @@
                let img = new Image;
                img.src = jpeg;
                document.getElementById(`draw_jpeg${id}`).appendChild(img);
-               document.getElementById(`info_jpeg${id}`).innerHTML = `JPEG image base64 ${jpeg.length}`;
+               document.getElementById(`info_jpeg${id}`).innerText = `JPEG image base64 ${jpeg.length}`;
 
                // shows also binary buffer can be generated as well
                makeImage({ format: 'jpeg', as_buffer: true, object, option, width, height }).then(buf => {
                   // such buffer can be stored in the file
-                  document.getElementById(`info_jpeg${id}`).innerHTML += `    buf ${buf.byteLength}`;
+                  document.getElementById(`info_jpeg${id}`).innerText += `    buf ${buf.byteLength}`;
                });
            });
       }

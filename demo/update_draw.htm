@@ -48,7 +48,7 @@
                if (!request_count)
                   registerForResize('drawing');
             });
-         }).catch(() => { document.getElementById('drawing').innerHTML = `"<h3>Can not get ${request_addr} from the server</h3>`;});
+         }).catch(() => { document.getElementById('drawing').innerText = `Can not get ${request_addr} from the server`; });
       }
 
       let d = decodeUrl();

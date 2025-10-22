@@ -35,7 +35,7 @@
 
          /** function called before reading of TTree starts */
          Begin() {
-            document.getElementById('p_start').innerHTML = 'Start reading TTree';
+            document.getElementById('p_start').innerText = 'Start reading TTree';
          }
 
          /** function called for every entry */
@@ -43,7 +43,7 @@
             this.sumpx += this.tgtobj.px;
             this.sumpy += this.tgtobj.py;
             this.cnt++;
-            document.getElementById('p_process').innerHTML = `Process ${this.cnt} entries`;
+            document.getElementById('p_process').innerText = `Process ${this.cnt} entries`;
          }
 
          /** function called when processing finishes */
@@ -54,7 +54,7 @@
                let meanpx = this.sumpx/this.cnt, meanpy = this.sumpy/this.cnt;
                res = `MeanPX = ${meanpx.toFixed(4)}  MeanPY = ${meanpy.toFixed(4)}`;
             }
-            document.getElementById('p_ready').innerHTML = res;
+            document.getElementById('p_ready').innerText = res;
          }
       }
 
