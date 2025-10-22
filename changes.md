@@ -25,6 +25,7 @@
 1. Fix - ticks size and labels with kMoreLogLabels axis bit
 1. Fix - first color in palette drawing #365
 1. Fix - latex parsing error of `#delta_{0}_suffix` string
+1. Fix - reduce plain HTML usage to minimize danger of JS code injection
 
 
 ## Changes in 7.9.3
