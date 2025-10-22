@@ -16,6 +16,7 @@
          <input type="radio" name="kind" id="btn2" value="Click"/> Click
          <input type="radio" name="kind" id="btn3" value="Dblclick"/> Doubleclk
          <input type="radio" name="kind" id="btnall" value="All"/> All
+         <input type="checkbox" name="mode3d" id="chkmode3d" checked="true"/> 3D mode
       </form>
       <div id="object_draw" style="position: relative; width: 800px; height: 600px;"></div>
       <div id="tooltip_draw" style="position: relative; width: 400px; height: 300px;"></div>
@@ -38,7 +39,7 @@
          // show info
          document.getElementById('user_tooltip').innerText = `Handler: ${kind} Name: ${info.name} Bin: ${info.bin} Content: ${info.cont}`;
 
-         let h1 = createHistogram('TH1I', 20);
+         const h1 = createHistogram('TH1I', 20);
          // copy content from TH2 to TH1
          for (let n = 0; n < 20; n++)
             h1.setBinContent(n+1, info.obj.getBinContent(n+1, info.biny));
@@ -110,22 +111,23 @@
          histo.fName = 'generated';
          histo.fTitle = `Drawing ${cnt++}`;
 
-         let canv = create('TCanvas');
+         const chkd1 = document.getElementById('btn1').checked,
+               chkd2 = document.getElementById('btn2').checked,
+               chkd3 = document.getElementById('btn3').checked,
+               all = document.getElementById('btnall').checked,
+               mode3d = document.getElementById('chkmode3d').checked;
+
+         const canv = create('TCanvas');
          canv.fName = 'c1';
-         canv.fPrimitives.Add(histo, 'lego2');
+         canv.fPrimitives.Add(histo, mode3d ? 'lego2' : 'colz');
 
          redraw('object_draw', canv).then(canvas_painter => {
             // one can find painter for any object if name and/or type name is known
             // have to use histogram name while by update original histogram will be preserved
-            let painter = canvas_painter.findPainterFor(null, histo.fName, histo._typename);
+            const painter = canvas_painter.findPainterFor(null, histo.fName, histo._typename);
 
             // if there is at least one histogram - it should be also main painter
             // let painter = canvas_painter.getMainPainter();
-
-            let chkd1 = document.getElementById('btn1').checked,
-                chkd2 = document.getElementById('btn2').checked,
-                chkd3 = document.getElementById('btn3').checked,
-                all = document.getElementById('btnall').checked;
 
             painter.configureUserTooltipHandler((chkd1 || all) ? info => UserHandler('tooltip', info) : null);
 
@@ -141,5 +143,8 @@
 
       // update drawing every 30 sec
       setInterval(updateGUI, 30000);
+
+      // update drawing also by click on checkbox
+      document.getElementById('chkmode3d').addEventListener('click', updateGUI);
    </script>
 </html>
