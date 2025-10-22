@@ -792,37 +792,34 @@ class TooltipFor3D {
 
    /** @summary Show tooltip */
    show(v /* , mouse_pos, status_func */) {
-      if (!v)
+      let lines;
+      if (v && isObject(v) && (v.lines || v.line)) {
+         if (!v.only_status)
+            lines = v.line ? [v.line] : v.lines;
+      } else if (isStr(v))
+         lines = [v];
+
+      const doc = this.parent.ownerDocument;
+
+      if (!lines || !doc)
          return this.hide();
 
-      if (isObject(v) && (v.lines || v.line)) {
-         if (v.only_status)
-            return this.hide();
-
-         if (v.line)
-            v = v.line;
-         else {
-            let res = v.lines[0];
-            for (let n = 1; n < v.lines.length; ++n)
-               res += '<br/>' + v.lines[n];
-            v = res;
-         }
-      }
-
-      if (this.tt === null) {
-         const doc = getDocument();
+      if (!this.tt) {
          this.tt = doc.createElement('div');
-         this.tt.setAttribute('style', 'opacity: 1; filter: alpha(opacity=1); position: absolute; display: block; overflow: hidden; z-index: 101;');
+         this.tt.setAttribute('style', 'opacity: 1; filter: alpha(opacity=1); position: absolute; display: block; width: auto; overflow: hidden; z-index: 101;');
          this.cont = doc.createElement('div');
          this.cont.setAttribute('style', 'display: block; padding: 5px; margin-left: 5px; font-size: 11px; line-height: 18px; background: #777; color: #fff;');
          this.tt.appendChild(this.cont);
          this.parent.appendChild(this.tt);
       }
 
-      if (this.lastlbl !== v) {
-         this.cont.innerHTML = this.lastlbl = v;
-         this.tt.style.width = 'auto'; // let it be automatically resizing...
-      }
+      this.cont.innerText = '';
+      lines.forEach(lbl => {
+         const p = doc.createElement('p');
+         p.innerText = lbl;
+         p.setAttribute('style', 'padding: 0px; margin: 1px;');
+         this.cont.appendChild(p);
+      });
    }
 
    /** @summary Hide tooltip */
@@ -830,8 +827,7 @@ class TooltipFor3D {
       if (this.tt)
          this.parent.removeChild(this.tt);
 
-      this.tt = null;
-      this.lastlbl = '';
+      this.tt = this.cont = null;
    }
 
 } // class TooltipFor3D
