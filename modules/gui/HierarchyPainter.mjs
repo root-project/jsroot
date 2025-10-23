@@ -2515,12 +2515,12 @@ class HierarchyPainter extends BasePainter {
 
       if ((options.length === 1) && (options[0] === 'iotest')) {
          this.clearHierarchy();
-         d3_select('#' + this.disp_frameid).html('<h2>Start I/O test</h2>');
+         d3_select('#' + this.disp_frameid).html('').append('h2').text('Start I/O test');
 
          const tm0 = new Date();
-         return this.getObject(items[0]).then(() => {
+         return this.getObject(items[0]).then(res => {
             const tm1 = new Date();
-            d3_select('#' + this.disp_frameid).append('h2').html('Item ' + items[0] + ' reading time = ' + (tm1.getTime() - tm0.getTime()) + 'ms');
+            d3_select('#' + this.disp_frameid).append('h2').text(`Item ${items[0]} reading ` + (res?.obj ? `type ${res?.obj._typename} time = ${tm1.getTime() - tm0.getTime()}ms` : 'fail'));
             return true;
          });
       }

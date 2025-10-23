@@ -401,6 +401,7 @@
            { name: 'Veritcal layout', url: '?file=' + filepath + 'hsimple.root&layout=vert121&items=[hpx;1,hpxpy;1,ntuple;1,hprof;1]&opts=[hist,colz,px:pz,e1]', title: 'Display several items in vertical layout; `&layout=vert121`' },
            { name: 'Horizontal layout', url: '?file=' + filepath + 'hsimple.root&layout=horiz32_12&items=[ntuple,ntuple,ntuple,hpx,hpxpy]&opts=[px:py,px:pz,py:pz,hist,lego2]', title: 'Display several items in horizontal layout, adjust size ratio; `&layout=horiz32_12`' },
            { name: 'Inspector', url: '?file=' + filepath + 'hsimple.root&item=hpx;1&opt=inspect', title: 'Show objects data memebers; `&opt=inspect`' },
+           { name: 'IO test', url: '?file=' + filepath + 'hsimple.root&item=hpx&opt=iotest', title: 'Check reading speed of specified object; `&opt=iotest`' },
            { name: 'Projection', url: '?nobrowser&file=' + filepath + 'hsimple.root&item=hpxpy;1&opt=col,projx3', title: 'Enable X projection with 3 bins, `&opt=projx3`' },
            { name: 'Images', url: '?path=' + filepath + '&layout=grid2x2&file=hsimple.root&items=[hpx;1,hpxpy;1,img:../files/img/ALICE.png,img:../files/img/ATLAS.png]&opts=[hist,colz,scale,center]', title: 'Example of adding images from the web server, `item=img:path/to/image.png`' },
            { name: 'Use JSON', url: '?nobrowser&json=https://jsroot.gsi.de/files/danilo6.json', title: 'Read and display data from JSON file, produced with TBufferJSON class; `&json=<filename>`' },
