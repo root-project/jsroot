@@ -1,6 +1,6 @@
 {
   "name": "jsroot-demos",
-  "version": "7.9.99",
+  "version": "7.10.0",
   "engines": {
     "node": ">=0.18"
   },
