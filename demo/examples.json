@@ -43,6 +43,7 @@
      { "name": "fill_N", "opt": "fill_7", "title": "draw histogram with fill color N - index or name like 'green' or hex like 00774422" },
      { "name": "xaxis_N", "opt": "xaxis_ff00ff", "title": "draw histogram X axis with color N - index or name like 'green' or hex like ff00ff" },
      { "name": "yaxis_N", "opt": "yaxis_00ff0055", "title": "draw histogram Y axis with color N - index or name like 'green' or hex like 00ff0055" },
+     { "name": "htitle", "opt": "htitle:Custom%20histogram%20title", "title": "Change histogram title" },
      { "opt": "inspect", "asurl": true, "file": "hsimple.root", "item": "hpx;1", "title": "universal object inspector, can be used for any class" },
      { "name": "docu", "file": "histpainter6.root", "layout": "vert32", "items": ["two_axis","draw_e1","draw_bar","draw_e34","draw_text"], "title":"several TH1 examples from THistPainter documentation" },
      { "name": "twoscales", "url": "nobrowser&file=$$$tutorials_hist.root&item=[twoscales/[1],twoscales/[3]]&opt=[hist,yaxis_red;line_red;y+]", "title": "interactive second Y scale to draw axis for second histogram" },

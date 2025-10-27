@@ -222,24 +222,28 @@ More examples of supported classes can be found on: <https://root.cern/js/latest
 
 One can change some histograms colors using draw options:
 
-- line_N: [line color](https://root.cern/js/latest/examples.htm#th1_line_n)
-- fill_N: [fill color](https://root.cern/js/latest/examples.htm#th1_fill_n)
-- xaxis_N: [X axis color](https://jsroot.gsi.de/dev/examples.htm#th1_xaxis_n)
-- yaxis_N: [Y axis color](https://jsroot.gsi.de/dev/examples.htm#th1_yaxis_n)
+- `line_N` [line color](https://root.cern/js/latest/examples.htm#th1_line_n)
+- `fill_N` [fill color](https://root.cern/js/latest/examples.htm#th1_fill_n)
+- `htitle:value` [histogram title](https://jsroot.gsi.de/dev/examples.htm#th1_htitle)
+- `xaxis_N` [X axis color](https://jsroot.gsi.de/dev/examples.htm#th1_xaxis_n)
+- `yaxis_N` [Y axis color](https://jsroot.gsi.de/dev/examples.htm#th1_yaxis_n)
 
 One also can modify histogram axes attributes by following option:
-- ctx: center title of X axis
-- cty: center title of Y axis
-- ctz: center title of Z axis
-- otx: place X axis title in opposite to normal corner
-- oty: place Y axis title in opposite to normal corner
-- otz: place Z axis title in opposite to normal corner
-- noex: no exponent for X axis labels
-- noey: no exponent for Y axis labels
-- noez: no exponent for Z axis labels
-- mlx: more log labels on X axis
-- mly: more log labels on Y axis
-- mlz: more log labels on Y axis
+- `ctx` center title of X axis
+- `cty` center title of Y axis
+- `ctz` center title of Z axis
+- `otx` place X axis title in opposite to normal corner
+- `oty` place Y axis title in opposite to normal corner
+- `otz` place Z axis title in opposite to normal corner
+- `noex` no exponent for X axis labels
+- `noey` no exponent for Y axis labels
+- `noez` no exponent for Z axis labels
+- `mlx` more log labels on X axis
+- `mly` more log labels on Y axis
+- `mlz` more log labels on Y axis
+- `xtitle:value` set title for X axis
+- `ytitle:value` set title for Y axis
+- `ztitle:value` set title for Z axis
 
 Here N can be existing ROOT color index or hex6/hex8 values like [line_ff00ff](https://jsroot.gsi.de/dev/?nobrowser&file=../files/hsimple.root&item=hpx;1&opt=line_ff00ff) or [fill_7733ff34](https://jsroot.gsi.de/dev/?nobrowser&file=../files/hsimple.root&item=hpx;1&opt=fill_7733ff34).
 
