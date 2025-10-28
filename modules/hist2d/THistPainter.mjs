@@ -269,6 +269,14 @@ class THistDrawOptions {
          pad.fGridx = 1;
       if (d.check('GRIDY') && pad)
          pad.fGridy = 1;
+      if (d.check('TICKXY2') && pad)
+         pad.fTickx = pad.fTicky = 2;
+      if (d.check('TICKX2') && pad)
+         pad.fTickx = 2;
+      if (d.check('TICKY2') && pad)
+         pad.fTicky = 2;
+      if (d.check('TICKZ2') && pad)
+         pad.fTickz = 2;
       if (d.check('TICKXY') && pad)
          pad.fTickx = pad.fTicky = 1;
       if (d.check('TICKX') && pad)
@@ -847,11 +855,17 @@ class THistDrawOptions {
             res += '_GRIDX';
          if (pad.fGridy)
             res += '_GRIDY';
-         if (pad.fTickx)
+         if (pad.fTickx == 2)
+            res += '_TICKX2';
+         else if (pad.fTickx)
             res += '_TICKX';
-         if (pad.fTicky)
+         if (pad.fTicky === 2)
+            res += '_TICKY2';
+         else if (pad.fTicky)
             res += '_TICKY';
-         if (pad.fTickz)
+         if (pad.fTickz === 2)
+            res += '_TICKZ2';
+         else if (pad.fTickz)
             res += '_TICKZ';
       }
 
