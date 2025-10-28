@@ -855,7 +855,7 @@ class THistDrawOptions {
             res += '_GRIDX';
          if (pad.fGridy)
             res += '_GRIDY';
-         if (pad.fTickx == 2)
+         if (pad.fTickx === 2)
             res += '_TICKX2';
          else if (pad.fTickx)
             res += '_TICKX';
