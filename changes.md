@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.10.x
+1. Fix - proper paint axis labels on both sides when pad.fTickx/y = 2
+
+
 ## Changes in 7.10.0
 1. `RNtuple` support, thanks to Kriti Mahajan https://github.com/Krmjn09
 2. Implement `RTreeMapPainter` to display `RNTuple` structure, thanks to Patryk Pilichowski https://github.com/magnustymoteus
