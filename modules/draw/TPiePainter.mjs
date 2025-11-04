@@ -63,16 +63,15 @@ class TPiePainter extends ObjectPainter {
 
    /** @summary Redraw pie */
    redraw() {
-      const g = this.createG(),
+      const maing = this.createG(),
             pie = this.getObject(),
             xc = this.axisToSvg('x', pie.fX),
             yc = this.axisToSvg('y', pie.fY);
 
-      let radX = pie.fRadius, radY = pie.fRadius, radXY = 1, pixelHeight = 1;
+      let radX = pie.fRadius, radY = pie.fRadius, pixelHeight = 1;
 
       if (this.#is3d) {
-         radXY = Math.sin(pie.fAngle3D/180.*Math.PI);
-         radY *= radXY;
+         radY *= Math.sin(pie.fAngle3D/180.*Math.PI);
          pixelHeight = this.axisToSvg('y', pie.fY - pie.fHeight) - yc;
       }
 
@@ -86,10 +85,12 @@ class TPiePainter extends ObjectPainter {
                return Math.abs(a - 1.5 * Math.PI)
             };
 
-      makeTranslate(g, xc, yc);
+      makeTranslate(maing, xc, yc);
 
       const arr = [];
       let total = 0, af = -pie.fAngularOffset / 180 * Math.PI;
+      while (af < 2.5 * Math.PI)
+         af += 2*Math.PI;
       for (let n = 0; n < pie.fPieSlices.length; n++) {
          const value = pie.fPieSlices[n].fValue;
          total += value;
@@ -113,7 +114,16 @@ class TPiePainter extends ObjectPainter {
 
       for (let o = 0; o < arr.length; o++) {
          const entry = arr[o],
-               slice = pie.fPieSlices[entry.n];
+               slice = pie.fPieSlices[entry.n],
+               g = maing.append('svg:g');
+
+         if (slice.fRadiusOffset) {
+            const angle = (entry.a1 + entry.a2)/2,
+                  coef = radX > 0 ? slice.fRadiusOffset / radX : 0.1,
+                  dx = Math.round(rx * coef * Math.cos(angle)),
+                  dy = Math.round(ry * coef * Math.sin(angle));
+            makeTranslate(g, dx, dy);
+         }
 
          // Draw the slices
          const a1 = entry.a1, a2 = entry.a2,
@@ -143,15 +153,15 @@ class TPiePainter extends ObjectPainter {
                 .attr('d', `M0,0v${pixelHeight}l${x},${y}v${-pixelHeight}z`)
                 .call(this.lineatt.func)
                 .call(this.fillatt.func);
-            }, build_pie = (aa1, aa2, func) => {
+            }, build_pie = func => {
                // use same segments for side and top/bottom curves
-               let a = aa1, border = -6*Math.PI;
-               while (border <= aa1)
+               let a = a1, border = 0;
+               while (border <= a1)
                   border += Math.PI;
-               while (a < aa2) {
-                  if (border >= aa2) {
-                     func(a, aa2);
-                     a = aa2;
+               while (a < a2) {
+                  if (border >= a2) {
+                     func(a, a2);
+                     a = a2;
                   } else {
                      func(a, border);
                      a = border;
@@ -161,7 +171,7 @@ class TPiePainter extends ObjectPainter {
             };
 
             let pie = '';
-            build_pie(a1, a2, (aa1,aa2) => {
+            build_pie((aa1, aa2) => {
                const xx1 = Math.round(rx * Math.cos(aa1)),
                      yy1 = Math.round(ry * Math.sin(aa1)),
                      xx2 = Math.round(rx * Math.cos(aa2)),
@@ -186,7 +196,7 @@ class TPiePainter extends ObjectPainter {
             }
 
             // curved
-            build_pie(a1, a2, add_curved_side);
+            build_pie(add_curved_side);
 
             // upper
             g.append('svg:path')
