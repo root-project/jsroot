@@ -1,4 +1,4 @@
-import { makeTranslate, DrawOptions } from '../base/BasePainter.mjs';
+import { makeTranslate, DrawOptions, floatToString } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
@@ -14,6 +14,7 @@ class TPiePainter extends ObjectPainter {
    #is3d; // if 3d mode enabled
    #lblor; // how to draw labels
    #sort; // sorting order of pies
+   #samecolor; // use same color for labels
 
    /** @summary Decode options */
    decodeOptions(opt) {
@@ -21,6 +22,9 @@ class TPiePainter extends ObjectPainter {
       this.#is3d = d.check('3D');
       this.#lblor = 0;
       this.#sort = 0;
+      this.#samecolor = false;
+      if (d.check('SC'))
+         this.#samecolor = true; // around
       if (d.check('T'))
          this.#lblor = 2; // around
       if (d.check('R'))
@@ -76,8 +80,9 @@ class TPiePainter extends ObjectPainter {
          pixelHeight = this.axisToSvg('y', pie.fY - pie.fHeight) - yc;
       }
 
-      const textatt = this.createAttText({ attr: pie }),
-            rx = this.axisToSvg('x', pie.fX + radX) - xc,
+      this.createAttText({ attr: pie });
+
+      const rx = this.axisToSvg('x', pie.fX + radX) - xc,
             ry = this.axisToSvg('y', pie.fY - radY) - yc,
             dist_to_15pi = a => {
                while (a < 0.5*Math.PI)
@@ -212,15 +217,38 @@ class TPiePainter extends ObjectPainter {
              .call(this.fillatt.func);
          }
 
+         const frac = total ? slice.fValue / total : 0;
+         let tmptxt  = pie.fLabelFormat;
+         tmptxt = tmptxt.replaceAll("%txt", slice.fTitle);
+         tmptxt = tmptxt.replaceAll("%val", floatToString(slice.fValue, pie.fValueFormat));
+         tmptxt = tmptxt.replaceAll("%frac", floatToString(frac, pie.fFractionFormat));
+         tmptxt = tmptxt.replaceAll("%perc", floatToString(frac*100, pie.fPercentFormat) + '%');
+
+
          const arg = { draw_g: g,
-                       x: rx * 1.05 * Math.cos(mid_angle),
-                       y: ry * 1.05 * Math.sin(mid_angle),
+                       x: rx * (1 + pie.fLabelsOffset) * Math.cos(mid_angle),
+                       y: ry * (1 + pie.fLabelsOffset) * Math.sin(mid_angle),
                        latex: 1,
                        align: 22,
-                       text: slice.fTitle,
-                       color: this.textatt.color };
+                       text: tmptxt };
 
-         if ((arg.x >= 0) && (arg.y >= 0)) {
+         if (this.#samecolor)
+            arg.color = this.getColor(slice.fFillColor);
+
+         if (this.#lblor === 1) {
+            // radial positioning of the labels
+            arg.rotate = Math.atan2(arg.y, arg.x) / Math.PI * 180;
+            if (arg.x > 0) {
+               arg.align = 12;
+            } else {
+               arg.align = 32;
+               arg.rotate += 180;
+            }
+         } else if (this.#lblor === 2) {
+            // in the slice
+            arg.align = 23;
+            arg.rotate = Math.atan2(arg.y, arg.x) / Math.PI * 180 + 90;
+         } else if ((arg.x >= 0) && (arg.y >= 0)) {
             arg.align = 13;
             if (this.#is3d)
                arg.y += pixelHeight;
