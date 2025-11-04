@@ -110,7 +110,7 @@ class TPiePainter extends ObjectPainter {
          if (this.#is3d) {
             // bottom
             g.append('svg:path')
-             .attr('d', `M0,${pixelHeight}L${x1},${y1+pixelHeight}A${rx},${ry},0,0,1,${x2},${y2+pixelHeight}Z`)
+             .attr('d', `M0,${pixelHeight}l${x1},${y1}a${rx},${ry},0,0,1,${x2-x1},${y2-y1}z`)
              .call(this.lineatt.func)
              .call(this.fillatt.func);
 
@@ -122,12 +122,12 @@ class TPiePainter extends ObjectPainter {
                      xx2 = Math.round(rx * Math.cos(aa2)),
                      yy2 = Math.round(ry * Math.sin(aa2));
                g.append('svg:path')
-                .attr('d', `M${xx1},${yy1}A${rx},${ry},0,0,1,${xx2},${yy2}L${xx2},${yy2+pixelHeight}A${rx},${ry},0,0,0,${xx1},${yy1+pixelHeight}Z`)
+                .attr('d', `M${xx1},${yy1}a${rx},${ry},0,0,1,${xx2-xx1},${yy2-yy1}v${pixelHeight}a${rx},${ry},0,0,0,${xx1-xx2},${yy1-yy2}z`)
                 .call(this.lineatt.func)
                 .call(this.fillatt.func);
             }, add_planar_side = (x,y) => {
                g.append('svg:path')
-                .attr('d', `M0,${pixelHeight}L${x},${y+pixelHeight}L${x},${y}L0,0Z`)
+                .attr('d', `M0,0v${pixelHeight}l${x},${y}v${-pixelHeight}z`)
                 .call(this.lineatt.func)
                 .call(this.fillatt.func);
             }
@@ -158,7 +158,7 @@ class TPiePainter extends ObjectPainter {
          }
 
          g.append('svg:path')
-          .attr('d', `M0,0L${x1},${y1}A${rx},${ry},0,0,1,${x2},${y2}z`)
+          .attr('d', `M0,0l${x1},${y1}a${rx},${ry},0,0,1,${x2-x1},${y2-y1}z`)
           .call(this.lineatt.func)
           .call(this.fillatt.func);
       }
