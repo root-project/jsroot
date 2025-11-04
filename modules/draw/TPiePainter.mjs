@@ -12,11 +12,23 @@ import { assignContextMenu } from '../gui/menu.mjs';
 class TPiePainter extends ObjectPainter {
 
    #is3d; // if 3d mode enabled
+   #lblor; // how to draw labels
+   #sort; // sorting order of pies
 
    /** @summary Decode options */
    decodeOptions(opt) {
       const d = new DrawOptions(opt);
       this.#is3d = d.check('3D');
+      this.#lblor = 0;
+      this.#sort = 0;
+      if (d.check('T'))
+         this.#lblor = 2; // around
+      if (d.check('R'))
+         this.#lblor = 1; // along the radius
+      if (d.check('>'))
+         this.#sort = 1;
+      if (d.check('<'))
+         this.#sort = -1;
    }
 
 
@@ -53,7 +65,6 @@ class TPiePainter extends ObjectPainter {
    redraw() {
       const g = this.createG(),
             pie = this.getObject(),
-            nb = pie.fPieSlices.length,
             xc = this.axisToSvg('x', pie.fX),
             yc = this.axisToSvg('y', pie.fY);
 
@@ -77,27 +88,38 @@ class TPiePainter extends ObjectPainter {
 
       makeTranslate(g, xc, yc);
 
+      const arr = [];
       let total = 0, af = pie.fAngularOffset / 180 * Math.PI;
-      for (let n = 0; n < nb; n++)
-         total += pie.fPieSlices[n].fValue;
-
-      const angles = [af], order = [], p2 = 2 * Math.PI, p15 = 1.5 * Math.PI;
-      for (let n = 0; n < nb; n++) {
-         const prev = af;
-         af += pie.fPieSlices[n].fValue / total * 2 * Math.PI;
-         angles.push(af);
-         order.push({ n, a: dist_to_15pi((prev + af)/2) });
+      for (let n = 0; n < pie.fPieSlices.length; n++) {
+         const value = pie.fPieSlices[n].fValue;
+         total += value;
+         arr.push({n, value});
+      }
+      // sort in increase/decrease order
+      if (this.#sort !== 0) {
+         arr.sort((v1,v2) => { return this.#sort*(v1.value - v2.value); });
+         console.log('after sorting', this.#sort);
+         arr.forEach(v => console.log('entry', v.value, v.n));
       }
 
-      // sort in increasing order from Pi/2 angle
-      order.sort((v1,v2) => { return v1.a - v2.a; });
+      // now assign angles for each slice
+      for (let n = 0; n < arr.length; n++) {
+         const entry = arr[n];
+         entry.a1 = af;
+         af += entry.value / total * 2 * Math.PI;
+         entry.a2 = af;
+         entry.a = dist_to_15pi((entry.a1 + entry.a2)/2);
+      }
 
-      for (let o = 0; o < Math.min(5, nb); o++) {
-         const n = order[o].n,
-               slice = pie.fPieSlices[n];
+      // sort for visualization in increasing order from Pi/2 angle
+      arr.sort((v1,v2) => { return v1.a - v2.a; });
+
+      for (let o = 0; o < arr.length; o++) {
+         const entry = arr[o],
+               slice = pie.fPieSlices[entry.n];
 
          // Draw the slices
-         const a1 = angles[n], a2 = angles[n+1],
+         const a1 = entry.a1, a2 = entry.a2,
                x1 = Math.round(rx * Math.cos(a1)),
                y1 = Math.round(ry * Math.sin(a1)),
                x2 = Math.round(rx * Math.cos(a2)),
