@@ -84,7 +84,7 @@ class TPiePainter extends ObjectPainter {
       const angles = [af], order = [], p2 = 2 * Math.PI, p15 = 1.5 * Math.PI;
       for (let n = 0; n < nb; n++) {
          const prev = af;
-         af += pie.fPieSlices[n].fValue / total * p2;
+         af += pie.fPieSlices[n].fValue / total * 2 * Math.PI;
          angles.push(af);
          order.push({ n, a: dist_to_15pi((prev + af)/2) });
       }
@@ -108,12 +108,6 @@ class TPiePainter extends ObjectPainter {
 
          // paint pseudo-3d object
          if (this.#is3d) {
-            // bottom
-            g.append('svg:path')
-             .attr('d', `M0,${pixelHeight}l${x1},${y1}a${rx},${ry},0,0,1,${x2-x1},${y2-y1}z`)
-             .call(this.lineatt.func)
-             .call(this.fillatt.func);
-
             const add_curved_side = (aa1, aa2) => {
                if (dist_to_15pi((aa1 + aa2)/ 2) < 0.5*Math.PI)
                   return;
@@ -130,8 +124,40 @@ class TPiePainter extends ObjectPainter {
                 .attr('d', `M0,0v${pixelHeight}l${x},${y}v${-pixelHeight}z`)
                 .call(this.lineatt.func)
                 .call(this.fillatt.func);
-            }
+            }, build_pie = (aa1, aa2, func) => {
+               // use same segments for side and top/bottom curves
+               let a = aa1, border = -2*Math.PI;
+               while (border <= aa1)
+                  border += Math.PI;
+               while (a < aa2) {
+                  if (border >= aa2) {
+                     func(a, aa2);
+                     a = a2;
+                  } else {
+                     func(a, border);
+                     a = border;
+                     border += Math.PI;
+                  }
+               }
+            };
 
+            let pie = '';
+            build_pie(a1, a2, (aa1,aa2) => {
+               const xx1 = Math.round(rx * Math.cos(aa1)),
+                     yy1 = Math.round(ry * Math.sin(aa1)),
+                     xx2 = Math.round(rx * Math.cos(aa2)),
+                     yy2 = Math.round(ry * Math.sin(aa2));
+               pie += `a${rx},${ry},0,0,1,${xx2-xx1},${yy2-yy1}`;
+            });
+
+            // bottom
+            g.append('svg:path')
+             .attr('d', `M0,${pixelHeight}l${x1},${y1}${pie}z`)
+             .call(this.lineatt.func)
+             .call(this.fillatt.func);
+
+
+            // planar
             if (dist_to_15pi(a1) > dist_to_15pi(a2)) {
                add_planar_side(x2, y2);
                add_planar_side(x1, y1);
@@ -140,27 +166,21 @@ class TPiePainter extends ObjectPainter {
                add_planar_side(x2, y2);
             }
 
-            let a = a1, border = -p2;
-            while (border <= a)
-               border += Math.PI;
+            // curved
+            build_pie(a1, a2, add_curved_side);
 
-            // fill curve sides, while it can cross Pi and 2*Pi several times, add as segments
-            while (a < a2) {
-               if (border > a2) {
-                  add_curved_side(a, a2);
-                  a = a2;
-               } else {
-                  add_curved_side(a, border);
-                  a = border;
-                  border += Math.PI;
-               }
-            }
+            // upper
+            g.append('svg:path')
+             .attr('d', `M0,0l${x1},${y1}${pie}z`)
+             .call(this.lineatt.func)
+             .call(this.fillatt.func);
+
+         } else {
+            g.append('svg:path')
+             .attr('d', `M0,0l${x1},${y1}a${rx},${ry},0,0,1,${x2-x1},${y2-y1}z`)
+             .call(this.lineatt.func)
+             .call(this.fillatt.func);
          }
-
-         g.append('svg:path')
-          .attr('d', `M0,0l${x1},${y1}a${rx},${ry},0,0,1,${x2-x1},${y2-y1}z`)
-          .call(this.lineatt.func)
-          .call(this.fillatt.func);
       }
 
       assignContextMenu(this);
