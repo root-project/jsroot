@@ -62,11 +62,12 @@ class TPiePainter extends ObjectPainter {
    }
 
    /** @summary Redraw pie */
-   redraw() {
+   async redraw() {
       const maing = this.createG(),
             pie = this.getObject(),
             xc = this.axisToSvg('x', pie.fX),
-            yc = this.axisToSvg('y', pie.fY);
+            yc = this.axisToSvg('y', pie.fY),
+            pp = this.getPadPainter();
 
       let radX = pie.fRadius, radY = pie.fRadius, pixelHeight = 1;
 
@@ -75,7 +76,8 @@ class TPiePainter extends ObjectPainter {
          pixelHeight = this.axisToSvg('y', pie.fY - pie.fHeight) - yc;
       }
 
-      const rx = this.axisToSvg('x', pie.fX + radX) - xc,
+      const textatt = this.createAttText({ attr: pie }),
+            rx = this.axisToSvg('x', pie.fX + radX) - xc,
             ry = this.axisToSvg('y', pie.fY - radY) - yc,
             dist_to_15pi = a => {
                while (a < 0.5*Math.PI)
@@ -87,7 +89,7 @@ class TPiePainter extends ObjectPainter {
 
       makeTranslate(maing, xc, yc);
 
-      const arr = [];
+      const arr = [], promises = [];
       let total = 0, af = -pie.fAngularOffset / 180 * Math.PI;
       while (af < 2.5 * Math.PI)
          af += 2*Math.PI;
@@ -115,13 +117,12 @@ class TPiePainter extends ObjectPainter {
       for (let o = 0; o < arr.length; o++) {
          const entry = arr[o],
                slice = pie.fPieSlices[entry.n],
-               g = maing.append('svg:g');
-
+               g = maing.append('svg:g'),
+               mid_angle = (entry.a1 + entry.a2)/2;
          if (slice.fRadiusOffset) {
-            const angle = (entry.a1 + entry.a2)/2,
-                  coef = radX > 0 ? slice.fRadiusOffset / radX : 0.1,
-                  dx = Math.round(rx * coef * Math.cos(angle)),
-                  dy = Math.round(ry * coef * Math.sin(angle));
+            const coef = radX > 0 ? slice.fRadiusOffset / radX : 0.1,
+                  dx = Math.round(rx * coef * Math.cos(mid_angle)),
+                  dy = Math.round(ry * coef * Math.sin(mid_angle));
             makeTranslate(g, dx, dy);
          }
 
@@ -210,13 +211,41 @@ class TPiePainter extends ObjectPainter {
              .call(this.lineatt.func)
              .call(this.fillatt.func);
          }
+
+         const arg = { draw_g: g,
+                       x: rx * 1.05 * Math.cos(mid_angle),
+                       y: ry * 1.05 * Math.sin(mid_angle),
+                       latex: 1,
+                       align: 22,
+                       text: slice.fTitle,
+                       color: this.textatt.color };
+
+         if ((arg.x >= 0) && (arg.y >= 0)) {
+            arg.align = 13;
+            if (this.#is3d)
+               arg.y += pixelHeight;
+         } else if ((arg.x > 0) && (arg.y < 0))
+            arg.align = 11;
+         else if ((arg.x < 0) && (arg.y >= 0)) {
+            arg.align = 33;
+            if (this.#is3d)
+               arg.y += pixelHeight;
+         } else if ((arg.x < 0) && (arg.y < 0))
+            arg.align = 31;
+
+         const pr = this.startTextDrawingAsync(this.textatt.font, this.textatt.getSize(pp), g)
+                        .then(() => this.drawText(arg)).then(() => this.finishTextDrawing(g));
+
+         promises.push(pr);
       }
 
-      assignContextMenu(this);
+      return Promise.all(promises).then(() => {
+         assignContextMenu(this);
 
-      addMoveHandler(this);
+         addMoveHandler(this);
 
-      return this;
+         return this;
+      });
    }
 
    /** @summary Draw TPie object */
