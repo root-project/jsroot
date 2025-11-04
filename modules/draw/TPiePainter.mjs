@@ -66,7 +66,14 @@ class TPiePainter extends ObjectPainter {
       }
 
       const rx = this.axisToSvg('x', pie.fX + radX) - xc,
-            ry = this.axisToSvg('y', pie.fY - radY) - yc;
+            ry = this.axisToSvg('y', pie.fY - radY) - yc,
+            dist_to_15pi = a => {
+               while (a < 0.5*Math.PI)
+                  a += 2*Math.PI;
+               while (a >= 2.5*Math.PI)
+                  a -= 2*Math.PI;
+               return Math.abs(a - 1.5 * Math.PI)
+            };
 
       makeTranslate(g, xc, yc);
 
@@ -76,17 +83,10 @@ class TPiePainter extends ObjectPainter {
 
       const angles = [af], order = [], p2 = 2 * Math.PI, p15 = 1.5 * Math.PI;
       for (let n = 0; n < nb; n++) {
-         let mid_angle = af;
+         const prev = af;
          af += pie.fPieSlices[n].fValue / total * p2;
          angles.push(af);
-         mid_angle = (mid_angle + af) / 2;
-         // while mid_angle compared with 1.5pi, rotate relative to pi/2
-         while (mid_angle < 0.5*Math.PI)
-            mid_angle += p2;
-         while (mid_angle >= 2.5*Math.PI)
-            mid_angle -= p2;
-
-         order.push({ n, mid_angle, a: Math.abs(mid_angle - p15) });
+         order.push({ n, a: dist_to_15pi((prev + af)/2) });
       }
 
       // sort in increasing order from Pi/2 angle
@@ -115,8 +115,7 @@ class TPiePainter extends ObjectPainter {
              .call(this.fillatt.func);
 
             const add_curved_side = (aa1, aa2) => {
-               const ma = (aa1 + aa2)/ 2;
-               if ((ma > Math.PI) && (ma < 2*Math.PI))
+               if (dist_to_15pi((aa1 + aa2)/ 2) < 0.5*Math.PI)
                   return;
                const xx1 = Math.round(rx * Math.cos(aa1)),
                      yy1 = Math.round(ry * Math.sin(aa1)),
@@ -133,7 +132,7 @@ class TPiePainter extends ObjectPainter {
                 .call(this.fillatt.func);
             }
 
-            if (Math.abs(a1-p15) > Math.abs(a2-p15)) {
+            if (dist_to_15pi(a1) > dist_to_15pi(a2)) {
                add_planar_side(x2, y2);
                add_planar_side(x1, y1);
             } else {
