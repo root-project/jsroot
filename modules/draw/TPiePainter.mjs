@@ -89,25 +89,22 @@ class TPiePainter extends ObjectPainter {
       makeTranslate(g, xc, yc);
 
       const arr = [];
-      let total = 0, af = pie.fAngularOffset / 180 * Math.PI;
+      let total = 0, af = -pie.fAngularOffset / 180 * Math.PI;
       for (let n = 0; n < pie.fPieSlices.length; n++) {
          const value = pie.fPieSlices[n].fValue;
          total += value;
          arr.push({n, value});
       }
       // sort in increase/decrease order
-      if (this.#sort !== 0) {
+      if (this.#sort !== 0)
          arr.sort((v1,v2) => { return this.#sort*(v1.value - v2.value); });
-         console.log('after sorting', this.#sort);
-         arr.forEach(v => console.log('entry', v.value, v.n));
-      }
 
       // now assign angles for each slice
       for (let n = 0; n < arr.length; n++) {
          const entry = arr[n];
-         entry.a1 = af;
-         af += entry.value / total * 2 * Math.PI;
          entry.a2 = af;
+         af -= entry.value / total * 2 * Math.PI;
+         entry.a1 = af;
          entry.a = dist_to_15pi((entry.a1 + entry.a2)/2);
       }
 
@@ -148,13 +145,13 @@ class TPiePainter extends ObjectPainter {
                 .call(this.fillatt.func);
             }, build_pie = (aa1, aa2, func) => {
                // use same segments for side and top/bottom curves
-               let a = aa1, border = -2*Math.PI;
+               let a = aa1, border = -6*Math.PI;
                while (border <= aa1)
                   border += Math.PI;
                while (a < aa2) {
                   if (border >= aa2) {
                      func(a, aa2);
-                     a = a2;
+                     a = aa2;
                   } else {
                      func(a, border);
                      a = border;
