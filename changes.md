@@ -2,8 +2,9 @@
 
 
 ## Changes in dev
+1. Implement 3D, text, title drawing for `TPie`
 1. Fix - proper paint axis labels on both sides when pad.fTickx/y = 2
-2. Fix - paint frame border mode/size from TCanvas
+1. Fix - paint frame border mode/size from TCanvas
 
 
 ## Changes in 7.10.0

@@ -130,11 +130,11 @@ class TPiePainter extends ObjectPainter {
       const rx = this.axisToSvg('x', pie.fX + radX) - xc,
             ry = this.axisToSvg('y', pie.fY - radY) - yc,
             dist_to_15pi = a => {
-               while (a < 0.5*Math.PI)
+               while (a < 0.5 * Math.PI)
                   a += 2 * Math.PI;
                while (a >= 2.5 * Math.PI)
                   a -= 2 * Math.PI;
-               return Math.abs(a - 1.5 * Math.PI)
+               return Math.abs(a - 1.5 * Math.PI);
             };
 
       makeTranslate(maing, xc, yc);
@@ -142,11 +142,11 @@ class TPiePainter extends ObjectPainter {
       const arr = [], promises = [];
       let total = 0, af = -pie.fAngularOffset / 180 * Math.PI;
       while (af < 2.5 * Math.PI)
-         af += 2*Math.PI;
+         af += 2 * Math.PI;
       for (let n = 0; n < pie.fPieSlices.length; n++) {
          const value = pie.fPieSlices[n].fValue;
          total += value;
-         arr.push({n, value});
+         arr.push({ n, value });
       }
       // sort in increase/decrease order
       if (this.#sort !== 0)
@@ -162,13 +162,13 @@ class TPiePainter extends ObjectPainter {
       }
 
       // sort for visualization in increasing order from Pi/2 angle
-      arr.sort((v1,v2) => { return v1.a - v2.a; });
+      arr.sort((v1, v2) => { return v1.a - v2.a; });
 
       for (let o = 0; o < arr.length; o++) {
          const entry = arr[o],
                slice = pie.fPieSlices[entry.n],
                g = maing.append('svg:g'),
-               mid_angle = (entry.a1 + entry.a2)/2;
+               mid_angle = (entry.a1 + entry.a2) / 2;
          if (slice.fRadiusOffset) {
             const coef = radX > 0 ? slice.fRadiusOffset / radX : 0.1,
                   dx = Math.round(rx * coef * Math.cos(mid_angle)),
@@ -181,25 +181,24 @@ class TPiePainter extends ObjectPainter {
                x1 = Math.round(rx * Math.cos(a1)),
                y1 = Math.round(ry * Math.sin(a1)),
                x2 = Math.round(rx * Math.cos(a2)),
-               y2 = Math.round(ry * Math.sin(a2));
-
-         const attline = this.createAttLine({ attr: slice, std: false }),
+               y2 = Math.round(ry * Math.sin(a2)),
+               attline = this.createAttLine({ attr: slice, std: false }),
                attfill = this.createAttFill({ attr: slice, std: false });
 
          // paint pseudo-3d object
          if (this.#is3d) {
             const add_curved_side = (aa1, aa2) => {
-               if (dist_to_15pi((aa1 + aa2)/ 2) < 0.5*Math.PI)
+               if (dist_to_15pi((aa1 + aa2) / 2) < 0.5 * Math.PI)
                   return;
                const xx1 = Math.round(rx * Math.cos(aa1)),
                      yy1 = Math.round(ry * Math.sin(aa1)),
                      xx2 = Math.round(rx * Math.cos(aa2)),
                      yy2 = Math.round(ry * Math.sin(aa2));
                g.append('svg:path')
-                .attr('d', `M${xx1},${yy1}a${rx},${ry},0,0,1,${xx2-xx1},${yy2-yy1}v${pixelHeight}a${rx},${ry},0,0,0,${xx1-xx2},${yy1-yy2}z`)
+                .attr('d', `M${xx1},${yy1}a${rx},${ry},0,0,1,${xx2 - xx1},${yy2 - yy1}v${pixelHeight}a${rx},${ry},0,0,0,${xx1 - xx2},${yy1 - yy2}z`)
                 .call(attline.func)
                 .call(attfill.func);
-            }, add_planar_side = (x,y) => {
+            }, add_planar_side = (x, y) => {
                g.append('svg:path')
                 .attr('d', `M0,0v${pixelHeight}l${x},${y}v${-pixelHeight}z`)
                 .call(attline.func)
@@ -221,18 +220,18 @@ class TPiePainter extends ObjectPainter {
                }
             };
 
-            let pie = '';
+            let pie_path = '';
             build_pie((aa1, aa2) => {
                const xx1 = Math.round(rx * Math.cos(aa1)),
                      yy1 = Math.round(ry * Math.sin(aa1)),
                      xx2 = Math.round(rx * Math.cos(aa2)),
                      yy2 = Math.round(ry * Math.sin(aa2));
-               pie += `a${rx},${ry},0,0,1,${xx2-xx1},${yy2-yy1}`;
+               pie_path += `a${rx},${ry},0,0,1,${xx2 - xx1},${yy2 - yy1}`;
             });
 
             // bottom
             g.append('svg:path')
-             .attr('d', `M0,${pixelHeight}l${x1},${y1}${pie}z`)
+             .attr('d', `M0,${pixelHeight}l${x1},${y1}${pie_path}z`)
              .call(attline.func)
              .call(attfill.func);
 
@@ -256,25 +255,26 @@ class TPiePainter extends ObjectPainter {
              .call(attfill.func);
          } else {
             g.append('svg:path')
-             .attr('d', `M0,0l${x1},${y1}a${rx},${ry},0,0,1,${x2-x1},${y2-y1}z`)
+             .attr('d', `M0,0l${x1},${y1}a${rx},${ry},0,0,1,${x2 - x1},${y2 - y1}z`)
              .call(attline.func)
              .call(attfill.func);
          }
 
          const frac = total ? slice.fValue / total : 0;
-         let tmptxt  = pie.fLabelFormat;
-         tmptxt = tmptxt.replaceAll("%txt", slice.fTitle);
-         tmptxt = tmptxt.replaceAll("%val", floatToString(slice.fValue, pie.fValueFormat));
-         tmptxt = tmptxt.replaceAll("%frac", floatToString(frac, pie.fFractionFormat));
-         tmptxt = tmptxt.replaceAll("%perc", floatToString(frac*100, pie.fPercentFormat) + '%');
+         let tmptxt = pie.fLabelFormat;
+         tmptxt = tmptxt.replaceAll('%txt', slice.fTitle);
+         tmptxt = tmptxt.replaceAll('%val', floatToString(slice.fValue, pie.fValueFormat));
+         tmptxt = tmptxt.replaceAll('%frac', floatToString(frac, pie.fFractionFormat));
+         tmptxt = tmptxt.replaceAll('%perc', floatToString(frac * 100, pie.fPercentFormat) + '%');
 
-
-         const arg = { draw_g: g,
-                       x: rx * (1 + pie.fLabelsOffset) * Math.cos(mid_angle),
-                       y: ry * (1 + pie.fLabelsOffset) * Math.sin(mid_angle),
-                       latex: 1,
-                       align: 22,
-                       text: tmptxt };
+         const arg = {
+            draw_g: g,
+            x: rx * (1 + pie.fLabelsOffset) * Math.cos(mid_angle),
+            y: ry * (1 + pie.fLabelsOffset) * Math.sin(mid_angle),
+            latex: 1,
+            align: 22,
+            text: tmptxt
+         };
 
          if (this.#samecolor)
             arg.color = this.getColor(slice.fFillColor);
@@ -282,9 +282,9 @@ class TPiePainter extends ObjectPainter {
          if (this.#lblor === 1) {
             // radial positioning of the labels
             arg.rotate = Math.atan2(arg.y, arg.x) / Math.PI * 180;
-            if (arg.x > 0) {
+            if (arg.x > 0)
                arg.align = 12;
-            } else {
+            else {
                arg.align = 32;
                arg.rotate += 180;
             }
