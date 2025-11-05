@@ -1,5 +1,7 @@
+import { clTPaveText, create, kTitle, gStyle } from '../core.mjs';
 import { makeTranslate, DrawOptions, floatToString } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { TPavePainter, kPosTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
@@ -14,6 +16,7 @@ class TPiePainter extends ObjectPainter {
    #is3d; // if 3d mode enabled
    #lblor; // how to draw labels
    #sort; // sorting order of pies
+   #same; // draw on existing pad
    #samecolor; // use same color for labels
 
    /** @summary Decode options */
@@ -23,6 +26,7 @@ class TPiePainter extends ObjectPainter {
       this.#lblor = 0;
       this.#sort = 0;
       this.#samecolor = false;
+      this.#same = d.check('SAME');
       if (d.check('SC'))
          this.#samecolor = true; // around
       if (d.check('T'))
@@ -51,6 +55,41 @@ class TPiePainter extends ObjectPainter {
    moveEnd(not_changed) {
       if (not_changed)
          return;
+   }
+
+   /** @summary Draw title
+     * @return {Promise} with painter */
+   async drawTitle() {
+      // case when histogram drawn over other histogram (same option)
+      if (this.#same)
+         return this;
+
+      const pie = this.getObject(), st = gStyle,
+            draw_title = (st.fOptTitle > 0) && pie.fTitle,
+            pp = this.getPadPainter();
+
+      let pt = pp.findInPrimitives(kTitle, clTPaveText);
+
+      if (pt) {
+         pt.Clear();
+         if (draw_title)
+            pt.AddText(pie.fTitle);
+         return this;
+      }
+
+      pt = create(clTPaveText);
+      Object.assign(pt, {
+         fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+         fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22
+      });
+
+      if (draw_title)
+         pt.AddText(pie.fTitle);
+
+      return TPavePainter.draw(pp, pt, kPosTitle).then(p => {
+         p?.setSecondaryId(this, kTitle);
+         return this;
+      });
    }
 
    /** @summary Update TPie object */
@@ -271,7 +310,7 @@ class TPiePainter extends ObjectPainter {
          promises.push(pr);
       }
 
-      return Promise.all(promises).then(() => {
+      return Promise.all(promises).then(() => this.drawTitle()).then(() => {
          assignContextMenu(this);
 
          addMoveHandler(this);
