@@ -43,11 +43,15 @@ class TPiePainter extends ObjectPainter {
    /** @summary start of drag handler
      * @private */
    moveStart(x, y) {
+      this.x = x;
+      this.y = y;
    }
 
    /** @summary drag handler
      * @private */
    moveDrag(dx, dy) {
+      this.x += dx;
+      this.y += dy;
    }
 
    /** @summary end of drag handler
@@ -55,6 +59,7 @@ class TPiePainter extends ObjectPainter {
    moveEnd(not_changed) {
       if (not_changed)
          return;
+      this.x = this.y = 0;
    }
 
    /** @summary Draw title
@@ -110,12 +115,13 @@ class TPiePainter extends ObjectPainter {
             pie = this.getObject(),
             xc = this.axisToSvg('x', pie.fX),
             yc = this.axisToSvg('y', pie.fY),
-            pp = this.getPadPainter();
+            pp = this.getPadPainter(),
+            radX = pie.fRadius;
 
-      let radX = pie.fRadius, radY = pie.fRadius, pixelHeight = 1;
+      let radY = radX, pixelHeight = 1;
 
       if (this.#is3d) {
-         radY *= Math.sin(pie.fAngle3D/180.*Math.PI);
+         radY *= Math.sin(pie.fAngle3D / 180 * Math.PI);
          pixelHeight = this.axisToSvg('y', pie.fY - pie.fHeight) - yc;
       }
 
@@ -125,9 +131,9 @@ class TPiePainter extends ObjectPainter {
             ry = this.axisToSvg('y', pie.fY - radY) - yc,
             dist_to_15pi = a => {
                while (a < 0.5*Math.PI)
-                  a += 2*Math.PI;
-               while (a >= 2.5*Math.PI)
-                  a -= 2*Math.PI;
+                  a += 2 * Math.PI;
+               while (a >= 2.5 * Math.PI)
+                  a -= 2 * Math.PI;
                return Math.abs(a - 1.5 * Math.PI)
             };
 
@@ -144,7 +150,7 @@ class TPiePainter extends ObjectPainter {
       }
       // sort in increase/decrease order
       if (this.#sort !== 0)
-         arr.sort((v1,v2) => { return this.#sort*(v1.value - v2.value); });
+         arr.sort((v1, v2) => { return this.#sort * (v1.value - v2.value); });
 
       // now assign angles for each slice
       for (let n = 0; n < arr.length; n++) {
@@ -152,7 +158,7 @@ class TPiePainter extends ObjectPainter {
          entry.a2 = af;
          af -= entry.value / total * 2 * Math.PI;
          entry.a1 = af;
-         entry.a = dist_to_15pi((entry.a1 + entry.a2)/2);
+         entry.a = dist_to_15pi((entry.a1 + entry.a2) / 2);
       }
 
       // sort for visualization in increasing order from Pi/2 angle
@@ -177,8 +183,8 @@ class TPiePainter extends ObjectPainter {
                x2 = Math.round(rx * Math.cos(a2)),
                y2 = Math.round(ry * Math.sin(a2));
 
-         this.createAttLine({ attr: slice });
-         this.createAttFill({ attr: slice });
+         const attline = this.createAttLine({ attr: slice, std: false }),
+               attfill = this.createAttFill({ attr: slice, std: false });
 
          // paint pseudo-3d object
          if (this.#is3d) {
@@ -191,13 +197,13 @@ class TPiePainter extends ObjectPainter {
                      yy2 = Math.round(ry * Math.sin(aa2));
                g.append('svg:path')
                 .attr('d', `M${xx1},${yy1}a${rx},${ry},0,0,1,${xx2-xx1},${yy2-yy1}v${pixelHeight}a${rx},${ry},0,0,0,${xx1-xx2},${yy1-yy2}z`)
-                .call(this.lineatt.func)
-                .call(this.fillatt.func);
+                .call(attline.func)
+                .call(attfill.func);
             }, add_planar_side = (x,y) => {
                g.append('svg:path')
                 .attr('d', `M0,0v${pixelHeight}l${x},${y}v${-pixelHeight}z`)
-                .call(this.lineatt.func)
-                .call(this.fillatt.func);
+                .call(attline.func)
+                .call(attfill.func);
             }, build_pie = func => {
                // use same segments for side and top/bottom curves
                let a = a1, border = 0;
@@ -227,8 +233,8 @@ class TPiePainter extends ObjectPainter {
             // bottom
             g.append('svg:path')
              .attr('d', `M0,${pixelHeight}l${x1},${y1}${pie}z`)
-             .call(this.lineatt.func)
-             .call(this.fillatt.func);
+             .call(attline.func)
+             .call(attfill.func);
 
 
             // planar
@@ -246,14 +252,13 @@ class TPiePainter extends ObjectPainter {
             // upper
             g.append('svg:path')
              .attr('d', `M0,0l${x1},${y1}${pie}z`)
-             .call(this.lineatt.func)
-             .call(this.fillatt.func);
-
+             .call(attline.func)
+             .call(attfill.func);
          } else {
             g.append('svg:path')
              .attr('d', `M0,0l${x1},${y1}a${rx},${ry},0,0,1,${x2-x1},${y2-y1}z`)
-             .call(this.lineatt.func)
-             .call(this.fillatt.func);
+             .call(attline.func)
+             .call(attfill.func);
          }
 
          const frac = total ? slice.fValue / total : 0;
