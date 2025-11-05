@@ -246,8 +246,12 @@ class TPiePainter extends ObjectPainter {
             }
          } else if (this.#lblor === 2) {
             // in the slice
-            arg.align = 23;
-            arg.rotate = Math.atan2(arg.y, arg.x) / Math.PI * 180 + 90;
+            arg.rotate = Math.atan2(y2 - y1, x2 - x1) / Math.PI * 180;
+            if ((arg.rotate > 90) || (arg.rotate < -90)) {
+               arg.rotate += 180;
+               arg.align = 21;
+            } else
+               arg.align = 23;
          } else if ((arg.x >= 0) && (arg.y >= 0)) {
             arg.align = 13;
             if (this.#is3d)
