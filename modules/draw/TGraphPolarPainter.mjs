@@ -1,8 +1,8 @@
-import { settings, gStyle, create, BIT, clTPaveText, kTitle } from '../core.mjs';
+import { settings, create, BIT } from '../core.mjs';
 import { scaleLinear, pointer as d3_pointer } from '../d3.mjs';
 import { DrawOptions, buildSvgCurve, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
-import { TPavePainter, kPosTitle } from '../hist/TPavePainter.mjs';
+import { drawObjectTitle, updateObjectTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { TooltipHandler } from '../gpad/TFramePainter.mjs';
 import { assignContextMenu, kNoReorder } from '../gui/menu.mjs';
@@ -498,7 +498,8 @@ class TGraphPolarPainter extends ObjectPainter {
 
    /** @summary Redraw TGraphPolar */
    redraw() {
-      return this.drawGraphPolar().then(() => this.updateTitle());
+      return this.drawGraphPolar()
+                  .then(() => updateObjectTitle(this, this._draw_axis, !this.getObject()?.TestBit(kNoTitle)));
    }
 
    /** @summary Drawing TGraphPolar */
@@ -681,64 +682,6 @@ class TGraphPolarPainter extends ObjectPainter {
       return res;
    }
 
-   /** @summary Only redraw histogram title
-     * @return {Promise} with painter */
-   async updateTitle() {
-      // case when histogram drawn over other histogram (same option)
-      if (!this._draw_axis)
-         return this;
-
-      const tpainter = this.getPadPainter()?.findPainterFor(null, kTitle, clTPaveText),
-            pt = tpainter?.getObject();
-
-      if (!tpainter || !pt)
-         return this;
-
-      const gr = this.getObject(),
-            draw_title = !gr.TestBit(kNoTitle) && (gStyle.fOptTitle > 0);
-
-      pt.Clear();
-      if (draw_title)
-         pt.AddText(gr.fTitle);
-      return tpainter.redraw().then(() => this);
-   }
-
-
-   /** @summary Draw histogram title
-     * @return {Promise} with painter */
-   async drawTitle() {
-      // case when histogram drawn over other histogram (same option)
-      if (!this._draw_axis)
-         return this;
-
-      const gr = this.getObject(),
-            st = gStyle,
-            draw_title = !gr.TestBit(kNoTitle) && (st.fOptTitle > 0),
-            pp = this.getPadPainter();
-
-      let pt = pp.findInPrimitives(kTitle, clTPaveText);
-
-      if (pt) {
-         pt.Clear();
-         if (draw_title)
-            pt.AddText(gr.fTitle);
-         return this;
-      }
-
-      pt = create(clTPaveText);
-      Object.assign(pt, {
-         fName: kTitle, fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
-         fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22
-      });
-
-      if (draw_title)
-         pt.AddText(gr.fTitle);
-      return TPavePainter.draw(pp, pt, kPosTitle).then(p => {
-         p?.setSecondaryId(this, kTitle);
-         return this;
-      });
-   }
-
    /** @summary Show tooltip */
    showTooltip(hint) {
       let ttcircle = this.getG()?.selectChild('.tooltip_bin');
@@ -797,7 +740,7 @@ class TGraphPolarPainter extends ObjectPainter {
          gram_painter?.setSecondaryId(painter, 'polargram');
          painter.addToPadPrimitives();
          return painter.drawGraphPolar();
-      }).then(() => painter.drawTitle());
+      }).then(() => drawObjectTitle(painter, painter._draw_axis, !graph.TestBit(kNoTitle)));
    }
 
 } // class TGraphPolarPainter

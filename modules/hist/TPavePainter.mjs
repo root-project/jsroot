@@ -1835,7 +1835,7 @@ async function drawObjectTitle(painter, is_enabled, is_draw) {
    if (pt) {
       pt.Clear();
       if (draw_title)
-         pt.AddText(histo.fTitle);
+         pt.AddText(obj.fTitle);
       return painter;
    }
 
