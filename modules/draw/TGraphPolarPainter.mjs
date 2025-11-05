@@ -2,7 +2,7 @@ import { settings, create, BIT } from '../core.mjs';
 import { scaleLinear, pointer as d3_pointer } from '../d3.mjs';
 import { DrawOptions, buildSvgCurve, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
-import { drawObjectTitle, updateObjectTitle } from '../hist/TPavePainter.mjs';
+import { drawObjectTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { TooltipHandler } from '../gpad/TFramePainter.mjs';
 import { assignContextMenu, kNoReorder } from '../gui/menu.mjs';
@@ -496,10 +496,14 @@ class TGraphPolarPainter extends ObjectPainter {
       return true;
    }
 
+   async drawTitle(first_time) {
+      return drawObjectTitle(this, first_time, this._draw_axis, !this.getObject()?.TestBit(kNoTitle));
+   }
+
    /** @summary Redraw TGraphPolar */
    redraw() {
       return this.drawGraphPolar()
-                  .then(() => updateObjectTitle(this, this._draw_axis, !this.getObject()?.TestBit(kNoTitle)));
+                  .then(() => this.drawTitle());
    }
 
    /** @summary Drawing TGraphPolar */
@@ -740,7 +744,7 @@ class TGraphPolarPainter extends ObjectPainter {
          gram_painter?.setSecondaryId(painter, 'polargram');
          painter.addToPadPrimitives();
          return painter.drawGraphPolar();
-      }).then(() => drawObjectTitle(painter, painter._draw_axis, !graph.TestBit(kNoTitle)));
+      }).then(() => painter.drawTitle(true));
    }
 
 } // class TGraphPolarPainter

@@ -1821,11 +1821,36 @@ class TPavePainter extends ObjectPainter {
 } // class TPavePainter
 
 
-/** @summary Draw histogram title
-    * @return {Promise} with painter */
-async function drawObjectTitle(painter, is_enabled, is_draw) {
+/** @summary Only redraw object title
+  * @return {Promise} with painter */
+async function updateObjectTitle(painter, is_enabled, is_draw) {
+   // case when histogram drawn over other histogram (same option)
    if (!is_enabled)
       return painter;
+
+   const tpainter = painter.getPadPainter()?.findPainterFor(null, kTitle, clTPaveText),
+         pt = tpainter?.getObject();
+
+   if (!tpainter || !pt)
+      return painter;
+
+   const obj = painter.getObject(),
+         draw_title = is_draw && (gStyle.fOptTitle > 0);
+
+   pt.Clear();
+   if (draw_title)
+      pt.AddText(obj.fTitle);
+   return tpainter.redraw().then(() => painter);
+}
+
+/** @summary Draw object title
+    * @return {Promise} with painter */
+async function drawObjectTitle(painter, first_time, is_enabled, is_draw) {
+   if (!is_enabled)
+      return painter;
+
+   if (!first_time)
+      return updateObjectTitle(painter, is_enabled, is_draw);
 
    const obj = painter.getObject(), st = gStyle,
          draw_title = is_draw && (st.fOptTitle > 0),
@@ -1854,27 +1879,4 @@ async function drawObjectTitle(painter, is_enabled, is_draw) {
    });
 }
 
-/** @summary Only redraw object title
-  * @return {Promise} with painter */
-async function updateObjectTitle(painter, is_enabled, is_draw) {
-   // case when histogram drawn over other histogram (same option)
-   if (!is_enabled)
-      return painter;
-
-   const tpainter = painter.getPadPainter()?.findPainterFor(null, kTitle, clTPaveText),
-         pt = tpainter?.getObject();
-
-   if (!tpainter || !pt)
-      return painter;
-
-   const obj = painter.getObject(),
-         draw_title = is_draw && (gStyle.fOptTitle > 0);
-
-   pt.Clear();
-   if (draw_title)
-      pt.AddText(obj.fTitle);
-   return tpainter.redraw().then(() => painter);
-}
-
-
-export { TPavePainter, kPosTitle, updateObjectTitle, drawObjectTitle };
+export { TPavePainter, kPosTitle, drawObjectTitle };

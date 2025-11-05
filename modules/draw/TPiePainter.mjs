@@ -1,6 +1,6 @@
 import { makeTranslate, DrawOptions, floatToString } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-import { drawObjectTitle, updateObjectTitle } from '../hist/TPavePainter.mjs';
+import { drawObjectTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
@@ -360,9 +360,13 @@ class TPiePainter extends ObjectPainter {
       });
    }
 
+   async drawTitle(first_time) {
+      return drawObjectTitle(this, first_time, !this.options.same, true);
+   }
+
    /** @summary Redraw TPie object */
    async redraw() {
-      return this.drawPie().then(() => updateObjectTitle(this, !this.options.same, true)).then(() => {
+      return this.drawPie().then(() => this.drawTitle()).then(() => {
          assignContextMenu(this);
          addMoveHandler(this);
          return this;
@@ -385,7 +389,7 @@ class TPiePainter extends ObjectPainter {
       painter.decodeOptions(opt);
       return ensureTCanvas(painter, false)
          .then(() => painter.drawPie())
-         .then(() => drawObjectTitle(painter, !painter.options.same, true))
+         .then(() => painter.drawTitle(true))
          .then(() => {
             assignContextMenu(painter);
             addMoveHandler(painter);

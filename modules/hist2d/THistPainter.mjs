@@ -4,7 +4,7 @@ import { gStyle, BIT, settings, constants, create, isObject, isFunc, isStr, getP
 import { getColorPalette } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits, kAxisTime, kAxisLabels } from '../base/ObjectPainter.mjs';
-import { TPavePainter, updateObjectTitle, drawObjectTitle } from '../hist/TPavePainter.mjs';
+import { TPavePainter, drawObjectTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { gamma_quantile, gamma_quantile_c } from '../base/math.mjs';
 
@@ -1671,18 +1671,15 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Only redraw histogram title
      * @return {Promise} with painter */
-   async updateHistTitle() {
-      const o = this.getOptions();
-
-      return updateObjectTitle(this, this.isMainPainter() && !o.Same && (o.Axis <= 0), !this.getHisto().TestBit(kNoTitle));
+   async updateHistTitle(first_time = false) {
+      const o = this.getOptions(),
+            histo = this.getHisto();
+      return drawObjectTitle(this, first_time, this.isMainPainter() && !o.Same && (o.Axis <= 0), !histo.TestBit(kNoTitle));
    }
 
    /** @summary Draw histogram title
      * @return {Promise} with painter */
-   async drawHistTitle() {
-      const o = this.getOptions();
-      return drawObjectTitle(this, this.isMainPainter() && !o.Same && (o.Axis <= 0), !this.getHisto().TestBit(kNoTitle));
-   }
+   async drawHistTitle() { return this.updateHistTitle(true); }
 
    /** @summary Live change and update of title drawing
      * @desc Used from the GED */
