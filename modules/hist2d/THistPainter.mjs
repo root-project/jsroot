@@ -1,10 +1,10 @@
 import { gStyle, BIT, settings, constants, create, isObject, isFunc, isStr, getPromise,
-         clTList, clTPaveText, clTPaveStats, clTPaletteAxis, clTProfile, clTProfile2D, clTProfile3D, clTPad,
+         clTList, clTPaveStats, clTPaletteAxis, clTProfile, clTProfile2D, clTProfile3D, clTPad,
          clTAxis, clTF1, clTF2, kNoZoom, clTCutG, kNoStats, kTitle, setHistogramTitle } from '../core.mjs';
 import { getColorPalette } from '../base/colors.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits, kAxisTime, kAxisLabels } from '../base/ObjectPainter.mjs';
-import { TPavePainter, kPosTitle } from '../hist/TPavePainter.mjs';
+import { TPavePainter, updateObjectTitle, drawObjectTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { gamma_quantile, gamma_quantile_c } from '../base/math.mjs';
 
@@ -1674,59 +1674,14 @@ class THistPainter extends ObjectPainter {
    async updateHistTitle() {
       const o = this.getOptions();
 
-      // case when histogram drawn over other histogram (same option)
-      if (!this.isMainPainter() || o.Same || (o.Axis > 0))
-         return this;
-
-      const tpainter = this.getPadPainter()?.findPainterFor(null, kTitle, clTPaveText),
-            pt = tpainter?.getObject();
-
-      if (!tpainter || !pt)
-         return this;
-
-      const histo = this.getHisto(),
-            draw_title = !histo.TestBit(kNoTitle) && (gStyle.fOptTitle > 0);
-
-      pt.Clear();
-      if (draw_title)
-         pt.AddText(histo.fTitle);
-      return tpainter.redraw().then(() => this);
+      return updateObjectTitle(this, this.isMainPainter() && !o.Same && (o.Axis <= 0), !this.getHisto().TestBit(kNoTitle));
    }
 
    /** @summary Draw histogram title
      * @return {Promise} with painter */
    async drawHistTitle() {
       const o = this.getOptions();
-
-      // case when histogram drawn over other histogram (same option)
-      if (!this.isMainPainter() || o.Same || (o.Axis > 0))
-         return this;
-
-      const histo = this.getHisto(), st = gStyle,
-            draw_title = !histo.TestBit(kNoTitle) && (st.fOptTitle > 0),
-            pp = this.getPadPainter();
-
-      let pt = pp.findInPrimitives(kTitle, clTPaveText);
-      if (pt) {
-         pt.Clear();
-         if (draw_title)
-            pt.AddText(histo.fTitle);
-         return this;
-      }
-
-      pt = create(clTPaveText);
-      Object.assign(pt, {
-         fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
-         fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22
-      });
-
-      if (draw_title)
-         pt.AddText(histo.fTitle);
-
-      return TPavePainter.draw(pp, pt, kPosTitle).then(p => {
-         p?.setSecondaryId(this, kTitle);
-         return this;
-      });
+      return drawObjectTitle(this, this.isMainPainter() && !o.Same && (o.Axis <= 0), !this.getHisto().TestBit(kNoTitle));
    }
 
    /** @summary Live change and update of title drawing
