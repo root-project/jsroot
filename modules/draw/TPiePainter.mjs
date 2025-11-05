@@ -13,30 +13,25 @@ import { assignContextMenu } from '../gui/menu.mjs';
 
 class TPiePainter extends ObjectPainter {
 
-   #is3d; // if 3d mode enabled
-   #lblor; // how to draw labels
-   #sort; // sorting order of pies
-   #same; // draw on existing pad
-   #samecolor; // use same color for labels
-
    /** @summary Decode options */
    decodeOptions(opt) {
-      const d = new DrawOptions(opt);
-      this.#is3d = d.check('3D');
-      this.#lblor = 0;
-      this.#sort = 0;
-      this.#samecolor = false;
-      this.#same = d.check('SAME');
+      const d = new DrawOptions(opt),
+            o = this.getOptions();
+      o.is3d = d.check('3D');
+      o.lblor = 0;
+      o.sort = 0;
+      o.samecolor = false;
+      o.same = d.check('SAME');
       if (d.check('SC'))
-         this.#samecolor = true; // around
+         o.samecolor = true; // around
       if (d.check('T'))
-         this.#lblor = 2; // around
+         o.lblor = 2; // around
       if (d.check('R'))
-         this.#lblor = 1; // along the radius
+         o.lblor = 1; // along the radius
       if (d.check('>'))
-         this.#sort = 1;
+         o.sort = 1;
       if (d.check('<'))
-         this.#sort = -1;
+         o.sort = -1;
    }
 
 
@@ -65,11 +60,11 @@ class TPiePainter extends ObjectPainter {
    /** @summary Draw title
      * @return {Promise} with painter */
    async drawTitle() {
-      // case when histogram drawn over other histogram (same option)
-      if (this.#same)
+      if (this.options.same)
          return this;
 
-      const pie = this.getObject(), st = gStyle,
+      const pie = this.getObject(),
+            st = gStyle,
             draw_title = (st.fOptTitle > 0) && pie.fTitle,
             pp = this.getPadPainter();
 
@@ -113,6 +108,7 @@ class TPiePainter extends ObjectPainter {
    async redraw() {
       const maing = this.createG(),
             pie = this.getObject(),
+            o = this.getOptions(),
             xc = this.axisToSvg('x', pie.fX),
             yc = this.axisToSvg('y', pie.fY),
             pp = this.getPadPainter(),
@@ -120,7 +116,7 @@ class TPiePainter extends ObjectPainter {
 
       let radY = radX, pixelHeight = 1;
 
-      if (this.#is3d) {
+      if (o.is3d) {
          radY *= Math.sin(pie.fAngle3D / 180 * Math.PI);
          pixelHeight = this.axisToSvg('y', pie.fY - pie.fHeight) - yc;
       }
@@ -149,8 +145,8 @@ class TPiePainter extends ObjectPainter {
          arr.push({ n, value });
       }
       // sort in increase/decrease order
-      if (this.#sort !== 0)
-         arr.sort((v1, v2) => { return this.#sort * (v1.value - v2.value); });
+      if (o.sort !== 0)
+         arr.sort((v1, v2) => { return o.sort * (v1.value - v2.value); });
 
       // now assign angles for each slice
       for (let n = 0; n < arr.length; n++) {
@@ -164,8 +160,8 @@ class TPiePainter extends ObjectPainter {
       // sort for visualization in increasing order from Pi/2 angle
       arr.sort((v1, v2) => { return v1.a - v2.a; });
 
-      for (let o = 0; o < arr.length; o++) {
-         const entry = arr[o],
+      for (let indx = 0; indx < arr.length; indx++) {
+         const entry = arr[indx],
                slice = pie.fPieSlices[entry.n],
                g = maing.append('svg:g'),
                mid_angle = (entry.a1 + entry.a2) / 2;
@@ -186,7 +182,7 @@ class TPiePainter extends ObjectPainter {
                attfill = this.createAttFill({ attr: slice, std: false });
 
          // paint pseudo-3d object
-         if (this.#is3d) {
+         if (o.is3d) {
             const add_curved_side = (aa1, aa2) => {
                if (dist_to_15pi((aa1 + aa2) / 2) < 0.5 * Math.PI)
                   return;
@@ -276,10 +272,10 @@ class TPiePainter extends ObjectPainter {
             text: tmptxt
          };
 
-         if (this.#samecolor)
+         if (o.samecolor)
             arg.color = this.getColor(slice.fFillColor);
 
-         if (this.#lblor === 1) {
+         if (o.lblor === 1) {
             // radial positioning of the labels
             arg.rotate = Math.atan2(arg.y, arg.x) / Math.PI * 180;
             if (arg.x > 0)
@@ -288,7 +284,7 @@ class TPiePainter extends ObjectPainter {
                arg.align = 32;
                arg.rotate += 180;
             }
-         } else if (this.#lblor === 2) {
+         } else if (o.lblor === 2) {
             // in the slice
             arg.rotate = Math.atan2(y2 - y1, x2 - x1) / Math.PI * 180;
             if ((arg.rotate > 90) || (arg.rotate < -90)) {
@@ -298,13 +294,13 @@ class TPiePainter extends ObjectPainter {
                arg.align = 23;
          } else if ((arg.x >= 0) && (arg.y >= 0)) {
             arg.align = 13;
-            if (this.#is3d)
+            if (o.is3d)
                arg.y += pixelHeight;
          } else if ((arg.x > 0) && (arg.y < 0))
             arg.align = 11;
          else if ((arg.x < 0) && (arg.y >= 0)) {
             arg.align = 33;
-            if (this.#is3d)
+            if (o.is3d)
                arg.y += pixelHeight;
          } else if ((arg.x < 0) && (arg.y < 0))
             arg.align = 31;
