@@ -21,6 +21,8 @@ class TPiePainter extends ObjectPainter {
    #movey; // moving Y coordinate
    #angle0; // initial angle
    #offset0; // initial offset
+   #slice; // moving slice
+   #mode; // moving mode
 
    /** @summary Decode options */
    decodeOptions(opt) {
@@ -46,21 +48,38 @@ class TPiePainter extends ObjectPainter {
    /** @summary start of drag handler
      * @private */
    moveStart(x, y) {
-      if ((!x && !y) || !this.#slices)
+      if ((!x && !y) || !this.#slices || !this.#rx || !this.#ry)
          return;
-      const angle = Math.atan2(y, x),
-            len = Math.sqrt(x**2 + y**2),
-            refx = this.#rx * Math.cos(angle),
-            refy = this.#ry * Math.sin(angle),
-            reflen = Math.sqrt(refx**2 + refy**2);
+      let angle = Math.atan2(y/this.#ry, x/this.#rx);
 
-      console.log('angle', angle, 'distance', len/reflen);
+      while (angle < 0.5 * Math.PI)
+         angle += 2 * Math.PI;
 
+
+      const pie = this.getObject(),
+            len = Math.sqrt((x/this.#rx)**2 + (y/this.#ry)**2),
+            slice = this.#slices.find(elem => {
+               return ((elem.a1 < angle) && (angle < elem.a2)) ||
+                      ((elem.a1 < angle + 2 * Math.PI) && (angle + 2 * Math.PI < elem.a2));
+            });
+
+      // kind of cursor shown
+      this.#mode = (slice && len < 0.7) ? 'grab' : 'w-resize';
 
       this.#movex = x;
       this.#movey = y;
-      this.#angle0 = angle;
-      this.#offset0 = this.getObject().fAngularOffset;
+
+      this.getG().style('cursor', this.#mode);
+
+      if (this.#mode === 'grab') {
+         this.#slice = slice.n;
+         this.#angle0 = len;
+         this.#offset0 = pie.fPieSlices[this.#slice].fRadiusOffset;
+      } else {
+         this.#angle0 = angle;
+         this.#offset0 = pie.fAngularOffset;
+      }
+
    }
 
    /** @summary drag handler
@@ -69,10 +88,15 @@ class TPiePainter extends ObjectPainter {
       this.#movex += dx;
       this.#movey += dy;
 
-      const angle = Math.atan2(this.#movey, this.#movex),
-            pie = this.getObject();
+      const pie = this.getObject();
 
-      pie.fAngularOffset = this.#offset0 - (angle - this.#angle0) / Math.PI * 180;
+      if (this.#mode === 'grab') {
+         const len = Math.sqrt((this.#movex/this.#rx)**2 + (this.#movey/this.#ry)**2);
+         pie.fPieSlices[this.#slice].fRadiusOffset = Math.max(0, this.#offset0 + 0.25*(len - this.#angle0));
+      } else {
+         const angle = Math.atan2(this.#movey/this.#ry, this.#movex/this.#rx);
+         pie.fAngularOffset = this.#offset0 - (angle - this.#angle0) / Math.PI * 180;
+      }
 
       this.drawPie();
    }
@@ -85,7 +109,19 @@ class TPiePainter extends ObjectPainter {
 
       const pie = this.getObject();
 
-      this.submitCanvExec(`SetAngularOffset(${pie.fAngularOffset});;Notify();;`);
+      let exec = '';
+
+      if (this.#mode === 'grab')
+         exec = `SetEntryRadiusOffset(${this.#slice},${pie.fPieSlices[this.#slice].fRadiusOffset})`;
+      else
+         exec = `SetAngularOffset(${pie.fAngularOffset})`;
+
+      if (exec)
+         this.submitCanvExec(exec + ';;Notify();;');
+
+      this.#mode = null;
+
+      this.getG().style('cursor', null);
    }
 
    /** @summary Draw title
@@ -151,6 +187,8 @@ class TPiePainter extends ObjectPainter {
          radY *= Math.sin(pie.fAngle3D / 180 * Math.PI);
          pixelHeight = this.axisToSvg('y', pie.fY - pie.fHeight) - yc;
       }
+
+      maing.style('cursor', this.#mode || null);
 
       this.createAttText({ attr: pie });
 
