@@ -250,7 +250,7 @@ class TPiePainter extends ObjectPainter {
 
             // upper
             g.append('svg:path')
-             .attr('d', `M0,0l${x1},${y1}${pie}z`)
+             .attr('d', `M0,0l${x1},${y1}${pie_path}z`)
              .call(attline.func)
              .call(attfill.func);
          } else {
