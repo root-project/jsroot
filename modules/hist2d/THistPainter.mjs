@@ -1671,7 +1671,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Only redraw histogram title
      * @return {Promise} with painter */
-   async updateHistTitle(first_time = false) {
+   async updateHistTitle(first_time) {
       const o = this.getOptions(),
             histo = this.getHisto();
       return drawObjectTitle(this, first_time, this.isMainPainter() && !o.Same && (o.Axis <= 0), !histo.TestBit(kNoTitle));

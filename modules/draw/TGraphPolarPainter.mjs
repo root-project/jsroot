@@ -496,12 +496,13 @@ class TGraphPolarPainter extends ObjectPainter {
       return true;
    }
 
+   /** @summary Draw TGraphPolar title */
    async drawTitle(first_time) {
       return drawObjectTitle(this, first_time, this._draw_axis, !this.getObject()?.TestBit(kNoTitle));
    }
 
    /** @summary Redraw TGraphPolar */
-   redraw() {
+   async redraw() {
       return this.drawGraphPolar()
                   .then(() => this.drawTitle());
    }

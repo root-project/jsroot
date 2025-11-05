@@ -1821,21 +1821,46 @@ class TPavePainter extends ObjectPainter {
 } // class TPavePainter
 
 
-/** @summary Only redraw object title
-  * @return {Promise} with painter */
-async function updateObjectTitle(painter, is_enabled, is_draw) {
-   // case when histogram drawn over other histogram (same option)
+/** @summary Draw object title
+    * @return {Promise} with painter */
+async function drawObjectTitle(painter, first_time, is_enabled, is_draw) {
    if (!is_enabled)
       return painter;
 
-   const tpainter = painter.getPadPainter()?.findPainterFor(null, kTitle, clTPaveText),
+   const st = gStyle,
+         obj = painter.getObject(),
+         pp = painter.getPadPainter(),
+         draw_title = is_draw && (st.fOptTitle > 0);
+
+   if (first_time) {
+      let pt = pp.findInPrimitives(kTitle, clTPaveText);
+      if (pt) {
+         pt.Clear();
+         if (draw_title)
+            pt.AddText(obj.fTitle);
+         return painter;
+      }
+
+      pt = create(clTPaveText);
+      Object.assign(pt, {
+         fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+         fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22
+      });
+
+      if (draw_title)
+         pt.AddText(obj.fTitle);
+
+      return TPavePainter.draw(pp, pt, kPosTitle).then(p => {
+         p?.setSecondaryId(painter, kTitle);
+         return painter;
+      });
+   }
+
+   const tpainter = pp?.findPainterFor(null, kTitle, clTPaveText),
          pt = tpainter?.getObject();
 
    if (!tpainter || !pt)
       return painter;
-
-   const obj = painter.getObject(),
-         draw_title = is_draw && (gStyle.fOptTitle > 0);
 
    pt.Clear();
    if (draw_title)
@@ -1843,40 +1868,5 @@ async function updateObjectTitle(painter, is_enabled, is_draw) {
    return tpainter.redraw().then(() => painter);
 }
 
-/** @summary Draw object title
-    * @return {Promise} with painter */
-async function drawObjectTitle(painter, first_time, is_enabled, is_draw) {
-   if (!is_enabled)
-      return painter;
-
-   if (!first_time)
-      return updateObjectTitle(painter, is_enabled, is_draw);
-
-   const obj = painter.getObject(), st = gStyle,
-         draw_title = is_draw && (st.fOptTitle > 0),
-         pp = painter.getPadPainter();
-
-   let pt = pp.findInPrimitives(kTitle, clTPaveText);
-   if (pt) {
-      pt.Clear();
-      if (draw_title)
-         pt.AddText(obj.fTitle);
-      return painter;
-   }
-
-   pt = create(clTPaveText);
-   Object.assign(pt, {
-      fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
-      fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22
-   });
-
-   if (draw_title)
-      pt.AddText(obj.fTitle);
-
-   return TPavePainter.draw(pp, pt, kPosTitle).then(p => {
-      p?.setSecondaryId(painter, kTitle);
-      return painter;
-   });
-}
 
 export { TPavePainter, kPosTitle, drawObjectTitle };

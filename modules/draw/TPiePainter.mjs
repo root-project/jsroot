@@ -360,6 +360,7 @@ class TPiePainter extends ObjectPainter {
       });
    }
 
+   /** @summary Draw TPie title */
    async drawTitle(first_time) {
       return drawObjectTitle(this, first_time, !this.options.same, true);
    }
