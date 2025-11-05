@@ -6,12 +6,21 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
+
 /**
  * @summary Painter for TBox class
  * @private
  */
 
 class TPiePainter extends ObjectPainter {
+
+   #rx; // recent rx
+   #ry; // recent ry
+   #slices; // recent slices
+   #movex; // moving X coordinate
+   #movey; // moving Y coordinate
+   #angle0; // initial angle
+   #offset0; // initial offset
 
    /** @summary Decode options */
    decodeOptions(opt) {
@@ -34,19 +43,38 @@ class TPiePainter extends ObjectPainter {
          o.sort = -1;
    }
 
-
    /** @summary start of drag handler
      * @private */
    moveStart(x, y) {
-      this.x = x;
-      this.y = y;
+      if ((!x && !y) || !this.#slices)
+         return;
+      const angle = Math.atan2(y, x),
+            len = Math.sqrt(x**2 + y**2),
+            refx = this.#rx * Math.cos(angle),
+            refy = this.#ry * Math.sin(angle),
+            reflen = Math.sqrt(refx**2 + refy**2);
+
+      console.log('angle', angle, 'distance', len/reflen);
+
+
+      this.#movex = x;
+      this.#movey = y;
+      this.#angle0 = angle;
+      this.#offset0 = this.getObject().fAngularOffset;
    }
 
    /** @summary drag handler
      * @private */
    moveDrag(dx, dy) {
-      this.x += dx;
-      this.y += dy;
+      this.#movex += dx;
+      this.#movey += dy;
+
+      const angle = Math.atan2(this.#movey, this.#movex),
+            pie = this.getObject();
+
+      pie.fAngularOffset = this.#offset0 - (angle - this.#angle0) / Math.PI * 180;
+
+      this.drawPie();
    }
 
    /** @summary end of drag handler
@@ -54,7 +82,10 @@ class TPiePainter extends ObjectPainter {
    moveEnd(not_changed) {
       if (not_changed)
          return;
-      this.x = this.y = 0;
+
+      const pie = this.getObject();
+
+      this.submitCanvExec(`SetAngularOffset(${pie.fAngularOffset});;Notify();;`);
    }
 
    /** @summary Draw title
@@ -105,7 +136,7 @@ class TPiePainter extends ObjectPainter {
    }
 
    /** @summary Redraw pie */
-   async redraw() {
+   async drawPie() {
       const maing = this.createG(),
             pie = this.getObject(),
             o = this.getOptions(),
@@ -311,14 +342,25 @@ class TPiePainter extends ObjectPainter {
          promises.push(pr);
       }
 
-      return Promise.all(promises).then(() => this.drawTitle()).then(() => {
-         assignContextMenu(this);
-
-         addMoveHandler(this);
-
+      return Promise.all(promises).then(() => {
+         this.#rx = rx;
+         this.#ry = ry;
+         this.#slices = arr;
          return this;
       });
    }
+
+   /** @summary Redraw TPie object */
+   async redraw() {
+      return this.drawPie().then(() => this.drawTitle()).then(() => {
+         if (!this.isBatchMode()) {
+            assignContextMenu(this);
+            addMoveHandler(this);
+         }
+         return this;
+      });
+   }
+
 
    /** @summary Draw TPie object */
    static async draw(dom, obj, opt) {
