@@ -50,20 +50,20 @@ class TPiePainter extends ObjectPainter {
    moveStart(x, y) {
       if ((!x && !y) || !this.#slices || !this.#rx || !this.#ry)
          return;
-      let angle = Math.atan2(y/this.#ry, x/this.#rx);
+      let angle = Math.atan2(y / this.#ry, x / this.#rx);
 
       while (angle < 0.5 * Math.PI)
          angle += 2 * Math.PI;
 
       const pie = this.getObject(),
-            len = Math.sqrt((x/this.#rx)**2 + (y/this.#ry)**2),
+            len = Math.sqrt((x / this.#rx) ** 2 + (y / this.#ry) ** 2),
             slice = this.#slices.find(elem => {
                return ((elem.a1 < angle) && (angle < elem.a2)) ||
                       ((elem.a1 < angle + 2 * Math.PI) && (angle + 2 * Math.PI < elem.a2));
             });
 
       // kind of cursor shown
-      this.#mode = ((len > 0.95) && (x > this.#rx*0.95) && this.options.is3d) ? 'n-resize': ((slice && len < 0.7) ? 'grab' : 'w-resize');
+      this.#mode = ((len > 0.95) && (x > this.#rx * 0.95) && this.options.is3d) ? 'n-resize' : ((slice && len < 0.7) ? 'grab' : 'w-resize');
 
       this.#movex = x;
       this.#movey = y;
@@ -82,7 +82,6 @@ class TPiePainter extends ObjectPainter {
          this.#angle0 = angle;
          this.#offset0 = pie.fAngularOffset;
       }
-
    }
 
    /** @summary drag handler
@@ -94,12 +93,12 @@ class TPiePainter extends ObjectPainter {
       const pie = this.getObject();
 
       if (this.#mode === 'grab') {
-         const len = Math.sqrt((this.#movex/this.#rx)**2 + (this.#movey/this.#ry)**2);
-         pie.fPieSlices[this.#slice].fRadiusOffset = Math.max(0, this.#offset0 + 0.25*(len - this.#angle0));
+         const len = Math.sqrt((this.#movex / this.#rx) ** 2 + (this.#movey / this.#ry) ** 2);
+         pie.fPieSlices[this.#slice].fRadiusOffset = Math.max(0, this.#offset0 + 0.25 * (len - this.#angle0));
       } else if (this.#mode === 'n-resize')
          pie.fAngle3D = Math.max(5, Math.min(85, this.#angle0 + (this.#movey - this.#offset0) / this.#padh * 180));
       else {
-         const angle = Math.atan2(this.#movey/this.#ry, this.#movex/this.#rx);
+         const angle = Math.atan2(this.#movey / this.#ry, this.#movex / this.#rx);
          pie.fAngularOffset = this.#offset0 - (angle - this.#angle0) / Math.PI * 180;
       }
 
@@ -114,7 +113,7 @@ class TPiePainter extends ObjectPainter {
 
       const pie = this.getObject();
 
-      let exec = '';
+      let exec;
 
       if (this.#mode === 'grab')
          exec = `SetEntryRadiusOffset(${this.#slice},${pie.fPieSlices[this.#slice].fRadiusOffset})`;
