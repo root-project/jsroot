@@ -1,7 +1,6 @@
-import { clTPaveText, create, kTitle, gStyle } from '../core.mjs';
 import { makeTranslate, DrawOptions, floatToString } from '../base/BasePainter.mjs';
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
-import { TPavePainter, kPosTitle } from '../hist/TPavePainter.mjs';
+import { drawObjectTitle, updateObjectTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
@@ -130,41 +129,6 @@ class TPiePainter extends ObjectPainter {
       this.#mode = null;
 
       this.getG().style('cursor', null);
-   }
-
-   /** @summary Draw title
-     * @return {Promise} with painter */
-   async drawTitle() {
-      if (this.options.same)
-         return this;
-
-      const pie = this.getObject(),
-            st = gStyle,
-            draw_title = (st.fOptTitle > 0) && pie.fTitle,
-            pp = this.getPadPainter();
-
-      let pt = pp.findInPrimitives(kTitle, clTPaveText);
-
-      if (pt) {
-         pt.Clear();
-         if (draw_title)
-            pt.AddText(pie.fTitle);
-         return this;
-      }
-
-      pt = create(clTPaveText);
-      Object.assign(pt, {
-         fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
-         fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22
-      });
-
-      if (draw_title)
-         pt.AddText(pie.fTitle);
-
-      return TPavePainter.draw(pp, pt, kPosTitle).then(p => {
-         p?.setSecondaryId(this, kTitle);
-         return this;
-      });
    }
 
    /** @summary Update TPie object */
@@ -398,13 +362,20 @@ class TPiePainter extends ObjectPainter {
 
    /** @summary Redraw TPie object */
    async redraw() {
-      return this.drawPie().then(() => this.drawTitle()).then(() => {
-         if (!this.isBatchMode()) {
-            assignContextMenu(this);
-            addMoveHandler(this);
-         }
+      return this.drawPie().then(() => updateObjectTitle(this, !this.options.same, true)).then(() => {
+         assignContextMenu(this);
+         addMoveHandler(this);
          return this;
       });
+   }
+
+   /** @summary Fill specific items */
+   fillContextMenuItems(menu) {
+      const pie = this.getObject();
+      menu.add('Change title', () => menu.input('Enter new title', pie.fTitle).then(t => {
+         pie.fTitle = t;
+         this.interactiveRedraw('pad', `exec:SetTitle("${t}")`);
+      }));
    }
 
 
@@ -412,7 +383,14 @@ class TPiePainter extends ObjectPainter {
    static async draw(dom, obj, opt) {
       const painter = new TPiePainter(dom, obj, opt);
       painter.decodeOptions(opt);
-      return ensureTCanvas(painter, false).then(() => painter.redraw());
+      return ensureTCanvas(painter, false)
+         .then(() => painter.drawPie())
+         .then(() => drawObjectTitle(painter, !painter.options.same, true))
+         .then(() => {
+            assignContextMenu(painter);
+            addMoveHandler(painter);
+            return painter;
+         });
    }
 
 } // class TPiePainter

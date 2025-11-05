@@ -1,4 +1,4 @@
-import { gStyle, browser, settings, clone, isObject, isFunc, isStr, BIT,
+import { gStyle, browser, settings, clone, create, isObject, isFunc, isStr, BIT,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox, kTitle, isNodeJs, nsSVG } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
@@ -1821,4 +1821,60 @@ class TPavePainter extends ObjectPainter {
 } // class TPavePainter
 
 
-export { TPavePainter, kPosTitle };
+/** @summary Draw histogram title
+    * @return {Promise} with painter */
+async function drawObjectTitle(painter, is_enabled, is_draw) {
+   if (!is_enabled)
+      return painter;
+
+   const obj = painter.getObject(), st = gStyle,
+         draw_title = is_draw && (st.fOptTitle > 0),
+         pp = painter.getPadPainter();
+
+   let pt = pp.findInPrimitives(kTitle, clTPaveText);
+   if (pt) {
+      pt.Clear();
+      if (draw_title)
+         pt.AddText(histo.fTitle);
+      return painter;
+   }
+
+   pt = create(clTPaveText);
+   Object.assign(pt, {
+      fName: kTitle, fOption: 'blNDC', fFillColor: st.fTitleColor, fFillStyle: st.fTitleStyle, fBorderSize: st.fTitleBorderSize,
+      fTextFont: st.fTitleFont, fTextSize: st.fTitleFontSize, fTextColor: st.fTitleTextColor, fTextAlign: 22
+   });
+
+   if (draw_title)
+      pt.AddText(obj.fTitle);
+
+   return TPavePainter.draw(pp, pt, kPosTitle).then(p => {
+      p?.setSecondaryId(painter, kTitle);
+      return painter;
+   });
+}
+
+/** @summary Only redraw object title
+  * @return {Promise} with painter */
+async function updateObjectTitle(painter, is_enabled, is_draw) {
+   // case when histogram drawn over other histogram (same option)
+   if (!is_enabled)
+      return painter;
+
+   const tpainter = painter.getPadPainter()?.findPainterFor(null, kTitle, clTPaveText),
+         pt = tpainter?.getObject();
+
+   if (!tpainter || !pt)
+      return painter;
+
+   const obj = painter.getObject(),
+         draw_title = is_draw && (gStyle.fOptTitle > 0);
+
+   pt.Clear();
+   if (draw_title)
+      pt.AddText(obj.fTitle);
+   return tpainter.redraw().then(() => painter);
+}
+
+
+export { TPavePainter, kPosTitle, updateObjectTitle, drawObjectTitle };

@@ -1707,7 +1707,6 @@ class THistPainter extends ObjectPainter {
             pp = this.getPadPainter();
 
       let pt = pp.findInPrimitives(kTitle, clTPaveText);
-
       if (pt) {
          pt.Clear();
          if (draw_title)
