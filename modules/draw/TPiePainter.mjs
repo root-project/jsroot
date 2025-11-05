@@ -23,6 +23,7 @@ class TPiePainter extends ObjectPainter {
    #offset0; // initial offset
    #slice; // moving slice
    #mode; // moving mode
+   #padh; // pad height
 
    /** @summary Decode options */
    decodeOptions(opt) {
@@ -55,7 +56,6 @@ class TPiePainter extends ObjectPainter {
       while (angle < 0.5 * Math.PI)
          angle += 2 * Math.PI;
 
-
       const pie = this.getObject(),
             len = Math.sqrt((x/this.#rx)**2 + (y/this.#ry)**2),
             slice = this.#slices.find(elem => {
@@ -64,7 +64,7 @@ class TPiePainter extends ObjectPainter {
             });
 
       // kind of cursor shown
-      this.#mode = (slice && len < 0.7) ? 'grab' : 'w-resize';
+      this.#mode = ((len > 0.95) && (x > this.#rx*0.95) && this.options.is3d) ? 'n-resize': ((slice && len < 0.7) ? 'grab' : 'w-resize');
 
       this.#movex = x;
       this.#movey = y;
@@ -75,6 +75,10 @@ class TPiePainter extends ObjectPainter {
          this.#slice = slice.n;
          this.#angle0 = len;
          this.#offset0 = pie.fPieSlices[this.#slice].fRadiusOffset;
+      } else if (this.#mode === 'n-resize') {
+         this.#padh = this.getPadPainter().getPadHeight();
+         this.#angle0 = pie.fAngle3D;
+         this.#offset0 = y;
       } else {
          this.#angle0 = angle;
          this.#offset0 = pie.fAngularOffset;
@@ -93,7 +97,9 @@ class TPiePainter extends ObjectPainter {
       if (this.#mode === 'grab') {
          const len = Math.sqrt((this.#movex/this.#rx)**2 + (this.#movey/this.#ry)**2);
          pie.fPieSlices[this.#slice].fRadiusOffset = Math.max(0, this.#offset0 + 0.25*(len - this.#angle0));
-      } else {
+      } else if (this.#mode === 'n-resize')
+         pie.fAngle3D = Math.max(5, Math.min(85, this.#angle0 + (this.#movey - this.#offset0) / this.#padh * 180));
+      else {
          const angle = Math.atan2(this.#movey/this.#ry, this.#movex/this.#rx);
          pie.fAngularOffset = this.#offset0 - (angle - this.#angle0) / Math.PI * 180;
       }
@@ -113,6 +119,8 @@ class TPiePainter extends ObjectPainter {
 
       if (this.#mode === 'grab')
          exec = `SetEntryRadiusOffset(${this.#slice},${pie.fPieSlices[this.#slice].fRadiusOffset})`;
+      else if (this.#mode === 'n-resize')
+         exec = `SetAngle3D(${pie.fAngle3D})`;
       else
          exec = `SetAngularOffset(${pie.fAngularOffset})`;
 
