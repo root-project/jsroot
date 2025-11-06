@@ -179,7 +179,8 @@ class TPiePainter extends ObjectPainter {
 
       const arr = [], promises = [];
       let total = 0, af = -pie.fAngularOffset / 180 * Math.PI;
-      while (af < 1.5 * Math.PI)
+      // ensure all angles are positive
+      while (af <= 2 * Math.PI)
          af += 2 * Math.PI;
 
       for (let n = 0; n < pie.fPieSlices.length; n++) {
@@ -190,7 +191,7 @@ class TPiePainter extends ObjectPainter {
             offset: slice.fRadiusOffset,
             attline: this.createAttLine({ attr: slice, std: false }),
             attfill: this.createAttFill({ attr: slice, std: false }),
-            g: maing.append('svg:g')
+            g: maing // maing.append('svg:g')
          });
       }
 
@@ -200,22 +201,24 @@ class TPiePainter extends ObjectPainter {
 
       // now assign angles for each slice
 
-      let start_indx = -1;
       for (let n = 0; n < arr.length; n++) {
          const entry = arr[n];
          entry.seq = n;
          entry.a2 = af;
          af -= entry.value / total * 2 * Math.PI;
          entry.a1 = af;
-         if ((entry.a1 >= 1.5*Math.PI) && (entry.a2 <= 1.5*Math.PI))
-            start_indx = n;
+
+         entry.x1 = Math.round(rx * Math.cos(entry.a1));
+         entry.y1 = Math.round(ry * Math.sin(entry.a1));
+         entry.x2 = Math.round(rx * Math.cos(entry.a2));
+         entry.y2 = Math.round(ry * Math.sin(entry.a2));
 
          if (entry.offset) {
             const coef = radX > 0 ? entry.offset / radX : 0.1,
-                  mid_angle = (entry.a1 + entry.a2) / 2,
-                  dx = Math.round(rx * coef * Math.cos(mid_angle)),
-                  dy = Math.round(ry * coef * Math.sin(mid_angle));
-            makeTranslate(entry.g, dx, dy);
+                  mid_angle = (entry.a1 + entry.a2) / 2;
+            entry.dx = Math.round(rx * coef * Math.cos(mid_angle));
+            entry.dy = Math.round(ry * coef * Math.sin(mid_angle));
+            // makeTranslate(entry.g, dx, dy);
          }
       }
 
@@ -236,14 +239,14 @@ class TPiePainter extends ObjectPainter {
       // but two sectors which are near by has to be treated differently
       // arr.sort((v1, v2) => { return v1.a - v2.a; });
 
-      arr.sort((v1, v2) => {
+/*      arr.sort((v1, v2) => {
          if (v2.seq === (v1.seq + 1)  % arr.length)
             return check_sector(v1.a1, 0) || check_sector(v1.a1, 3) ? 1 : -1;
          if ((v2.seq + 1) % arr.length === v1.seq)
             return check_sector(v1.a2, 1) || check_sector(v1.a2, 2) ? 1 : -1;
          return 0;
       });
-
+*/
 /*
       console.log('after sort', pie.fAngularOffset);
       arr.forEach(v => console.log(`${v.n} a1:${v.a1.toFixed(2)} ${get_sector(v.a1)} a2:${v.a2.toFixed(2)} ${get_sector(v.a2)}`))
@@ -266,7 +269,14 @@ class TPiePainter extends ObjectPainter {
       arr.forEach(v => console.log(`${v.n} seq: ${v.seq} a1:${v.a1.toFixed(2)} ${get_sector(v.a1)} a2:${v.a2.toFixed(2)} ${get_sector(v.a2)}`))
 */
 
-      const build_pie = (entry, func) => {
+      const add_path = (entry, path) => {
+         const elem = maing.append('svg:path')
+                           .attr('d', path)
+                           .call(entry.attline.func)
+                           .call(entry.attfill.func);
+         if (entry.offset)
+            makeTranslate(elem, entry.dx, entry.dy);
+      }, build_pie = (entry, func) => {
          // use same segments for side and top/bottom curves
          let a = entry.a1, border = 0;
          while (border <= entry.a1)
@@ -288,15 +298,9 @@ class TPiePainter extends ObjectPainter {
                yy1 = Math.round(ry * Math.sin(aa1)),
                xx2 = Math.round(rx * Math.cos(aa2)),
                yy2 = Math.round(ry * Math.sin(aa2));
-         entry.g.append('svg:path')
-            .attr('d', `M${xx1},${yy1}a${rx},${ry},0,0,1,${xx2 - xx1},${yy2 - yy1}v${pixelHeight}a${rx},${ry},0,0,0,${xx1 - xx2},${yy1 - yy2}z`)
-            .call(entry.attline.func)
-            .call(entry.attfill.func);
+         add_path(entry, `M${xx1},${yy1}a${rx},${ry},0,0,1,${xx2 - xx1},${yy2 - yy1}v${pixelHeight}a${rx},${ry},0,0,0,${xx1 - xx2},${yy1 - yy2}z`);
       }, add_planar_side = (x, y, entry) => {
-         entry.g.append('svg:path')
-            .attr('d', `M0,0v${pixelHeight}l${x},${y}v${-pixelHeight}z`)
-            .call(entry.attline.func)
-            .call(entry.attfill.func);
+         add_path(entry, `M0,0v${pixelHeight}l${x},${y}v${-pixelHeight}z`);
       };
 
       // build main paths for each slice
@@ -312,47 +316,82 @@ class TPiePainter extends ObjectPainter {
                      yy2 = Math.round(ry * Math.sin(aa2));
                entry.pie_path += `a${rx},${ry},0,0,1,${xx2 - xx1},${yy2 - yy1}`;
             });
-         } else {
-            const x1 = Math.round(rx * Math.cos(entry.a1)),
-                  y1 = Math.round(ry * Math.sin(entry.a1)),
-                  x2 = Math.round(rx * Math.cos(entry.a2)),
-                  y2 = Math.round(ry * Math.sin(entry.a2));
-            entry.pie_path = `a${rx},${ry},0,0,1,${x2 - x1},${y2 - y1}`;
-         }
+         } else
+            entry.pie_path = `a${rx},${ry},0,0,1,${entry.x2 - entry.x1},${entry.y2 - entry.y1}`;
       }
 
       // code to create 3d effect
 
       if (o.is3d) {
+         let start_indx = -1, border = Math.PI/2;
          for (let indx = 0; indx < arr.length; indx++) {
-            const entry = arr[indx],
-                  x1 = Math.round(rx * Math.cos(entry.a1)),
-                  y1 = Math.round(ry * Math.sin(entry.a1)),
-                  x2 = Math.round(rx * Math.cos(entry.a2)),
-                  y2 = Math.round(ry * Math.sin(entry.a2));
+            const entry = arr[indx];
 
+            // first add bottom
+            add_path(entry, `M0,${pixelHeight}l${entry.x1},${entry.y1}${entry.pie_path}z`);
 
-            // bottom
-            entry.g.append('svg:path')
-                 .attr('d', `M0,${pixelHeight}l${x1},${y1}${entry.pie_path}z`)
-                 .call(entry.attline.func)
-                 .call(entry.attfill.func);
-
-            // planar
-            if (dist_to_15pi(entry.a1) > dist_to_15pi(entry.a2)) {
-               add_planar_side(x2, y2, entry);
-               add_planar_side(x1, y1, entry);
-            } else {
-               add_planar_side(x1, y1, entry);
-               add_planar_side(x2, y2, entry);
+            if ((entry.a1 <= 1.5*Math.PI) && (entry.a2 >= 1.5*Math.PI))
+               start_indx = indx;
+            else if ((entry.a1 <= 3.5*Math.PI) && (entry.a2 >= 3.5*Math.PI)) {
+               start_indx = indx;
+               border = 2.5*Math.PI;
             }
 
+            console.log(`entry ${indx}  slice: ${entry.n} a1:${(entry.a1/Math.PI).toFixed(3)} a2:${(entry.a2/Math.PI).toFixed(3)}`)
+         }
+
+         console.log('start_indx', start_indx, 'border', border / Math.PI)
+
+         if (start_indx < 0) {
+            console.error('fail to find start index, use default');
+            start_indx = 0;
+         }
+
+         let indx = start_indx, cnt = arr.length;
+
+         while ((arr[indx].a1 > border) && (cnt-- > 0)) {
+            const entry1 = arr[indx];
+            indx++;
+            if (indx === arr.length) {
+               indx = 0;
+               border += 2*Math.PI;
+            }
+            const entry2 = arr[indx];
+
+            if (entry1.offset || entry2.offset) {
+               console.log(`add planar1 ${entry1.n} and planar2 ${entry2.n}`)
+               add_planar_side(entry1.x1, entry1.y1, entry1);
+               add_planar_side(entry2.x2, entry2.y2, entry2);
+            }
+
+            console.log(`add cureved side ${entry1.n}`)
+
             // curved
-            build_pie(entry, add_curved_side);
+            build_pie(entry1, add_curved_side);
+         }
+
+         console.log('--- Made break on index', indx)
+
+         indx = start_indx;
+
+         while (cnt-- > 0) {
+            const entry1 = arr[indx];
+            indx = (indx === 0) ? arr.length - 1 : indx - 1;
+            const entry2 = arr[indx];
+
+            if (entry1.offset || entry2.offset) {
+               console.log(`add planar2 ${entry1.n} and planar1 ${entry2.n}`)
+               add_planar_side(entry1.x2, entry1.y2, entry1);
+               add_planar_side(entry2.x1, entry2.y1, entry2);
+            }
+
+            console.log(`add cureved side ${entry2.n}`)
+
+            build_pie(entry2, add_curved_side);
          }
       }
 
-      // add main slice with text
+      // at the end add main slice with text
 
       for (let indx = 0; indx < arr.length; indx++) {
          const entry = arr[indx],
@@ -367,10 +406,7 @@ class TPiePainter extends ObjectPainter {
                y2 = Math.round(ry * Math.sin(entry.a2));
 
          // upper
-         entry.g.append('svg:path')
-             .attr('d', `M0,0l${x1},${y1}${entry.pie_path}z`)
-             .call(entry.attline.func)
-             .call(entry.attfill.func);
+         add_path(entry, `M0,0l${x1},${y1}${entry.pie_path}z`);
 
          const frac = total ? slice.fValue / total : 0;
          let tmptxt = pie.fLabelFormat;
