@@ -201,10 +201,11 @@ class TPiePainter extends ObjectPainter {
          const slice = pie.fPieSlices[n],
                value = slice.fValue;
          total += value;
-         arr.push({ n, value, slice,
+         arr.push({
+            n, value, slice,
             offset: slice.fRadiusOffset,
             attline: this.createAttLine(slice),
-            attfill: this.createAttFill(slice),
+            attfill: this.createAttFill(slice)
          });
       }
 
@@ -231,9 +232,8 @@ class TPiePainter extends ObjectPainter {
                   mid_angle = (entry.a1 + entry.a2) / 2;
             entry.dx = Math.round(rx * coef * Math.cos(mid_angle));
             entry.dy = Math.round(ry * coef * Math.sin(mid_angle));
-         } else {
+         } else
             entry.dx = entry.dy = 0;
-         }
       }
 
       const add_path = (entry, path) => {
@@ -290,18 +290,18 @@ class TPiePainter extends ObjectPainter {
       // code to create 3d effect
 
       if (o.is3d) {
-         let start_indx = -1, border = Math.PI/2;
+         let start_indx = -1, border = Math.PI / 2;
          for (let indx = 0; indx < arr.length; indx++) {
             const entry = arr[indx];
 
             // first add bottom
             add_path(entry, `M0,${pixelHeight}l${entry.x1},${entry.y1}${entry.pie_path}z`);
 
-            if ((entry.a1 <= 1.5*Math.PI) && (entry.a2 >= 1.5*Math.PI))
+            if ((entry.a1 <= 1.5 * Math.PI) && (entry.a2 >= 1.5 * Math.PI))
                start_indx = indx;
-            else if ((entry.a1 <= 3.5*Math.PI) && (entry.a2 >= 3.5*Math.PI)) {
+            else if ((entry.a1 <= 3.5 * Math.PI) && (entry.a2 >= 3.5 * Math.PI)) {
                start_indx = indx;
-               border = 2.5*Math.PI;
+               border = 2.5 * Math.PI;
             }
          }
 
@@ -317,7 +317,7 @@ class TPiePainter extends ObjectPainter {
             indx++;
             if (indx === arr.length) {
                indx = 0;
-               border += 2*Math.PI;
+               border += 2 * Math.PI;
             }
             const entry2 = arr[indx];
 
@@ -357,9 +357,9 @@ class TPiePainter extends ObjectPainter {
          for (let indx = 0; indx < arr.length; indx++) {
             const entry = arr[indx],
                   slice = entry.slice,
-                  mid_angle = (entry.a1 + entry.a2) / 2;
+                  mid_angle = (entry.a1 + entry.a2) / 2,
+                  frac = total ? slice.fValue / total : 0;
 
-            const frac = total ? slice.fValue / total : 0;
             let tmptxt = pie.fLabelFormat;
             tmptxt = tmptxt.replaceAll('%txt', slice.fTitle);
             tmptxt = tmptxt.replaceAll('%val', floatToString(slice.fValue, pie.fValueFormat));
@@ -473,7 +473,7 @@ class TPiePainter extends ObjectPainter {
          this.interactiveRedraw('pad', `exec:SetEntryRadiusOffset(${elem.n},${v})`);
       }));
 
-      menu.sub(`Line att`);
+      menu.sub('Line att');
       menu.addSizeMenu('width', 1, 10, 1, elem.attline.width, arg => {
          elem.slice.fLineWidth = arg;
          this.interactiveRedraw('pad', `exec:SetEntryLineWidth(${elem.n},${arg})`);
