@@ -2,7 +2,7 @@ import { makeTranslate, DrawOptions, floatToString } from '../base/BasePainter.m
 import { ObjectPainter } from '../base/ObjectPainter.mjs';
 import { drawObjectTitle } from '../hist/TPavePainter.mjs';
 import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
-import { addMoveHandler } from '../gui/utils.mjs';
+import { addMoveHandler, getColorId, getColorExec } from '../gui/utils.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
 
@@ -13,6 +13,8 @@ import { assignContextMenu } from '../gui/menu.mjs';
 
 class TPiePainter extends ObjectPainter {
 
+   #cx; // recent cx
+   #cy; // recent cy
    #rx; // recent rx
    #ry; // recent ry
    #slices; // recent slices
@@ -45,6 +47,20 @@ class TPiePainter extends ObjectPainter {
          o.sort = -1;
    }
 
+   #findDrawnSlice(x, y) {
+      if ((!x && !y) || !this.#slices || !this.#rx || !this.#ry)
+         return null;
+      let angle = Math.atan2(y / this.#ry, x / this.#rx);
+
+      while (angle < 0.5 * Math.PI)
+         angle += 2 * Math.PI;
+
+      return this.#slices.find(elem => {
+         return ((elem.a1 < angle) && (angle < elem.a2)) ||
+                ((elem.a1 < angle + 2 * Math.PI) && (angle + 2 * Math.PI < elem.a2));
+      });
+   }
+
    /** @summary start of drag handler
      * @private */
    moveStart(x, y) {
@@ -57,13 +73,10 @@ class TPiePainter extends ObjectPainter {
 
       const pie = this.getObject(),
             len = Math.sqrt((x / this.#rx) ** 2 + (y / this.#ry) ** 2),
-            slice = this.#slices.find(elem => {
-               return ((elem.a1 < angle) && (angle < elem.a2)) ||
-                      ((elem.a1 < angle + 2 * Math.PI) && (angle + 2 * Math.PI < elem.a2));
-            });
+            slice = this.#findDrawnSlice(x, y);
 
       // kind of cursor shown
-      this.#mode = ((len > 0.95) && (x > this.#rx * 0.95) && this.options.is3d) ? 'n-resize' : ((slice && len < 0.7) ? 'grab' : 'w-resize');
+      this.#mode = ((len > 0.95) && (x > this.#rx * 0.95) && this.options.is3d) ? 'n-resize' : ((slice && len - slice.offset < 0.7) ? 'grab' : 'w-resize');
 
       this.#movex = x;
       this.#movey = y;
@@ -147,24 +160,25 @@ class TPiePainter extends ObjectPainter {
       const maing = this.createG(),
             pie = this.getObject(),
             o = this.getOptions(),
-            xc = this.axisToSvg('x', pie.fX),
-            yc = this.axisToSvg('y', pie.fY),
             pp = this.getPadPainter(),
             radX = pie.fRadius;
+
+      this.#cx = this.axisToSvg('x', pie.fX);
+      this.#cy = this.axisToSvg('y', pie.fY);
 
       let radY = radX, pixelHeight = 1;
 
       if (o.is3d) {
          radY *= Math.sin(pie.fAngle3D / 180 * Math.PI);
-         pixelHeight = this.axisToSvg('y', pie.fY - pie.fHeight) - yc;
+         pixelHeight = this.axisToSvg('y', pie.fY - pie.fHeight) - this.#cy;
       }
 
       maing.style('cursor', this.#mode || null);
 
       this.createAttText({ attr: pie });
 
-      const rx = this.axisToSvg('x', pie.fX + radX) - xc,
-            ry = this.axisToSvg('y', pie.fY - radY) - yc,
+      const rx = this.axisToSvg('x', pie.fX + radX) - this.#cx,
+            ry = this.axisToSvg('y', pie.fY - radY) - this.#cy,
             dist_to_15pi = a => {
                while (a < 0.5 * Math.PI)
                   a += 2 * Math.PI;
@@ -173,11 +187,11 @@ class TPiePainter extends ObjectPainter {
                return Math.abs(a - 1.5 * Math.PI);
             };
 
-      makeTranslate(maing, xc, yc);
+      makeTranslate(maing, this.#cx, this.#cy);
 
       // pie.fPieSlices[4].fValue = 100;
 
-      const arr = [], promises = [];
+      const arr = [];
       let total = 0, af = -pie.fAngularOffset / 180 * Math.PI;
       // ensure all angles are positive
       while (af <= 2 * Math.PI)
@@ -189,8 +203,8 @@ class TPiePainter extends ObjectPainter {
          total += value;
          arr.push({ n, value, slice,
             offset: slice.fRadiusOffset,
-            attline: this.createAttLine({ attr: slice, std: false }),
-            attfill: this.createAttFill({ attr: slice, std: false }),
+            attline: this.createAttLine(slice),
+            attfill: this.createAttFill(slice),
          });
       }
 
@@ -289,8 +303,6 @@ class TPiePainter extends ObjectPainter {
                start_indx = indx;
                border = 2.5*Math.PI;
             }
-
-            // console.log(`entry ${indx}  slice: ${entry.n} a1:${(entry.a1/Math.PI).toFixed(3)} a2:${(entry.a2/Math.PI).toFixed(3)}`)
          }
 
          if (start_indx < 0) {
@@ -428,8 +440,69 @@ class TPiePainter extends ObjectPainter {
          pie.fTitle = t;
          this.interactiveRedraw('pad', `exec:SetTitle("${t}")`);
       }));
-   }
+      menu.add('Angular offset', () => menu.input('Enter new angular offset', pie.fAngularOffset, 'float').then(v => {
+         pie.fAngularOffset = v;
+         this.interactiveRedraw('pad', `exec:SetAngularOffset(${v})`);
+      }));
+      if (this.options.is3d) {
+         menu.add('Angle 3D', () => menu.input('Enter new angle 3D', pie.fAngle3D, 'float', 0, 90).then(v => {
+            pie.fAngle3D = v;
+            this.interactiveRedraw('pad', `exec:SetAngle3D(${v})`);
+         }));
+      }
 
+      if (!menu.getEventPosition())
+         return;
+
+      const svg = this.getPadPainter()?.getPadSvg(),
+            rect = svg.node().getBoundingClientRect(),
+            x = menu.getEventPosition().clientX - rect.left - svg.node().clientLeft,
+            y = menu.getEventPosition().clientY - rect.top - svg.node().clientTop,
+            elem = this.#findDrawnSlice(x - this.#cx, y - this.#cy);
+      if (!elem)
+         return;
+
+      menu.sub(`Slice${elem.n}`);
+
+      menu.add('Title', () => menu.input('Enter new title', elem.slice.fTitle).then(t => {
+         elem.slice.fTitle = t;
+         this.interactiveRedraw('pad', `exec:SetEntryLabel(${elem.n},"${t}")`);
+      }));
+      menu.add('Offset', () => menu.input('Enter new slice offset', elem.slice.fRadiusOffset, 'float', 0, 1).then(v => {
+         elem.slice.fRadiusOffset = v;
+         this.interactiveRedraw('pad', `exec:SetEntryRadiusOffset(${elem.n},${v})`);
+      }));
+
+      menu.sub(`Line att`);
+      menu.addSizeMenu('width', 1, 10, 1, elem.attline.width, arg => {
+         elem.slice.fLineWidth = arg;
+         this.interactiveRedraw('pad', `exec:SetEntryLineWidth(${elem.n},${arg})`);
+      });
+      if (!elem.attline.nocolor) {
+         menu.addColorMenu('color', elem.attline.color, arg => {
+            elem.slice.fLineColor = getColorId(arg).id;
+            this.interactiveRedraw('pad', getColorExec(arg, 'SetEntryLineColor', elem.n));
+         });
+      }
+      menu.addLineStyleMenu('style', elem.attline.style, id => {
+         elem.slice.fLineStyle = id;
+         this.interactiveRedraw('pad', `exec:SetEntryLineStyle(${elem.n},${id})`);
+      });
+      menu.endsub();
+
+      menu.sub('Fill att');
+      menu.addColorMenu('color', elem.attfill.colorindx, arg => {
+         elem.slice.fFillColor = getColorId(arg).id;
+         this.interactiveRedraw('pad', getColorExec(arg, 'SetEntryFillColor', elem.n));
+      }, elem.attfill.kind);
+      menu.addFillStyleMenu('style', elem.attfill.pattern, elem.attfill.colorindx, id => {
+         elem.slice.fFillStyle = id;
+         this.interactiveRedraw('pad', `exec:SetEntryFillStyle(${elem.n},${id})`);
+      });
+      menu.endsub();
+
+      menu.endsub();
+   }
 
    /** @summary Draw TPie object */
    static async draw(dom, obj, opt) {
