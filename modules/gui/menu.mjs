@@ -1,5 +1,5 @@
 import { settings, internals, browser, gStyle, isObject, isFunc, isStr, clTGaxis, nsSVG, kInspect, getDocument } from '../core.mjs';
-import { rgb as d3_rgb, select as d3_select } from '../d3.mjs';
+import { rgb as d3_rgb, select as d3_select, drag as d3_drag, pointer as d3_pointer } from '../d3.mjs';
 import { selectgStyle, saveSettings, readSettings, saveStyle, getColorExec, changeObjectMember } from './utils.mjs';
 import { getColor } from '../base/colors.mjs';
 import { TAttMarkerHandler } from '../base/TAttMarkerHandler.mjs';
@@ -1576,31 +1576,41 @@ class StandaloneMenu extends JSRootMenu {
       d3_select(`#${dlg_id}`).remove();
       d3_select(`#${dlg_id}_block`).remove();
 
-      const w = Math.min(args.width || 450, Math.round(0.9 * browser.screenWidth));
-      modal.block = d3_select('body').append('div')
-                                   .attr('id', `${dlg_id}_block`)
-                                   .attr('class', 'jsroot_dialog_block')
-                                   .attr('style', 'z-index: 100000; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; opacity: 0.2; background-color: white');
-      modal.element = d3_select('body')
-                      .append('div')
-                      .attr('id', dlg_id)
-                      .attr('class', 'jsroot_dialog')
-                      .style('position', 'absolute')
-                      .style('width', `${w}px`)
-                      .style('left', '50%')
-                      .style('top', '50%')
-                      .style('z-index', 100001)
-                      .attr('tabindex', '0');
+      const w = Math.min(args.width || 450, Math.round(0.9 * browser.screenWidth)),
+            b = d3_select('body');
+      modal.block = b.append('div')
+                     .attr('id', `${dlg_id}_block`)
+                     .attr('class', 'jsroot_dialog_block')
+                     .attr('style', 'z-index: 100000; position: absolute; left: 0px; top: 0px; bottom: 0px; right: 0px; opacity: 0.2; background-color: white');
+      modal.element = b.append('div')
+                       .attr('id', dlg_id)
+                       .attr('class', 'jsroot_dialog')
+                       .style('position', 'absolute')
+                       .style('width', `${w}px`)
+                       .style('left', '50%')
+                       .style('top', '50%')
+                       .style('z-index', 100001)
+                       .attr('tabindex', '0');
 
       modal.element.html(
          '<div style=\'position: relative; left: -50%; top: -50%; border: solid green 3px; padding: 5px; display: flex; flex-flow: column; background-color: white\'>' +
-           `<div style='flex: 0 1 auto; padding: 5px'>${title}</div>` +
+           `<div style='flex: 0 1 auto; padding: 5px; cursor: pointer;' class='jsroot_dialog_title'>${title}</div>` +
            `<div class='jsroot_dialog_content' style='flex: 1 1 auto; padding: 5px'>${main_content}</div>` +
            '<div class=\'jsroot_dialog_footer\' style=\'flex: 0 1 auto; padding: 5px\'>' +
               `<button class='jsroot_dialog_button' style='float: right; width: fit-content; margin-right: 1em'>${args.Ok}</button>` +
               (args.btns ? '<button class=\'jsroot_dialog_button\' style=\'float: right; width: fit-content; margin-right: 1em\'>Cancel</button>' : '') +
          '</div></div>'
       );
+
+      const drag_move = d3_drag().on('start', () => { modal.y0 = 0; }).on('drag', evnt => {
+         if (!modal.y0)
+            modal.y0 = d3_pointer(evnt, modal.element.node())[1];
+         let p0 = Math.max(0, d3_pointer(evnt, b.node())[1] - modal.y0);
+         if (b.node().clientHeight)
+            p0 = Math.min(p0, 0.8 * b.node().clientHeight);
+         modal.element.style('top', `${p0}px`);
+      });
+      modal.element.select('.jsroot_dialog_title').call(drag_move);
 
       modal.done = function(res) {
          if (this._done)
