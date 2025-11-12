@@ -1739,8 +1739,6 @@ class TGraphPainter extends ObjectPainter {
       if (!st.fOptFit || this.getCanvPainter()?.getRootPad(true)?.fPrimitives?.arr.length)
          return null;
 
-      this.create_stats = true;
-
       stats = create(clTPaveStats);
       Object.assign(stats, {
          fName: 'stats', fOptStat: 0, fOptFit: st.fOptFit, fBorderSize: 1,

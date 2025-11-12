@@ -1139,6 +1139,7 @@ class THistPainter extends ObjectPainter {
    #auto_exec; // can be reused when sending option back to server
    #funcs_handler; // special instance for functions drawing
    #contour;  // histogram colors contour
+   #create_stats;  // if stats was created by painter
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
@@ -1442,7 +1443,7 @@ class THistPainter extends ObjectPainter {
             histo.fBins = obj.fBins;
 
          // remove old functions, update existing, prepare to draw new one
-         this.#funcs_handler = new FunctionsHandler(this, pp, obj.fFunctions, statpainter, this.create_stats);
+         this.#funcs_handler = new FunctionsHandler(this, pp, obj.fFunctions, statpainter, this.#create_stats);
 
          const changed_opt = (histo.fOption !== obj.fOption);
          histo.fOption = obj.fOption;
@@ -1767,7 +1768,7 @@ class THistPainter extends ObjectPainter {
 
    /** @summary Returns true if stats box fill can be ignored */
    isIgnoreStatsFill() {
-      return !this.getObject() || (!this.draw_content && !this.create_stats && !this.hasSnapId());
+      return !this.getObject() || (!this.draw_content && !this.#create_stats && !this.hasSnapId());
    }
 
    /** @summary Create stat box for histogram if required */
@@ -1806,7 +1807,7 @@ class THistPainter extends ObjectPainter {
       if (!stats && !optstat && !optfit)
          return null;
 
-      this.create_stats = true;
+      this.#create_stats = true;
 
       if (stats)
          return stats;
