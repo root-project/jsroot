@@ -2,6 +2,7 @@
 
 ## Changes in 7.10.x
 1. Fix - proper paint axis labels on both sides when pad.fTickx/y = 2
+2. Fix - recover io after bad http response
 
 
 ## Changes in 7.10.0
