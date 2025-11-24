@@ -3289,7 +3289,7 @@ class TFile {
          // multipart messages requires special handling
 
          const indx = hdr.indexOf('boundary='), view = new DataView(res);
-         let boundary = '', n = first, o = 0;
+         let boundary = '';
          if (indx > 0) {
             boundary = hdr.slice(indx + 9);
             if ((boundary[0] === '"') && (boundary.at(-1) === '"'))
@@ -3300,7 +3300,7 @@ class TFile {
             return send_new_request('noranges');
          }
 
-         while (n < last) {
+         for(let n = first, o = 0; n < last; n += 2) {
             let code1, code2 = view.getUint8(o), nline = 0, line = '',
                 finish_header = false, segm_start = 0, segm_last = -1;
 
@@ -3349,7 +3349,6 @@ class TFile {
 
             reorder.addBuffer(n, res, o);
 
-            n += 2;
             o += (segm_last - segm_start + 1);
          }
 
