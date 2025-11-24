@@ -167,6 +167,11 @@ class TPavePainter extends ObjectPainter {
             opt = this.getPaveDrawOption().toUpperCase(),
             fp = this.getFramePainter(), pp = this.getPadPainter(),
             pad = pp.getRootPad(true);
+
+      // special handling of dummy frame painter
+      if (fp?.getDrawDom() === null)
+         return this;
+
       let interactive_element, width, height;
 
       if (pt.fInit === 0) {
