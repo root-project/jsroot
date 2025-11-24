@@ -3100,10 +3100,8 @@ class TFile {
          return this.fFileContent.extract(place);
 
       const reorder = this.#checkNeedReorder(place);
-      if (reorder?.place_new) {
-         console.log('apply reorder', place, reorder?.place_new);
+      if (reorder?.place_new)
          place = reorder?.place_new;
-      }
 
       let resolveFunc, rejectFunc;
 
@@ -3133,8 +3131,11 @@ class TFile {
          }
       }
 
-      function send_new_request(increment) {
-         if (increment) {
+      function send_new_request(arg) {
+         if (arg === 'noranges') {
+            file.fMaxRanges = 1;
+            last = Math.min(last, first + file.fMaxRanges * 2);
+         } else if (arg) {
             first = last;
             last = Math.min(first + file.fMaxRanges * 2, place.length);
             if (first >= place.length)
@@ -3278,19 +3279,16 @@ class TFile {
          }
 
          // object to access response data
-         const hdr = this.getResponseHeader('Content-Type'),
-               ismulti = isStr(hdr) && (hdr.indexOf('multipart') >= 0),
-               view = new DataView(res);
+         const hdr = this.getResponseHeader('Content-Type');
 
-         if (!ismulti) {
-            file.fMaxRanges = 1;
-            last = Math.min(last, first + file.fMaxRanges * 2);
-            return send_new_request();
+         if (!isStr(hdr) || (hdr.indexOf('multipart') < 0)) {
+            console.error('Did not found multipart in content-type - fallback to single range request');
+            return send_new_request('noranges');
          }
 
          // multipart messages requires special handling
 
-         const indx = hdr.indexOf('boundary=');
+         const indx = hdr.indexOf('boundary='), view = new DataView(res);
          let boundary = '', n = first, o = 0;
          if (indx > 0) {
             boundary = hdr.slice(indx + 9);
@@ -3298,10 +3296,8 @@ class TFile {
                boundary = boundary.slice(1, boundary.length - 1);
             boundary = '--' + boundary;
          } else {
-            console.error('Did not found boundary id in the response header');
-            file.fMaxRanges = 1;
-            last = Math.min(last, first + file.fMaxRanges * 2);
-            return send_new_request();
+            console.error('Did not found boundary id in the response header - fallback to single range request');
+            return send_new_request('noranges');
          }
 
          while (n < last) {
@@ -3347,10 +3343,8 @@ class TFile {
             }
 
             if (!finish_header || (segm_start > segm_last)) {
-               console.error('Failure decoding multirange header');
-               file.fMaxRanges = 1;
-               last = Math.min(last, first + file.fMaxRanges * 2);
-               return send_new_request();
+               console.error('Failure decoding multirange header - fallback to single range request');
+               return send_new_request('noranges');
             }
 
             reorder.addBuffer(n, res, o);
