@@ -3295,19 +3295,20 @@ class TFile {
 
          // multipart messages requires special handling
 
-         const indx = hdr.indexOf('boundary='), view = new DataView(res);
-         let boundary = '';
-         if (indx > 0) {
-            boundary = hdr.slice(indx + 9);
-            if ((boundary[0] === '"') && (boundary.at(-1) === '"'))
-               boundary = boundary.slice(1, boundary.length - 1);
-            boundary = '--' + boundary;
-         } else {
+         const indx = hdr.indexOf('boundary=');
+         if (indx <= 0) {
             console.error('Did not found boundary id in the response header - fallback to single range request');
             return send_new_request('noranges');
          }
 
-         for(let n = first, o = 0; n < last; n += 2) {
+         let boundary = hdr.slice(indx + 9);
+         if ((boundary[0] === '"') && (boundary.at(-1) === '"'))
+            boundary = boundary.slice(1, boundary.length - 1);
+         boundary = '--' + boundary;
+
+         const view = new DataView(res);
+
+         for (let n = first, o = 0; n < last; n += 2) {
             let code1, code2 = view.getUint8(o), nline = 0, line = '',
                 finish_header = false, segm_start = 0, segm_last = -1;
 
