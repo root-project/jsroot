@@ -114,7 +114,9 @@
       let server = 'https://root.cern/js/files/',
           filename = server + 'hsimple.root',
           filename2 = server + 'graph2d.root',
-          filename3 = server + 'geom/simple_alice.json.gz';
+          filename3 = server + 'geom/simple_alice.json.gz',
+          filename4 = server + 'tutorials_fit.root';
+
 
       let file = await openFile(filename);
       let hist2 = await file.readObject('hpxpy');
@@ -126,9 +128,10 @@
 
       await create3d(hist3, 'box3', -150, '#color[2]{TH3} #color[4]{box} plot');
 
-      let hist1 = await file.readObject('hpx');
+      let file4 = await openFile(filename4);
+      let canv = await file4.readObject('fit2a');
 
-      await create3d(hist1, 'lego2', 400, '#color[2]{TH1} #color[4]{lego} plot');
+      await create3d(canv, '', 400, '#color[2]{TCanvas} with #color[4]{TH2} and #color[4]{TF2}');
 
       let geom = await httpRequest(filename3, 'object');
       await create3d(geom, '', -400, '#color[2]{Geometry} build', 0.2);
