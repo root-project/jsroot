@@ -3047,22 +3047,18 @@ class TFile {
    #checkNeedReorder(place) {
       let res = false, resort = false;
       for (let n = 0; n < place.length - 2; n += 2) {
-         if (place[n] > place[n + 2]) {
+         if (place[n] > place[n + 2])
             res = resort = true;
-         }
-         if (place[n] + place[n + 1] > place[n + 2] - kMinimalHttpGap) {
+         if (place[n] + place[n + 1] > place[n + 2] - kMinimalHttpGap)
             res = true;
-         }
       }
       if (!res) {
          return {
             place,
             blobs: [],
-            expectedSize: function(indx) {
-               return this.place[indx + 1];
-            },
-            addBuffer: function(indx, buf, o) {
-               this.blobs[indx/2] = new DataView(buf, o, this.place[indx + 1]);
+            expectedSize(indx) { return this.place[indx + 1]; },
+            addBuffer(indx, buf, o) {
+               this.blobs[indx / 2] = new DataView(buf, o, this.place[indx + 1]);
             }
          };
       }
@@ -3075,7 +3071,7 @@ class TFile {
       if (resort)
          res.reorder.sort((a, b) => { return a.pos - b.pos; });
 
-      for(let n = 0; n < res.reorder.length - 1; n++) {
+      for (let n = 0; n < res.reorder.length - 1; n++) {
          const curr = res.reorder[n],
                next = res.reorder[n + 1];
          if (curr.pos + curr.len + kMinimalHttpGap > next.pos) {
@@ -3096,7 +3092,7 @@ class TFile {
          const elem = this.reorder[indx / 2],
                pos0 = elem.pos;
          elem.indx.forEach(indx0 => {
-            this.blobs[indx0/2] = new DataView(buf, o + this.place[indx0] - pos0, this.place[indx0 + 1]);
+            this.blobs[indx0 / 2] = new DataView(buf, o + this.place[indx0] - pos0, this.place[indx0 + 1]);
          });
       };
 
