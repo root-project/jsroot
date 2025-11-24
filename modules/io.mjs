@@ -3055,9 +3055,16 @@ class TFile {
          }
       }
       if (!res) {
-         return { place, blobs: [], addBuffer: function(indx, buf, o) {
-            this.blobs[indx/2] = new DataView(buf, o, this.place[indx + 1]);
-         }}
+         return {
+            place,
+            blobs: [],
+            expectedSize: function(indx) {
+               return this.place[indx + 1];
+            },
+            addBuffer: function(indx, buf, o) {
+               this.blobs[indx/2] = new DataView(buf, o, this.place[indx + 1]);
+            }
+         };
       }
 
       res = { place, reorder: [], place_new: [], blobs: [] };
@@ -3080,6 +3087,10 @@ class TFile {
       }
 
       res.reorder.forEach(elem => res.place_new.push(elem.pos, elem.len));
+
+      res.expectedSize = function(indx) {
+         return this.reorder[indx / 2].len;
+      };
 
       res.addBuffer = function(indx, buf, o) {
          const elem = this.reorder[indx / 2],
@@ -3342,14 +3353,16 @@ class TFile {
                o++;
             }
 
-            if (!finish_header || (segm_start > segm_last)) {
+            const segm_size = segm_last - segm_start + 1;
+
+            if (!finish_header || (segm_size <= 0) || (reorder.expectedSize(n) !== segm_size)) {
                console.error('Failure decoding multirange header - fallback to single range request');
                return send_new_request('noranges');
             }
 
             reorder.addBuffer(n, res, o);
 
-            o += (segm_last - segm_start + 1);
+            o += segm_size;
          }
 
          send_new_request(true);
