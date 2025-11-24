@@ -3056,8 +3056,11 @@ class TFile {
             break;
          }
       }
-      if (!res)
-         return false;
+      if (!res) {
+         return { place, blobs: [], addBuffer: function(indx, buf, o) {
+            this.blobs[indx/2] = new DataView(buf, o, this.place[indx + 1]);
+         }}
+      }
 
       res = { place, reorder: [], place_new: [], blobs: [] };
 
@@ -3099,7 +3102,7 @@ class TFile {
          return this.fFileContent.extract(place);
 
       const need_reorder = this.#checkNeedReorder(place);
-      if (need_reorder)
+      if (need_reorder?.place_new)
          console.log('!!!!! One can reorder/merge', place, need_reorder.place_new);
 
 
