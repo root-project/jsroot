@@ -3049,11 +3049,9 @@ class TFile {
       for (let n = 0; n < place.length - 2; n += 2) {
          if (place[n] > place[n + 2]) {
             res = resort = true;
-            break;
          }
          if (place[n] + place[n + 1] > place[n + 2] - kMinimalHttpGap) {
             res = true;
-            break;
          }
       }
       if (!res) {
@@ -3068,7 +3066,7 @@ class TFile {
          res.reorder.push({ pos: place[n], len: place[n + 1], indx: [n] });
 
       if (resort)
-         res.reorder.sort((a, b) => a.pos > b.pos);
+         res.reorder.sort((a, b) => { return a.pos - b.pos; });
 
       for(let n = 0; n < res.reorder.length - 1; n++) {
          const curr = res.reorder[n],
@@ -3101,15 +3099,15 @@ class TFile {
       if ((this.fFileContent !== null) && !filename && (!this.fAcceptRanges || this.fFileContent.canExtract(place)))
          return this.fFileContent.extract(place);
 
-      const need_reorder = this.#checkNeedReorder(place);
-      if (need_reorder?.place_new)
-         console.log('!!!!! One can reorder/merge', place, need_reorder.place_new);
-
+      const reorder = this.#checkNeedReorder(place);
+      if (reorder?.place_new) {
+         console.log('apply reorder', place, reorder?.place_new);
+         place = reorder?.place_new;
+      }
 
       let resolveFunc, rejectFunc;
 
       const file = this, first_block = (place[0] === 0) && (place.length === 2),
-            blobs = [], // array of requested segments
             promise = new Promise((resolve, reject) => {
                resolveFunc = resolve;
                rejectFunc = reject;
@@ -3140,7 +3138,7 @@ class TFile {
             first = last;
             last = Math.min(first + file.fMaxRanges * 2, place.length);
             if (first >= place.length)
-               return resolveFunc(blobs);
+               return resolveFunc(reorder.blobs.length === 1 ? reorder.blobs[0] : reorder.blobs);
          }
 
          let fullurl = fileurl, ranges = 'bytes', totalsz = 0;
@@ -3157,7 +3155,7 @@ class TFile {
 
          // when read first block, allow to read more - maybe ranges are not supported and full file content will be returned
          if (file.fAcceptRanges && first_block)
-            totalsz = Math.max(totalsz, 1e7);
+            totalsz = Math.max(totalsz, 1e5);
 
          return createHttpRequest(fullurl, 'buf', read_callback, undefined, true).then(xhr => {
             if (file.fAcceptRanges) {
@@ -3275,10 +3273,7 @@ class TFile {
 
          // if only single segment requested, return result as is
          if (last - first === 2) {
-            const b = new DataView(res);
-            if (place.length === 2)
-               return resolveFunc(b);
-            blobs.push(b);
+            reorder.addBuffer(first, res, 0);
             return send_new_request(true);
          }
 
@@ -3288,55 +3283,26 @@ class TFile {
                view = new DataView(res);
 
          if (!ismulti) {
-            // server may returns simple buffer, which combines all segments together
-
-            const hdr_range = this.getResponseHeader('Content-Range');
-            let segm_start = 0, segm_last = -1;
-
-            if (isStr(hdr_range) && hdr_range.indexOf('bytes') >= 0) {
-               const parts = hdr_range.slice(hdr_range.indexOf('bytes') + 6).split(/[\s-/]+/);
-               if (parts.length === 3) {
-                  segm_start = Number.parseInt(parts[0]);
-                  segm_last = Number.parseInt(parts[1]);
-                  if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
-                     segm_start = 0;
-                     segm_last = -1;
-                  }
-               }
-            }
-
-            let canbe_single_segment = (segm_start <= segm_last);
-            for (let n = first; n < last; n += 2) {
-               if ((place[n] < segm_start) || (place[n] + place[n + 1] - 1 > segm_last))
-                  canbe_single_segment = false;
-            }
-
-            if (canbe_single_segment) {
-               for (let n = first; n < last; n += 2)
-                  blobs.push(new DataView(res, place[n] - segm_start, place[n + 1]));
-               return send_new_request(true);
-            }
-
-            if ((file.fMaxRanges === 1) || first)
-               return rejectFunc(Error('Server returns normal response when multipart was requested, disable multirange support'));
-
             file.fMaxRanges = 1;
-            last = Math.min(last, file.fMaxRanges * 2);
-
+            last = Math.min(last, first + file.fMaxRanges * 2);
             return send_new_request();
          }
 
          // multipart messages requires special handling
 
          const indx = hdr.indexOf('boundary=');
-         let boundary = '', n = first, o = 0, normal_order = true;
+         let boundary = '', n = first, o = 0;
          if (indx > 0) {
             boundary = hdr.slice(indx + 9);
             if ((boundary[0] === '"') && (boundary.at(-1) === '"'))
                boundary = boundary.slice(1, boundary.length - 1);
             boundary = '--' + boundary;
-         } else
+         } else {
             console.error('Did not found boundary id in the response header');
+            file.fMaxRanges = 1;
+            last = Math.min(last, first + file.fMaxRanges * 2);
+            return send_new_request();
+         }
 
          while (n < last) {
             let code1, code2 = view.getUint8(o), nline = 0, line = '',
@@ -3357,6 +3323,7 @@ class TFile {
                      if (parts.length === 3) {
                         segm_start = Number.parseInt(parts[0]);
                         segm_last = Number.parseInt(parts[1]);
+                        // TODO: check for consistency
                         if (!Number.isInteger(segm_start) || !Number.isInteger(segm_last) || (segm_start > segm_last)) {
                            segm_start = 0;
                            segm_last = -1;
@@ -3379,44 +3346,17 @@ class TFile {
                o++;
             }
 
-            if (!finish_header)
-               return rejectFunc(Error('Cannot decode header in multipart message'));
-
-            if (segm_start > segm_last) {
-               // fall-back solution, believe that segments same as requested
-               blobs.push(new DataView(res, o, place[n + 1]));
-               o += place[n + 1];
-               n += 2;
-            } else if (normal_order) {
-               const n0 = n;
-               while ((n < last) && (place[n] >= segm_start) && (place[n] + place[n + 1] - 1 <= segm_last)) {
-                  blobs.push(new DataView(res, o + place[n] - segm_start, place[n + 1]));
-                  n += 2;
-               }
-
-               if (n > n0)
-                  o += (segm_last - segm_start + 1);
-               else
-                  normal_order = false;
+            if (!finish_header || (segm_start > segm_last)) {
+               console.error('Failure decoding multirange header');
+               file.fMaxRanges = 1;
+               last = Math.min(last, first + file.fMaxRanges * 2);
+               return send_new_request();
             }
 
-            if (!normal_order) {
-               // special situation when server reorder segments in the reply
-               let isany = false;
-               for (let n1 = n; n1 < last; n1 += 2) {
-                  if ((place[n1] >= segm_start) && (place[n1] + place[n1 + 1] - 1 <= segm_last)) {
-                     blobs[n1 / 2] = new DataView(res, o + place[n1] - segm_start, place[n1 + 1]);
-                     isany = true;
-                  }
-               }
-               if (!isany)
-                  return rejectFunc(Error(`Provided fragment ${segm_start} - ${segm_last} out of requested multi-range request`));
+            reorder.addBuffer(n, res, o);
 
-               while (blobs[n / 2])
-                  n += 2;
-
-               o += (segm_last - segm_start + 1);
-            }
+            n += 2;
+            o += (segm_last - segm_start + 1);
          }
 
          send_new_request(true);
