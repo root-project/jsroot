@@ -2,6 +2,7 @@
 
 
 ## Changes in dev
+1. Resort order of ranges in http request, fixing several problems #374
 1. Implement for `TPie` 3d, text, title drawing including interactivity
 1. Remove support for deprectaed TH1K class
 1. Fix - proper paint axis labels on both sides when pad.fTickx/y = 2
