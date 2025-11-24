@@ -46,7 +46,10 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
       StlNames = ['', 'vector', 'list', 'deque', 'map', 'multimap', 'set', 'multiset', 'bitset'],
 
       // TObject bits
-      kIsReferenced = BIT(4), kHasUUID = BIT(5);
+      kIsReferenced = BIT(4), kHasUUID = BIT(5),
+
+      // gap in http which can be merged into single http request
+      kMinimalHttpGap = 128;
 
 
 /** @summary Custom streamers for root classes
@@ -3039,12 +3042,66 @@ class TFile {
      * @private */
    async _open() { return this.readKeys(); }
 
+   /** @summary check if requested segments can be reordered or merged
+    * @private */
+   #checkNeedReorder(place) {
+      let res = false, resort = false;
+      for (let n = 0; n < place.length - 2; n += 2) {
+         if (place[n] > place[n + 2]) {
+            res = resort = true;
+            break;
+         }
+         if (place[n] + place[n + 1] > place[n + 2] - kMinimalHttpGap) {
+            res = true;
+            break;
+         }
+      }
+      if (!res)
+         return false;
+
+      res = { place, reorder: [], place_new: [], blobs: [] };
+
+      for (let n = 0; n < place.length; n += 2)
+         res.reorder.push({ pos: place[n], len: place[n + 1], indx: [n] });
+
+      if (resort)
+         res.reorder.sort((a, b) => a.pos > b.pos);
+
+      for(let n = 0; n < res.reorder.length - 1; n++) {
+         const curr = res.reorder[n],
+               next = res.reorder[n + 1];
+         if (curr.pos + curr.len + kMinimalHttpGap > next.pos) {
+            curr.indx.push(...next.indx);
+            curr.len = next.pos + next.len - curr.pos;
+            res.reorder.splice(n + 1, 1); // remove segment
+            n--;
+         }
+      }
+
+      res.reorder.forEach(elem => res.place_new.push(elem.pos, elem.len));
+
+      res.addBuffer = function(indx, buf, o) {
+         const elem = this.reorder[indx / 2],
+               pos0 = elem.pos;
+         elem.indx.forEach(indx0 => {
+            this.blobs[indx0/2] = new DataView(buf, o + this.place[indx0] - pos0, this.place[indx0 + 1]);
+         });
+      };
+
+      return res;
+   }
+
    /** @summary read buffer(s) from the file
     * @return {Promise} with read buffers
     * @private */
    async readBuffer(place, filename, progress_callback) {
       if ((this.fFileContent !== null) && !filename && (!this.fAcceptRanges || this.fFileContent.canExtract(place)))
          return this.fFileContent.extract(place);
+
+      const need_reorder = this.#checkNeedReorder(place);
+      if (need_reorder)
+         console.log('!!!!! One can reorder/merge', place, need_reorder.place_new);
+
 
       let resolveFunc, rejectFunc;
 
