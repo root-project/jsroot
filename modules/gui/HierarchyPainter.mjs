@@ -3609,7 +3609,7 @@ class HierarchyPainter extends BasePainter {
          delete this.disp;
       }
 
-      if (this.disp_kind === 'batch') {
+      if ((this.disp_kind === 'batch') || !this.disp_frameid || isNodeJs()) {
          const pr = isNodeJs() ? _loadJSDOM() : Promise.resolve(null);
          return pr.then(handle => {
             this.disp = new BatchDisplay(1200, 800, handle?.body);
