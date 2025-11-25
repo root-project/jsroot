@@ -3609,7 +3609,7 @@ class HierarchyPainter extends BasePainter {
          delete this.disp;
       }
 
-      if ((this.disp_kind === 'batch') || !this.disp_frameid || isNodeJs()) {
+      if (this.disp_kind === 'batch') {
          const pr = isNodeJs() ? _loadJSDOM() : Promise.resolve(null);
          return pr.then(handle => {
             this.disp = new BatchDisplay(1200, 800, handle?.body);
@@ -3618,7 +3618,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       // check that we can found frame where drawing should be done
-      if (!document.getElementById(this.disp_frameid))
+      if (!this.disp_frameid || !document.getElementById(this.disp_frameid))
          return null;
 
       if (isBatchMode())
