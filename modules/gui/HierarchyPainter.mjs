@@ -825,6 +825,8 @@ class HierarchyPainter extends BasePainter {
    #one_by_one;  // process drop items one by one
    #topname; // top item name
    #cached_draw_object; // cached object for first draw
+   #draw_func; // alternative draw function
+   #redraw_func; // alternative redraw function
 
    /** @summary Create painter
      * @param {string} name - symbolic name
@@ -853,6 +855,23 @@ class HierarchyPainter extends BasePainter {
    setBasicColors() {
       this.background = settings.DarkMode ? 'black' : 'white';
       this.textcolor = settings.DarkMode ? '#eee' : '#111';
+   }
+
+   /** @summary Set alternative draw/redraw functions
+    * @desc If only only draw function specified - it also will be used for re-drawing
+    * @protected */
+   setDrawFunc(_draw, _redraw) {
+      if (isFunc(_draw)) {
+         this.#draw_func = _draw;
+         this.#redraw_func = isFunc(_redraw) ? _redraw : _draw;
+      }
+   }
+
+   /** @summary Invoke configured draw or redraw function
+    * @protected */
+   async callDrawFunc(dom, obj, opt, doredraw) {
+      const func = doredraw ? (this.#redraw_func || redraw) : (this.#draw_func || draw);
+      return func(dom, obj, opt);
    }
 
    /** @summary Cleanup hierarchy painter
@@ -2279,10 +2298,8 @@ class HierarchyPainter extends BasePainter {
             if (use_dflt_opt && !drawopt && handle?.dflt && (handle.dflt !== kExpand))
                drawopt = handle.dflt;
 
-            if (dom) {
-               const func = updating ? redraw : draw;
-               return func(dom, obj, drawopt).then(p => complete(p)).catch(err => complete(null, err));
-            }
+            if (dom)
+               return this.callDrawFunc(dom, obj, drawopt, updating).then(p => complete(p)).catch(err => complete(null, err));
 
             let did_activate = false;
             const arr = [];
@@ -2326,9 +2343,9 @@ class HierarchyPainter extends BasePainter {
             cleanup(frame);
             mdi.activateFrame(frame);
 
-            return draw(frame, obj, drawopt)
-                         .then(p => complete(p))
-                         .catch(err => complete(null, err));
+            return this.callDrawFunc(frame, obj, drawopt)
+                       .then(p => complete(p))
+                       .catch(err => complete(null, err));
          });
       });
    }
@@ -2434,7 +2451,7 @@ class HierarchyPainter extends BasePainter {
          if (isFunc(dom?.addPadButtons))
             dom.addPadButtons();
 
-         return draw(dom, res.obj, opt).then(p => drop_complete(p, mp === p));
+         return this.callDrawFunc(dom, res.obj, opt).then(p => drop_complete(p, mp === p));
       });
    }
 
