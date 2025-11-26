@@ -1439,6 +1439,9 @@ class HierarchyPainter extends BasePainter {
       if (!element_title)
          element_title = element_name;
 
+      if (hitem._filter)
+         element_name += ' *';
+
       d3a.attr('title', element_title)
          .text(element_name + ('_value' in hitem ? ':' : ''))
          .style('background', hitem._background ? hitem._background : null);
@@ -1458,6 +1461,8 @@ class HierarchyPainter extends BasePainter {
          for (let i = 0; i < hitem._childs.length; ++i) {
             const chld = hitem._childs[i];
             chld._parent = hitem;
+            if (hitem._filter && chld._name && chld._name.indexOf(hitem._filter) < 0)
+               continue;
             if (!this.addItemHtml(chld, d3chlds, i))
                break; // if too many items, skip rest
          }
@@ -2121,6 +2126,15 @@ class HierarchyPainter extends BasePainter {
                if (hitem._childs === undefined)
                   menu.add('Expand', () => this.expandItem(itemname), 'Expand content of object');
                else {
+                  if (hitem._childs.length > 10) {
+                     menu.add('Filter...', () => menu.input('Enter items to select', hitem._filter).then(f => {
+                        const changed = hitem._filter !== f;
+                        hitem._filter = f;
+                        if (changed)
+                           this.updateTreeNode(hitem);
+                     }));
+                  }
+
                   menu.add('Unexpand', () => {
                      hitem._more = true;
                      delete hitem._childs;
