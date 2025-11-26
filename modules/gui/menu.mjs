@@ -1092,7 +1092,7 @@ class JSRootMenu {
       }
       if (!kind)
          kind = 'text';
-      const inp_type = (kind === 'int') ? 'number' : 'text';
+      const inp_type = (kind === 'int') ? 'number' : 'text', value0 = value;
       let ranges = '';
       if ((value === undefined) || (value === null))
          value = '';
@@ -1114,8 +1114,11 @@ class JSRootMenu {
 
       return new Promise(resolveFunc => {
          this.runModal(title, main_content, { btns: true, height: 150, width: 400, oninit }).then(element => {
-            if (!element)
+            if (!element) {
+               if (onchange)
+                  onchange(value0);
                return;
+            }
             let val = element.querySelector('.jsroot_dlginp').value, isok = true;
             if (kind === 'float') {
                val = Number.parseFloat(val);
