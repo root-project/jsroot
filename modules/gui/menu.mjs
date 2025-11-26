@@ -1085,6 +1085,11 @@ class JSRootMenu {
      * @param {string} [kind] - use 'text' (default), 'number', 'float' or 'int'
      * @protected */
    async input(title, value, kind, min, max) {
+      let onchange = null;
+      if (isFunc(kind)) {
+         onchange = kind;
+         kind = '';
+      }
       if (!kind)
          kind = 'text';
       const inp_type = (kind === 'int') ? 'number' : 'text';
@@ -1101,10 +1106,16 @@ class JSRootMenu {
       const main_content =
          '<form><fieldset style="padding:0; border:0">' +
             `<input type="${inp_type}" value="${value}" ${ranges} style="width:98%;display:block" class="jsroot_dlginp"/>` +
-         '</fieldset></form>';
+         '</fieldset></form>',
+         oninit = !onchange ? null : elem => {
+            const inp = elem.querySelector('.jsroot_dlginp');
+            console.log('input element', inp)
+            if (inp)
+               inp.oninput = () => onchange(inp.value);
+         };
 
       return new Promise(resolveFunc => {
-         this.runModal(title, main_content, { btns: true, height: 150, width: 400 }).then(element => {
+         this.runModal(title, main_content, { btns: true, height: 150, width: 400, oninit }).then(element => {
             if (!element)
                return;
             let val = element.querySelector('.jsroot_dlginp').value;
@@ -1654,6 +1665,8 @@ class StandaloneMenu extends JSRootMenu {
          f = modal.element.select('.jsroot_dialog_footer').select('button');
       if (!f.empty())
          f.node().focus();
+      if (isFunc(args.oninit))
+         args.oninit(modal.element.node());
       return modal;
    }
 
