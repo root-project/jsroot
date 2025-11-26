@@ -2126,13 +2126,8 @@ class HierarchyPainter extends BasePainter {
                if (hitem._childs === undefined)
                   menu.add('Expand', () => this.expandItem(itemname), 'Expand content of object');
                else {
-                  if (sett.handle?.pm && (hitem._childs.length > 10)) {
+                  if (sett.handle?.pm && hitem._childs.length) {
                      menu.add('Filter...', () => menu.input('Enter items to select', hitem._filter, f => {
-                        const changed = hitem._filter !== f;
-                        hitem._filter = f;
-                        if (changed)
-                           this.updateTreeNode(hitem);
-                     }).then(f => {
                         const changed = hitem._filter !== f;
                         hitem._filter = f;
                         if (changed)
