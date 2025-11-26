@@ -2132,7 +2132,7 @@ class HierarchyPainter extends BasePainter {
                         hitem._filter = f;
                         if (changed)
                            this.updateTreeNode(hitem);
-                     }));
+                     }), 'Filter out items based on input pattern');
                   }
 
                   menu.add('Unexpand', () => {
