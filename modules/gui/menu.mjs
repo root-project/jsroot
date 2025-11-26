@@ -1105,11 +1105,9 @@ class JSRootMenu {
 
       const main_content =
          '<form><fieldset style="padding:0; border:0">' +
-            `<input type="${inp_type}" value="${value}" ${ranges} style="width:98%;display:block" class="jsroot_dlginp"/>` +
-         '</fieldset></form>',
-         oninit = !onchange ? null : elem => {
+         `<input type="${inp_type}" value="${value}" ${ranges} style="width:98%;display:block" class="jsroot_dlginp"/>` +
+         '</fieldset></form>', oninit = !onchange ? null : elem => {
             const inp = elem.querySelector('.jsroot_dlginp');
-            console.log('input element', inp)
             if (inp)
                inp.oninput = () => onchange(inp.value);
          };
@@ -1118,17 +1116,19 @@ class JSRootMenu {
          this.runModal(title, main_content, { btns: true, height: 150, width: 400, oninit }).then(element => {
             if (!element)
                return;
-            let val = element.querySelector('.jsroot_dlginp').value;
+            let val = element.querySelector('.jsroot_dlginp').value, isok = true;
             if (kind === 'float') {
                val = Number.parseFloat(val);
-               if (Number.isFinite(val))
-                  resolveFunc(val);
+               isok = Number.isFinite(val);
             } else if (kind === 'int') {
                val = parseInt(val);
-               if (Number.isInteger(val))
-                  resolveFunc(val);
-            } else
+               isok = Number.isInteger(val);
+            }
+            if (isok) {
+               if (onchange)
+                  onchange(val);
                resolveFunc(val);
+            }
          });
       });
    }
