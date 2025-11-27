@@ -2,8 +2,8 @@
 // in batch display one just able to create images
 
 
-import { version, HierarchyPainter, draw } from 'jsroot';
-
+import { version, HierarchyPainter, draw, addDrawFunc } from 'jsroot';
+import { writeFileSync } from 'fs';
 
 console.log(`JSROOT version ${version}`);
 
@@ -14,21 +14,27 @@ const hp = new HierarchyPainter('hpainter');
 hp.setDisplay('batch');
 
 // catch draw function calls
-hp.setDrawFunc((dom, obj, opt) => {
-   console.log(`trying to draw ${obj._typename}`);
-   return draw(dom, obj, opt);
+addDrawFunc({
+   name: '*',
+   func: (dom, obj, opt) => {
+      console.log(`Actual draw of ${obj._typename}`);
+      // if function return true no normal drawing will be performed
+      // do not try to call `draw` function from here !!!
+      // return true;
+   }
 });
 
 await hp.openRootFile('https://root.cern/js/files/hsimple.root');
 
 // display of TH2 histogram
+console.log('Invoke histogram drawing');
 await hp.display('hpxpy');
 
 await hp.expandItem('ntuple');
 
 // invoking TTree::Draw
+console.log('Invoke TLeaf drawing');
 await hp.display('ntuple/pz');
-
 
 // should be BatchDisplay
 const disp = hp.getDisplay();
@@ -38,5 +44,5 @@ for (let id = 0; id < disp.numFrames(); ++id) {
    console.log(`Frame ${id} create svg size ${svg.length}`);
 
    // one can save svg plain file
-   // writeFileSync(`frame${id}.svg`, svg);
+   writeFileSync(`frame${id}.svg`, svg);
 }
