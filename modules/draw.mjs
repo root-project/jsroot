@@ -172,12 +172,16 @@ const drawFuncs = { lst: [
   * @param {object} args - arguments
   * @param {string|regexp} args.name - class name or regexp pattern or '*'
   * @param {function} [args.func] - draw function
+  * @param {string} [args.sameas] - let behave same as specified class
   * @param {function} [args.draw] - async function to load draw function
   * @param {function} [args.class] - async function to load painter class with static draw function
   * @param {boolean} [args.direct] - if true, function is just Redraw() method of ObjectPainter
   * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like 'col;scat;'
   * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
   * @param {string} [args.draw_field] - draw only data member from object, like fHistogram
+  * @param {string} [args.noinspect] - disable inspect
+  * @param {string} [args.noexpand] - disable expand
+  * @param {string} [args.pm] - always show plus or minus sign even when no child items exists
   * @desc List of supported draw options could be provided, separated  with ';'
   * If args.name parameter is '*', function will be invoked before object drawing.
   * If such function does not return value - normal drawing will be continued.
