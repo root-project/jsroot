@@ -165,7 +165,7 @@ const drawFuncs = { lst: [
    { name: nsREX + 'RFont', icon: 'img_text', draw: () => import_v7().then(h => h.drawRFont), opt: '', direct: 'v7', csstype: 'font' },
    { name: nsREX + 'RAxisDrawable', icon: 'img_frame', draw: () => import_v7().then(h => h.drawRAxis), opt: '' },
    { name: nsREX + 'RTreeMapPainter', class: () => import('./draw/RTreeMapPainter.mjs').then(h => h.RTreeMapPainter), opt: '' }
-], cache: {}, alt: null };
+], cache: {} };
 
 
 /** @summary Register draw function for the class
@@ -184,7 +184,7 @@ const drawFuncs = { lst: [
   * @protected */
 function addDrawFunc(args) {
    if (args?.name === '*')
-      drawFuncs.alt = isFunc(args.func) ? args.func : null;
+      internals._alt_draw = isFunc(args.func) ? args.func : null;
    else
       drawFuncs.lst.push(args);
    return args;
@@ -397,8 +397,8 @@ async function draw(dom, obj, opt) {
    if (handle.draw_field && obj[handle.draw_field])
       return draw(dom, obj[handle.draw_field], opt || handle.draw_field_opt);
 
-   if (drawFuncs.alt && !handle.transform) {
-      const v = drawFuncs.alt(dom, obj, opt);
+   if (internals._alt_draw && !handle.transform) {
+      const v = internals._alt_draw(dom, obj, opt);
       if (v)
          return v;
    }
