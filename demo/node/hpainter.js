@@ -3,7 +3,7 @@
 
 
 import { version, HierarchyPainter, draw, addDrawFunc } from 'jsroot';
-import { writeFileSync } from 'fs';
+// import { writeFileSync } from 'fs';
 
 console.log(`JSROOT version ${version}`);
 
@@ -33,7 +33,7 @@ await hp.display('hpxpy');
 await hp.expandItem('ntuple');
 
 // invoking TTree::Draw
-console.log('Invoke TLeaf drawing');
+console.log('Invoke TBranch drawing');
 await hp.display('ntuple/pz');
 
 // should be BatchDisplay
@@ -41,8 +41,9 @@ const disp = hp.getDisplay();
 
 for (let id = 0; id < disp.numFrames(); ++id) {
    const svg = await disp.makeSVG(id);
+
    console.log(`Frame ${id} create svg size ${svg.length}`);
 
    // one can save svg plain file
-   writeFileSync(`frame${id}.svg`, svg);
+   // writeFileSync(`frame${id}.svg`, svg);
 }
