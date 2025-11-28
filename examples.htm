@@ -375,7 +375,7 @@
 
       let jsroot_path = './',
           demo_path = 'demo/',
-          filepath = '../files/',
+          filepath = 'https://root.cern/js/files/',
           extra_opts = '', // extra options like webgl=no or interactive=0
           select_key = null, // select the only key like ?select=TH2
           select_id = null,  // selected entry
@@ -419,10 +419,10 @@
       if (host.indexOf('localhost') >= 0) {
          filepath = 'https://jsroot.gsi.de/files/';
          use_zstd = false;
-      } else if ((host.indexOf('jsroot.gsi.de') < 0) && (host.indexOf('root.cern') < 0)) {
-         filepath = 'https://root.cern/js/files/';
+      } else if (host.indexOf('jsroot.gsi.de') >= 0)
+         filepath = 'https://jsroot.gsi.de/files/';
+      else if (host.indexOf('root.cern') < 0)
          use_zstd = false;
-      }
 
       if (window.location.protocol == 'file:') {
          jsroot_path = '../index.htm';
