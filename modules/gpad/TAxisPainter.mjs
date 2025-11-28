@@ -1054,7 +1054,7 @@ class TAxisPainter extends ObjectPainter {
 
          if (handle.kind === 1) {
             // if not showing labels, not show large tick
-            // FIXME: for labels last tick is smaller,
+            // FIXME: for labels last tick is smaller
             if (!this.isExtraLogTick(handle.tick) && (this.format(handle.tick, true) !== null))
                h1 = tickSize;
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
@@ -1159,7 +1159,7 @@ class TAxisPainter extends ObjectPainter {
       if (!this.vertical && this.regular_labels && !rotate_lbls) {
          let tlen = 0;
          for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
-            const text = this.format(lbl_pos[nmajor], true);
+            const text = this.format(lbl_pos[nmajor], true, fmt);
             if (text)
                tlen = Math.max(tlen, text.length);
          }
@@ -1176,7 +1176,7 @@ class TAxisPainter extends ObjectPainter {
             const fix_coord = this.vertical ? -labeloffset * side : labeloffset * side + ticksPlusMinus * tickSize;
 
             for (let nmajor = 0; nmajor < lbl_pos.length; ++nmajor) {
-               let text = this.format(lbl_pos[nmajor], true);
+               let text = this.format(lbl_pos[nmajor], true, fmt);
                if (text === null)
                   continue;
 
