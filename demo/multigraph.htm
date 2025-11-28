@@ -35,18 +35,17 @@
          const graph1 = createTGraph(npoints, xpts, ypts);
          graph1.fLineColor = 2;
          graph1.fMarkerSize = 2;
-         xpts = [];
-         ypts = [];
+         const xpts2 = [], ypts2 = [];
          for (let i = 0; i < npoints; i++) {
             if (cnt%2 === 1) {
-               xpts.push(i);
-               ypts.push(i*i);
+               xpts2.push(i);
+               ypts2.push(i*i);
             } else {
-               xpts.push(i);
-               ypts.push(Math.sqrt(i));
+               xpts2.push(i);
+               ypts2.push(Math.sqrt(i));
             }
          }
-         const graph2 = createTGraph(npoints, xpts, ypts);
+         const graph2 = createTGraph(npoints, xpts2, ypts2);
          graph2.fLineColor = 3;
          graph2.fMarkerSize = 2;
 

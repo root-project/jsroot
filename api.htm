@@ -355,7 +355,9 @@
    <script type="module">
       import { httpRequest, version, version_id, source_dir } from './modules/core.mjs';
 
-      let jsroot_path = './', filepath = 'https://root.cern/js/files/';
+      let jsroot_path = './',
+          filepath = 'https://root.cern/js/files/',
+          demopath = '';
 
       document.getElementById('version').innerText = version_id != 'dev' ? version_id : version;
       document.getElementById('version').title = `${version}, ${source_dir}`;
@@ -374,6 +376,8 @@
          jsroot_path = 'https://root.cern/js/dev/';
       else if (window.location.host.indexOf('jsroot.gsi.de') >= 0)
          filepath = 'https://jsroot.gsi.de/files/'
+      else if (window.location.host.indexOf('localhost') >= 0)
+         demopath = 'https://root.cern/js/latest/';
 
       function GetGithubBrunch(is_test) {
          if (source_dir.indexOf('/dev/') > 0 && !is_test)
@@ -429,7 +433,7 @@
            { name: 'Context menu', url: 'demo/context_menu.htm', title: 'Custom context menu for TH2 histograms', src: true },
            { name: 'Zooming', url: 'demo/zoom_handler.htm', title: 'Redefine Zoom function to make synchronous zooming in other histogram', src: true },
            { name: 'User IO', url: `index.htm?file=${filepath}amore.root&item=moH1F_0;1&inject=../demo/amore.mjs`, title: 'Example of custom streamer and custom draw function (AMORE)', src: 'demo/amore.mjs' },
-           { name: 'User class', url: 'index.htm?file=demo/custom/divhist.root&inject=demo/custom/divhist.js&item=DivHist', title: 'Example of draw function for custom user class', src: 'demo/custom/divhist.js' },
+           { name: 'User class', url: 'index.htm?file=demo/custom/divhist.root&inject=../demo/custom/divhist.mjs&item=DivHist', title: 'Example of draw function for custom user class', src: 'demo/custom/divhist.mjs' },
            { name: 'Store JSON', url: 'demo/store_json.htm', title: 'Store drawn objects into JSON, can be reused to display once again', src: true },
            { name: 'build3d', url: 'demo/build3d.htm', title: 'Example how one can create three.js model for different classes, using generic build3d() function', src: 'demo/build3d.htm' },
            { name: 'Geometry', url: 'demo/tgeo_build.htm', title: 'Example how one can create three.js model for TGeo object, using build() function from geom/TGeoPainter.mjs', src: 'demo/tgeo_build.htm' },
@@ -437,7 +441,7 @@
          ],
          'TTree': [
             { name: 'TSelector', url: 'demo/read_tree.htm', title: 'Simple example of reading TTree using TSelector class', src: true, syn: 'custom_html_read_tree' },
-            { name: 'User class', url: 'index.htm?file=https://root.cern/files/markus.root&item=_Event;1/Refs&opt=dump&inject=demo/gaudi.js', title: 'Example of user custom streamer for reading TTree data (Gaudi)', src: 'demo/gaudi.js', syn: 'custom_html_user_tree' },
+            { name: 'User class', url: 'index.htm?file=https://root.cern/files/markus.root&item=_Event;1/Refs&opt=dump&inject=../demo/gaudi.mjs', title: 'Example of user custom streamer for reading TTree data (Gaudi)', src: 'demo/gaudi.js', syn: 'custom_html_user_tree' },
             { name: 'Extract tracks', url: 'index.htm?inject=../demo/alice_esd.mjs&files=[https://root.cern/files/alice_ESDgeometry.root,https://root.cern/files/alice_ESDs.root]&item=[[0]/Gentle;1,[1]/esdTree;1]&opt=[,extract_tracks$]', title: 'Extract tracks from the custom tree', src: 'demo/alice_esd.mjs' }
          ],
          'Node.js': [
@@ -453,36 +457,36 @@
           ],
          'httpserver.C' : [
            { link: 'https://github.com/root-project/root/blob/master/tutorials/http/httpserver.C' },
-           { name: 'Default page', url: 'httpserver.C/', title: 'Default HTML page of running httpserver.C macro (snapshot)' },
-           { name: 'Sub-folder', url: 'httpserver.C/Files/job1.root/', title: 'Browse server objects from sub-folder' },
-           { name: 'Display item', url: 'httpserver.C/?item=Files/job1.root/hpxpy&opt=colz&monitoring=1000', title: 'Display histogram and enable monitoring (not updating while snapshot is used)' },
-           { name: 'No browser (1)', url: 'httpserver.C/Files/job1.root/hpxpy/draw.htm?opt=colz', title: 'Display item without browser, using provided draw.htm page' },
-           { name: 'No browser (2)', url: 'httpserver.C/?nobrowser&item=Files/job1.root/hpxpy&opt=colz', title: 'Display item without browser, using nobrowser option and normal UI' },
-           { name: 'Produce PNG', url: 'httpserver.C/Files/job1.root/hpxpy/root.png', title: 'Use normal ROOT drawing to produce PNG image' },
-           { name: 'Access object members', url: 'httpserver.C/?item=Canvases/c1/fPrimitives/hpx', title: 'Show histogram from TCanvas lists of primitives (all other objects not cached in this example)' },
-           { name: 'Get object title', url: 'httpserver.C/Files/job1.root/hpxpy/exe.json?method=GetTitle', title: 'Access object methods with exe.json request' },
-           { name: 'Tree player', url: 'httpserver.C/?item=Files/job1.root/ntuple', title: 'Custom UI to execute TTree::Draw on running application' },
-           { name: 'Read file', url: `httpserver.C/?file=${filepath}hsimple.root&layout=grid2x2&items=[hsimple.root/hpx;1,hsimple.root/hpxpy;1,job1/Files/job1.root/hpx,job1/Files/job1.root/hpxpy]&opts=[hist,col,hist,col]`, title: 'Show histograms from ROOT file and THttpServer' },
-           { name: 'Superimpose', url: `httpserver.C/?file=${filepath}hsimple.root&item=[job1/Files/job1.root/hpx,hsimple.root/hpx;1]&opt=logy`, title: 'Superimpose objects from ROOT file and online server' }
+           { name: 'Default page', url: demopath + 'httpserver.C/', title: 'Default HTML page of running httpserver.C macro (snapshot)' },
+           { name: 'Sub-folder', url: demopath + 'httpserver.C/Files/job1.root/', title: 'Browse server objects from sub-folder' },
+           { name: 'Display item', url: demopath + 'httpserver.C/?item=Files/job1.root/hpxpy&opt=colz&monitoring=1000', title: 'Display histogram and enable monitoring (not updating while snapshot is used)' },
+           { name: 'No browser (1)', url: demopath + 'httpserver.C/Files/job1.root/hpxpy/draw.htm?opt=colz', title: 'Display item without browser, using provided draw.htm page' },
+           { name: 'No browser (2)', url: demopath + 'httpserver.C/?nobrowser&item=Files/job1.root/hpxpy&opt=colz', title: 'Display item without browser, using nobrowser option and normal UI' },
+           { name: 'Produce PNG', url: demopath + 'httpserver.C/Files/job1.root/hpxpy/root.png', title: 'Use normal ROOT drawing to produce PNG image' },
+           { name: 'Access object members', url: demopath + 'httpserver.C/?item=Canvases/c1/fPrimitives/hpx', title: 'Show histogram from TCanvas lists of primitives (all other objects not cached in this example)' },
+           { name: 'Get object title', url: demopath + 'httpserver.C/Files/job1.root/hpxpy/exe.json?method=GetTitle', title: 'Access object methods with exe.json request' },
+           { name: 'Tree player', url: demopath + 'httpserver.C/?item=Files/job1.root/ntuple', title: 'Custom UI to execute TTree::Draw on running application' },
+           { name: 'Read file', url: `${demopath}httpserver.C/?file=${filepath}hsimple.root&layout=grid2x2&items=[hsimple.root/hpx;1,hsimple.root/hpxpy;1,job1/Files/job1.root/hpx,job1/Files/job1.root/hpxpy]&opts=[hist,col,hist,col]`, title: 'Show histograms from ROOT file and THttpServer' },
+           { name: 'Superimpose', url: `${demopath}httpserver.C/?file=${filepath}hsimple.root&item=[job1/Files/job1.root/hpx,hsimple.root/hpx;1]&opt=logy`, title: 'Superimpose objects from ROOT file and online server' }
          ],
          'httpcontrol.C' : [
            { link: 'https://github.com/root-project/root/blob/master/tutorials/http/httpcontrol.C' },
-           { name: 'Default page', url: 'httpcontrol.C/', title: 'Default HTML page of running httpscontrol.C macro (snapshot)' },
-           { name: 'Text output', url: 'httpcontrol.C/?layout=simple&item=Debug&monitoring=0', title: 'Custom text output, using MathJax.js; also disable default monitoring' },
-           { name: 'Text output (2)', url: 'httpcontrol.C/Debug/draw.htm', title: 'Custom text output without browser' }
+           { name: 'Default page', url: demopath + 'httpcontrol.C/', title: 'Default HTML page of running httpscontrol.C macro (snapshot)' },
+           { name: 'Text output', url: demopath + 'httpcontrol.C/?layout=simple&item=Debug&monitoring=0', title: 'Custom text output, using MathJax.js; also disable default monitoring' },
+           { name: 'Text output (2)', url: demopath + 'httpcontrol.C/Debug/draw.htm', title: 'Custom text output without browser' }
          ],
          'Go4ExampleSimple' : [
            { link: 'https://github.com/linev/go4/tree/master/Go4ExampleSimple' },
-           { name: 'Main page', url: 'Go4ExampleSimple/', title: 'Main page of running Go4ExampleSimple example (snapshot)' },
-           { name: 'Without status line', url: 'Go4ExampleSimple/?nostatus', title: 'Suppress output of status line' },
-           { name: 'Draw condition', url: 'Go4ExampleSimple/?nostatus&item=Conditions/cHis1', title: 'Show TGo4Condition values correspondent histogram' },
-           { name: 'Edit condition', url: 'Go4ExampleSimple/?item=Conditions/cHis1&opt=editor', title: 'Editing condition values' },
-           { name: 'Edit parameter', url: 'Go4ExampleSimple/?item=Parameters/Par1&opt=editor', title: 'Editing parameter values' },
-           { name: 'Debug output', url: 'Go4ExampleSimple/?item=Status/Log', title: 'Show analysis log output' },
-           { name: 'Draw picture', url: 'Go4ExampleSimple/?nostatus&item=Pictures/condSet', title: 'Show TGo4Picture, which fetch and draw many other objects' },
-           { name: 'Processing rate', url: 'Go4ExampleSimple/?item=Status/EventsRate', title: 'Show analysis events processing rate as TGraph' },
-           { name: 'Analysis configuration', url: 'Go4ExampleSimple/?item=Control/Analysis', title: 'Change analysis configurations' },
-           { name: 'Terminal', url: 'Go4ExampleSimple/?item=Control/Terminal', title: 'Analysis terminal output plus several control elements' }
+           { name: 'Main page', url: demopath + 'Go4ExampleSimple/', title: 'Main page of running Go4ExampleSimple example (snapshot)' },
+           { name: 'Without status line', url: demopath + 'Go4ExampleSimple/?nostatus', title: 'Suppress output of status line' },
+           { name: 'Draw condition', url: demopath + 'Go4ExampleSimple/?nostatus&item=Conditions/cHis1', title: 'Show TGo4Condition values correspondent histogram' },
+           { name: 'Edit condition', url: demopath + 'Go4ExampleSimple/?item=Conditions/cHis1&opt=editor', title: 'Editing condition values' },
+           { name: 'Edit parameter', url: demopath + 'Go4ExampleSimple/?item=Parameters/Par1&opt=editor', title: 'Editing parameter values' },
+           { name: 'Debug output', url: demopath + 'Go4ExampleSimple/?item=Status/Log', title: 'Show analysis log output' },
+           { name: 'Draw picture', url: demopath + 'Go4ExampleSimple/?nostatus&item=Pictures/condSet', title: 'Show TGo4Picture, which fetch and draw many other objects' },
+           { name: 'Processing rate', url: demopath + 'Go4ExampleSimple/?item=Status/EventsRate', title: 'Show analysis events processing rate as TGraph' },
+           { name: 'Analysis configuration', url: demopath + 'Go4ExampleSimple/?item=Control/Analysis', title: 'Change analysis configurations' },
+           { name: 'Terminal', url: demopath + 'Go4ExampleSimple/?item=Control/Terminal', title: 'Analysis terminal output plus several control elements' }
          ]
       };
 

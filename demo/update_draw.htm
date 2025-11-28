@@ -26,19 +26,22 @@
    <script type='module'>
       import { httpRequest, redraw, decodeUrl, registerForResize, GridDisplay } from 'jsroot';
 
-      let mdi = null, cnt = 0, drawopt = null, addr = null;
+      let mdi = null, cnt = 0, drawopt = null, addr = null, path = 'https://root.cern/js/latest/demo/';
+
+      if ((window.location.host.indexOf('root.cern') >= 0) || (window.location.host.indexOf('jsroot.gsi.de') >= 0))
+         path = '';
 
       function updateGUI() {
 
          // here set of generated json files are used
-         // One could specify addres of running THttpServer like http://localhost:8080/Canvases/c1/root.json.gz?compact=23
+         // One could specify address of running THttpServer like http://localhost:8080/Canvases/c1/root.json.gz?compact=23
          // Or one can create root.json file in the application and place it on the webserver
          // To run demo, one should generate rootXX.json files using demo.C macro
 
          let request_addr = addr || `root${cnt % 20}.json`,
              request_count = cnt++;
 
-         httpRequest(request_addr, 'object').then(histo => {
+         httpRequest(path + request_addr, 'object').then(histo => {
             // when use grid layout, use counter value stored in request itself
             let frame = mdi ? mdi.findFrame(`item${request_count % mdi.numGridFrames()}`, true) : 'drawing';
 
