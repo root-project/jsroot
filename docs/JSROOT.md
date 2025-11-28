@@ -674,7 +674,7 @@ One also can load some special components directly like:
    h.setDisplay("simple", "myMainDiv");
 
    // open file and display element
-   await h.openRootFile('../../files/hsimple.root');
+   await h.openRootFile('https://root.cern/js/files/hsimple.root');
    await h.display('hpxpy;1","colz');
 </script>
 ```

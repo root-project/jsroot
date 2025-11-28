@@ -4074,7 +4074,7 @@ class HierarchyPainter extends BasePainter {
                     '<label style="margin-right:5px"><input type="checkbox" name="monitoring" class="gui_monitoring"/>Monitoring</label>';
       } else if (!this.no_select) {
          const myDiv = d3_select('#' + this.gui_div),
-               files = myDiv.attr('files') || '../files/hsimple.root',
+               files = myDiv.attr('files') || 'https://root.cern/js/files/hsimple.root',
                path = decodeUrl().get('path') || myDiv.attr('path') || '',
                arrFiles = files.split(';');
 

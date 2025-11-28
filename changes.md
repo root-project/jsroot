@@ -1477,11 +1477,11 @@
 8. Fix several problems with markers drawing; implement plus, asterisk, mult symbols.
 9. Implement custom layout, which allows to configure user-defined layout for displayed objects
 10. Fix errors with scaling of axis labels.
-11. Support also Y axis with custom labels like: http://jsroot.gsi.de/dev/?nobrowser&file=../files/atlas.root&item=LEDShapeHeightCorr_Gain0;1&opt=col
+11. Support also Y axis with custom labels like: https://jsroot.gsi.de/dev/?nobrowser&file=https://jsroot.gsi.de/files/atlas.root&item=LEDShapeHeightCorr_Gain0;1&opt=col
 
 
 ## Changes in 3.7
-1. Support of X axis with custom labels like: http://jsroot.gsi.de/dev/?nobrowser&json=../files/hist_xlabels.json
+1. Support of X axis with custom labels like: https://jsroot.gsi.de/dev/?nobrowser&json=https://jsroot.gsi.de/files/hist_xlabels.json
 2. Extend functionality of JSROOT.addDrawFunc() function. One could register type-specific
    `make_request` and `after_request` functions; `icon`, `prereq`, `script`, `monitor` properties.
    This let add more custom elements to the generic gui, implemented with JSROOT.HierarchyPainter
@@ -1668,7 +1668,7 @@
 13. Provide example fileitem.htm how read and display item from ROOT file.
 14. In default index.htm page one could specify 'file', 'layout',
     'item' and 'items' parameters like:
-      <http://root.cern.ch/js/3.0/index.htm?file=../files/hsimple.root&layout=grid3x2&item=hpx;1>
+      <https://root.cern/js/3.0/index.htm?file=https://root.cern/js/files/hsimple.root&layout=grid3x2&item=hpx;1>
 15. Support direct reading of objects from sub-sub-directories.
 16. Introduce demo.htm, which demonstrates online usage of JSROOT.
 17. One could use demo.htm directly with THttpServer providing address like:
