@@ -355,7 +355,7 @@
    <script type="module">
       import { httpRequest, version, version_id, source_dir } from './modules/core.mjs';
 
-      let jsroot_path = './', filepath = '../files/';
+      let jsroot_path = './', filepath = 'https://root.cern/js/files/';
 
       document.getElementById('version').innerText = version_id != 'dev' ? version_id : version;
       document.getElementById('version').title = `${version}, ${source_dir}`;
@@ -370,15 +370,10 @@
          document.getElementById('panel').classList.toggle('open');
       };
 
-      if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
-          (window.location.host.indexOf('root.cern') < 0)) {
-             filepath = 'https://root.cern/js/files/';
-          }
-
-      if (window.location.protocol == 'file:') {
+      if (window.location.protocol == 'file:')
          jsroot_path = 'https://root.cern/js/dev/';
-         filepath = 'https://root.cern/js/files/';
-      }
+      else if (window.location.host.indexOf('jsroot.gsi.de') >= 0)
+         filepath = 'https://jsroot.gsi.de/files/'
 
       function GetGithubBrunch(is_test) {
          if (source_dir.indexOf('/dev/') > 0 && !is_test)
