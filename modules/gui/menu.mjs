@@ -887,6 +887,9 @@ class JSRootMenu {
       this.addchk(settings.StripAxisLabels, 'Strip labels', flag => { settings.StripAxisLabels = flag; }, 'Provide shorter labels like 10^0 -> 1');
       this.addchk(settings.CutAxisLabels, 'Cut labels', flag => { settings.CutAxisLabels = flag; }, 'Remove labels which may exceed graphical range');
       this.add(`Tilt angle ${settings.AxisTiltAngle}`, () => this.input('Axis tilt angle', settings.AxisTiltAngle, 'int', 0, 180).then(val => { settings.AxisTiltAngle = val; }));
+      this.add(`X format ${settings.XValuesFormat ?? gStyle.fStatFormat}`, () => this.input('X axis format', settings.XValuesFormat).then(val => { settings.XValuesFormat = val; }));
+      this.add(`Y format ${settings.YValuesFormat ?? gStyle.fStatFormat}`, () => this.input('Y axis format', settings.YValuesFormat).then(val => { settings.YValuesFormat = val; }));
+      this.add(`Z format ${settings.ZValuesFormat ?? gStyle.fStatFormat}`, () => this.input('Z axis format', settings.ZValuesFormat).then(val => { settings.ZValuesFormat = val; }));
       this.endsub();
       this.addSelectMenu('Latex', ['Off', 'Symbols', 'Normal', 'MathJax', 'Force MathJax'], settings.Latex, value => { settings.Latex = value; });
       this.addSelectMenu('3D rendering', ['Default', 'WebGL', 'Image'], settings.Render3D, value => { settings.Render3D = value; });
