@@ -18,7 +18,7 @@
       import { adoptRootColors } from 'jsroot/colors';
 
       // absolute file path can be used as well
-      const filename = '../../files/transparency_test.root';
+      const filename = 'https://root.cern/js/files/transparency_test.root';
       const file = await openFile(filename);
       const lst = await file.readObject('mycolors');
       adoptRootColors(lst);

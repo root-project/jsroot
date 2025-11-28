@@ -118,7 +118,7 @@ class FileProxyMultiple extends FileProxyPromise {
 
 } // class FileProxyMultiple
 
-let filearg = null, fname = '../../../files/hsimple.root';
+let filearg = null, fname = './hsimple.root';
 
 if (process.argv && process.argv[3] && typeof process.argv[3] == 'string')
    fname = process.argv[3];

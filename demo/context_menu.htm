@@ -9,7 +9,7 @@
       </script>
    </head>
    <body>
-      <div id="guiDiv" path="../../files/" files="ct.root;exclusion.root;fillrandom.root;glbox.root;graph.root;hsimple.root;legends.root;rf107.root;stacks.root;zdemo.root">
+      <div id="guiDiv" path="https://root.cern/js/files/" files="ct.root;exclusion.root;fillrandom.root;glbox.root;graph.root;hsimple.root;legends.root;rf107.root;stacks.root;zdemo.root">
          loading ...
       </div>
    </body>
@@ -21,7 +21,7 @@
 
       const hpainter = await buildGUI('guiDiv');
 
-      await hpainter.openRootFile('../../files/hsimple.root');
+      await hpainter.openRootFile('https://root.cern/js/files/hsimple.root');
 
       const histpainter = await hpainter.display('hpxpy;1', 'colz');
 

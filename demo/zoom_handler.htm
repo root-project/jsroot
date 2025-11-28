@@ -17,7 +17,7 @@
    <script type='module'>
       import { openFile, draw } from 'jsroot';
 
-      const file = await openFile('../../files/hsimple.root');
+      const file = await openFile('https://root.cern/js/files/hsimple.root');
 
       const obj1 = await file.readObject('hpx;1');
 

@@ -21,7 +21,7 @@
       import { parse, openFile, draw, cleanup, drawingJSON } from 'jsroot';
 
       // absolute file path can be used as well
-      const file = await openFile('../../files/hsimple.root');
+      const file = await openFile('https://root.cern/js/files/hsimple.root');
       const obj = await file.readObject('hpxpy;1');
       await draw('drawing', obj, 'colz');
 

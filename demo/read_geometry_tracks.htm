@@ -16,8 +16,8 @@
    <script type='module'>
       import { httpRequest, openFile, draw } from 'jsroot';
 
-      const geom_file = '../../files/geom/evegeoshape.json.gz',
-            tracks_file = '../../files/geom/eve_tracks.root';
+      const geom_file = 'https://root.cern/js/files/geom/evegeoshape.json.gz',
+            tracks_file = 'https://root.cern/js/files/geom/eve_tracks.root';
 
       const obj = await httpRequest(geom_file, 'object');
       const geo_painter = await draw('drawing', obj);

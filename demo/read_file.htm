@@ -13,7 +13,7 @@
    </body>
    <script type='module'>
       import { openFile, draw } from 'jsroot';
-      const file = await openFile('../../files/hsimple.root');
+      const file = await openFile('https://root.cern/js/files/hsimple.root');
       const obj = await file.readObject('hpxpy;1');
       draw('drawing', obj, 'colz');
    </script>
