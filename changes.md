@@ -2,6 +2,7 @@
 
 ## Changes in 7.10.x
 1. Fix - correctly process `TLeafB` arrays in tree draw #384
+2. Fix - better detect default ranges in `TGraph` histogram
 
 
 ## Changes in 7.10.1
