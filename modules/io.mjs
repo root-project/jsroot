@@ -1083,6 +1083,7 @@ function createMemberStreamer(element, file, no_string) {
       case kOffsetP + kBool:
       case kOffsetP + kInt:
       case kOffsetP + kDouble:
+      case kOffsetP + kChar:
       case kOffsetP + kUChar:
       case kOffsetP + kShort:
       case kOffsetP + kUShort:
@@ -1094,15 +1095,15 @@ function createMemberStreamer(element, file, no_string) {
       case kOffsetP + kLong64:
       case kOffsetP + kFloat:
          member.cntname = element.fCountName;
-         member.func = function(buf, obj) {
-            obj[this.name] = (buf.ntou1() === 1) ? buf.readFastArray(obj[this.cntname], this.type - kOffsetP) : [];
-         };
-         break;
-      case kOffsetP + kChar:
-         member.cntname = element.fCountName;
-         member.func = function(buf, obj) {
-            obj[this.name] = (buf.ntou1() === 1) ? buf.readFastString(obj[this.cntname]) : null;
-         };
+         if ((member.type !== kOffsetP + kChar) || no_string) {
+            member.func = function(buf, obj) {
+               obj[this.name] = (buf.ntou1() === 1) ? buf.readFastArray(obj[this.cntname], this.type - kOffsetP) : [];
+            };
+         } else {
+            member.func = function(buf, obj) {
+               obj[this.name] = (buf.ntou1() === 1) ? buf.readFastString(obj[this.cntname]) : null;
+            };
+         }
          break;
       case kDouble32:
       case kOffsetL + kDouble32:
