@@ -7,6 +7,7 @@
 1. Implement `TCanvas` support in `build3d` function #373
 1. Implements `TTree` branches filtering via context menu #364
 1. Let define alternative draw function #378
+1. Implement padsN draw option for `THStack`
 1. Remove support for deprectaed `TH1K` class
 1. Fix - paint frame border mode/size from TCanvas
 1. Fix - correctly process `TLeafB` arrays in tree draw #384

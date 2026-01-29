@@ -307,7 +307,7 @@ class THStackPainter extends ObjectPainter {
             o.auto += ' ' + f;
       });
 
-      if(d.check('PADS', true)) {
+      if (d.check('PADS', true)) {
          o.pads = true;
          o.pads_columns = d.partAsInt();
       }
