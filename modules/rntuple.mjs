@@ -925,24 +925,23 @@ async function readHeaderFooter(tuple) {
 function readEntry(rntuple, fieldName, entryIndex) {
    const builder = rntuple.builder,
          field = builder.fieldDescriptors.find(f => f.fieldName === fieldName),
-         fieldData = rntuple._clusterData[fieldName];
+         columns = rntuple.fieldToColumns[fieldName];
 
    if (!field)
       throw new Error(`No descriptor for field ${fieldName}`);
-   if (!fieldData)
-      throw new Error(`No data for field ${fieldName}`);
+   if (!columns)
+      throw new Error(`No columns field ${fieldName}`);
 
-   // Detect and decode string fields
-   if (Array.isArray(fieldData) && fieldData.length === 2) {
-      const [offsets, payload] = fieldData,
+   if (field.typeName === 'std::string') {
+      // string extracted from two columns
+      const offsets = rntuple._clusterData[columns[0].index][0],
+            payload = rntuple._clusterData[columns[1].index][0],
             start = entryIndex === 0 ? 0 : Number(offsets[entryIndex - 1]),
-            end = Number(offsets[entryIndex]),
-            decoded = payload.slice(start, end).join(''); // Convert to string
-      return decoded;
+            end = Number(offsets[entryIndex]);
+      return payload.slice(start, end).join(''); // Convert to string
    }
-
-   // Fallback: primitive type (e.g. int, float)
-   return fieldData[0][entryIndex];
+   const values = rntuple._clusterData[columns[0].index];
+   return values[0][entryIndex];
 }
 
 /** @summary Return field name for specified branch index
@@ -1040,7 +1039,7 @@ function readNextCluster(rntuple, selector) {
             });
 
       return Promise.all(unzipPromises).then(unzipBlobs => {
-         rntuple._clusterData = {}; // store deserialized data per field
+         rntuple._clusterData = {}; // store deserialized data per column index
 
          for (let i = 0; i < unzipBlobs.length; ++i) {
             const blob = unzipBlobs[i];
@@ -1051,54 +1050,25 @@ function readNextCluster(rntuple, selector) {
                page,
                colDesc
             } = pages[i],
-                  field = builder.fieldDescriptors[colDesc.fieldId],
-                  values = builder.deserializePage(blob, colDesc, page);
+                field = builder.fieldDescriptors[colDesc.fieldId],
+                values = builder.deserializePage(blob, colDesc, page);
 
             // Support multiple representations (e.g., string fields with offsets + payload)
-            if (!rntuple._clusterData[field.fieldName])
-               rntuple._clusterData[field.fieldName] = [];
+            if (!rntuple._clusterData[colDesc.index])
+               rntuple._clusterData[colDesc.index] = [];
 
-            // splitting string fields into offset and payload components
-            if (field.typeName === 'std::string') {
-               if (
-                  colDesc.coltype === ENTupleColumnType.kIndex64 ||
-                        colDesc.coltype === ENTupleColumnType.kIndex32 ||
-                        colDesc.coltype === ENTupleColumnType.kSplitIndex64 ||
-                        colDesc.coltype === ENTupleColumnType.kSplitIndex32
-               ) // Index64/Index32
-                  rntuple._clusterData[field.fieldName][0] = values; // Offsets
-               else if (colDesc.coltype === ENTupleColumnType.kChar)
-                  rntuple._clusterData[field.fieldName][1] = values; // Payload
-               else
-                  throw new Error(`Unsupported column type for string field: ${colDesc.coltype}`);
-            } else
-               rntuple._clusterData[field.fieldName][0] = values;
-         }
-
-         // Ensure string fields have ending offset for proper reconstruction of the last entry
-         for (const fieldName of selectedFields) {
-            const field = builder.fieldDescriptors.find(f => f.fieldName === fieldName),
-                  colData = rntuple._clusterData[fieldName];
-            if (field.typeName === 'std::string') {
-               if (!Array.isArray(colData) || colData.length !== 2)
-                  throw new Error(`String field '${fieldName}' must have 2 columns`);
-               if (colData[0].length !== builder.clusterSummaries[clusterIndex].numEntries)
-                  throw new Error(`Malformed string field '${fieldName}': missing final offset`);
-            }
+            rntuple._clusterData[colDesc.index].push(values);
          }
 
          const numEntries = clusterSummary.numEntries;
          for (let i = 0; i < numEntries; ++i) {
             for (let b = 0; b < selector.numBranches(); ++b) {
                const fieldName = getSelectorFieldName(selector, b),
-                     tgtName = selector.nameOfBranch(b),
-                     values = rntuple._clusterData[fieldName];
+                     tgtName = selector.nameOfBranch(b);
 
-               if (!values)
-                  throw new Error(`Missing values for selected field: ${fieldName}`);
                selector.tgtobj[tgtName] = readEntry(rntuple, fieldName, i);
             }
-            selector.Process();
+            selector.Process(i);
          }
 
          selector.Terminate(true);
