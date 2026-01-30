@@ -58,22 +58,23 @@
   ],
   "dependencies": {
     "@oneidentity/zstd-js": "^1.0.3",
+    "@resvg/resvg-js": "^2.6.2",
     "canvas": "^3.2.1",
     "jsdom": "^27.4.0",
     "mathjax": "3.2.2",
+    "three": "0.162.0",
     "tmp": "^0.2.5",
-    "xhr2": "^0.2.1",
-    "three": "0.162.0"
+    "xhr2": "^0.2.1"
   },
   "devDependencies": {
-    "gl": "9.0.0-rc.9",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.1",
-    "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-replace": "6.0.2",
-    "eslint": "^9.39.2",
+    "@rollup/plugin-terser": "0.4.4",
     "@stylistic/eslint-plugin": "^4.4.1",
     "docdash": "^2.0.2",
+    "eslint": "^9.39.2",
+    "gl": "9.0.0-rc.9",
     "jsdoc": "^4.0.5",
     "rollup": "4.56.0",
     "rollup-plugin-ascii": "0.0.3",
