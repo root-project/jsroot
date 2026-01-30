@@ -1137,6 +1137,17 @@ class TDrawSelectorTuple extends TDrawSelector {
    /** @summary Returns true if field can be used as array */
    isArrayBranch(/* tuple, br */) { return false; }
 
+   /** @summary Process entry */
+   Process(entry) {
+      for (let n = 0; n < this.numBranches(); ++n) {
+         const name = this.nameOfBranch(n);
+         if (typeof this.tgtobj[name] === 'bigint')
+            this.tgtobj[name] = Number(this.tgtobj[name]);
+      }
+
+      super.Process(entry);
+   }
+
 } // class TDrawSelectorTuple
 
 
