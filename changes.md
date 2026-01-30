@@ -11,6 +11,7 @@
 1. Remove support for deprectaed `TH1K` class
 1. Fix - paint frame border mode/size from TCanvas
 1. Fix - correctly process `TLeafB` arrays in tree draw #384
+1. Fix - convert BigInt before `RNtuple` drawing
 
 
 ## Changes in 7.10.1
