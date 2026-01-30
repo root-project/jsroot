@@ -882,19 +882,37 @@ async function svgToImage(svg, image_format, args) {
       });
 
       const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
+      const RESVG_FEATURE_FLAG = true;
+      
+      if (RESVG_FEATURE_FLAG) {
+         return import('@resvg/resvg-js').then(({ Resvg }) => {
+            const rawSvg = decodeURIComponent(svg);
 
-      return import('canvas').then(async handle => {
-         return handle.default.loadImage(img_src).then(img => {
-            const canvas = handle.default.createCanvas(img.width, img.height);
+            const resvg = new Resvg(rawSvg);
 
-            canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+            const pngData = resvg.render();
+            const pngBuffer = pngData.asPng();
 
-            if (args?.as_buffer)
-               return canvas.toBuffer('image/' + image_format);
+            if (args?.as_buffer) {
+               return pngBuffer;
+            }
 
-            return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
+            return 'data:image/png;base64,' + pngBuffer.toString('base64');
          });
-      });
+      } else {
+         return import('canvas').then(async handle => {
+            return handle.default.loadImage(img_src).then(img => {
+               const canvas = handle.default.createCanvas(img.width, img.height);
+
+               canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+
+               if (args?.as_buffer)
+                  return canvas.toBuffer('image/' + image_format);
+
+               return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
+            });
+         });
+      }
    }
 
    const img_src = URL.createObjectURL(new Blob([doctype + svg], { type: 'image/svg+xml;charset=utf-8' }));
