@@ -963,11 +963,11 @@ function getSelectorFieldName(selector, i) {
 }
 
 // Read and process the next data cluster from the RNTuple
-function readNextCluster(rntuple, selector) {
+async function readNextCluster(rntuple, selector) {
    const builder = rntuple.builder;
 
    // Add validation
-   if (!builder.clusterSummaries || builder.clusterSummaries.length === 0)
+   if (!builder.clusterSummaries)
       throw new Error('No cluster summaries available - possibly incomplete file reading');
 
    const clusterIndex = selector.currentCluster,
@@ -976,6 +976,11 @@ function readNextCluster(rntuple, selector) {
          pages = [],
       // Collect only selected field names from selector
          selectedFields = [];
+
+   if (!clusterSummary) {
+      selector.Terminate(clusterIndex > 0);
+      return false;
+   }
 
    for (let i = 0; i < selector.numBranches(); ++i)
       selectedFields.push(getSelectorFieldName(selector, i));
@@ -1003,7 +1008,7 @@ function readNextCluster(rntuple, selector) {
    // Early exit if no pages to read (i.e., no selected fields matched)
    if (pages.length === 0) {
       selector.Terminate(false);
-      return Promise.resolve();
+      return false;
    }
 
    // Build flat array of [offset, size, offset, size, ...] to read pages
@@ -1079,10 +1084,10 @@ function readNextCluster(rntuple, selector) {
 
                selector.tgtobj[tgtName] = readEntry(rntuple, fieldName, clusterIndex, i);
             }
-            selector.Process(i);
+            selector.Process(selector.currentEntry++);
          }
 
-         selector.Terminate(true);
+         return readNextCluster(rntuple, selector);
       });
    });
 }
@@ -1093,6 +1098,7 @@ function rntupleProcess(rntuple, selector, args) {
    return readHeaderFooter(rntuple).then(() => {
       selector.Begin();
       selector.currentCluster = 0;
+      selector.currentEntry = 0;
       return readNextCluster(rntuple, selector, args);
    }).then(() => selector);
 }
