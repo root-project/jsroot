@@ -884,12 +884,13 @@ async function svgToImage(svg, image_format, args) {
       const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
       const RESVG_FEATURE_FLAG = true;
       
+      // Use the newer and stabler `resvg-js` backend for converting SVG to PNG
       if (RESVG_FEATURE_FLAG) {
          return import('@resvg/resvg-js').then(({ Resvg }) => {
-            const rawSvg = decodeURIComponent(svg);
+            const rawSvg = decodeURIComponent(svg);   // raw SVG XML
 
+            // Initialize Resvg and create the PNG buffer
             const resvg = new Resvg(rawSvg);
-
             const pngData = resvg.render();
             const pngBuffer = pngData.asPng();
 
@@ -899,7 +900,7 @@ async function svgToImage(svg, image_format, args) {
 
             return 'data:image/png;base64,' + pngBuffer.toString('base64');
          });
-      } else {
+      } else { // Fallback to `node-canvas`
          return import('canvas').then(async handle => {
             return handle.default.loadImage(img_src).then(img => {
                const canvas = handle.default.createCanvas(img.width, img.height);
