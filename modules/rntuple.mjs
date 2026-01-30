@@ -922,7 +922,7 @@ async function readHeaderFooter(tuple) {
    });
 }
 
-function readEntry(rntuple, fieldName, entryIndex) {
+function readEntry(rntuple, fieldName, clusterIndex, entryIndex) {
    const builder = rntuple.builder,
          field = builder.fieldDescriptors.find(f => f.fieldName === fieldName),
          columns = rntuple.fieldToColumns[fieldName];
@@ -932,16 +932,27 @@ function readEntry(rntuple, fieldName, entryIndex) {
    if (!columns)
       throw new Error(`No columns field ${fieldName}`);
 
+
+   const pages = builder.pageLocations[clusterIndex]?.[columns[0].index]?.pages;
+   if (!pages)
+      throw new Error(`No pages found ${fieldName}`);
+
+   let pageid = 0;
+   while ((pageid < pages.length - 1) && (entryIndex >= Number(pages[pageid].numElements))) {
+      entryIndex -= Number(pages[pageid].numElements);
+      pageid++;
+   }
+
    if (field.typeName === 'std::string') {
       // string extracted from two columns
-      const offsets = rntuple._clusterData[columns[0].index][0],
-            payload = rntuple._clusterData[columns[1].index][0],
+      const offsets = rntuple._clusterData[columns[0].index][pageid],
+            payload = rntuple._clusterData[columns[1].index][pageid],
             start = entryIndex === 0 ? 0 : Number(offsets[entryIndex - 1]),
             end = Number(offsets[entryIndex]);
       return payload.slice(start, end).join(''); // Convert to string
    }
    const values = rntuple._clusterData[columns[0].index];
-   return values[0][entryIndex];
+   return values[pageid][entryIndex];
 }
 
 /** @summary Return field name for specified branch index
@@ -1066,7 +1077,7 @@ function readNextCluster(rntuple, selector) {
                const fieldName = getSelectorFieldName(selector, b),
                      tgtName = selector.nameOfBranch(b);
 
-               selector.tgtobj[tgtName] = readEntry(rntuple, fieldName, i);
+               selector.tgtobj[tgtName] = readEntry(rntuple, fieldName, clusterIndex, i);
             }
             selector.Process(i);
          }
