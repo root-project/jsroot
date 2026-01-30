@@ -5,9 +5,9 @@ import { getColor, addColor } from './colors.mjs';
 /** @summary Standard prefix for SVG file context as data url
  * @private */
 const prSVG = 'data:image/svg+xml;charset=utf-8,',
-   /** @summary Standard prefix for JSON file context as data url
-    * @private */
-   prJSON = 'data:application/json;charset=utf-8,';
+/** @summary Standard prefix for JSON file context as data url
+ * @private */
+      prJSON = 'data:application/json;charset=utf-8,';
 
 
 /** @summary Returns visible rect of element
@@ -92,13 +92,13 @@ function floatToString(value, fmt, ret_fmt) {
       return ret_fmt ? [value.toFixed(4), '6.4f'] : value.toFixed(4);
 
    const kind = fmt[len - 1].toLowerCase(),
-      compact = (len > 1) && (fmt[len - 2] === 'c') ? 'c' : '';
+         compact = (len > 1) && (fmt[len - 2] === 'c') ? 'c' : '';
    fmt = fmt.slice(0, len - (compact ? 2 : 1));
 
    if (kind === 'g') {
       const se = floatToString(value, fmt + 'ce', true),
-         sg = floatToString(value, fmt + 'cf', true),
-         res = se[0].length < sg[0].length || ((sg[0] === '0') && value) ? se : sg;
+            sg = floatToString(value, fmt + 'cf', true),
+            res = se[0].length < sg[0].length || ((sg[0] === '0') && value) ? se : sg;
       return ret_fmt ? res : res[0];
    }
 
@@ -124,7 +124,7 @@ function floatToString(value, fmt, ret_fmt) {
 
       if (compact) {
          const pnt = se.indexOf('.'),
-            pe = se.toLowerCase().indexOf('e');
+               pe = se.toLowerCase().indexOf('e');
          if ((pnt > 0) && (pe > pnt)) {
             let p = pe;
             while ((p > pnt) && (se[p - 1] === '0'))
@@ -352,8 +352,8 @@ function buildSvgCurve(p, args) {
 
    const end_point = (pnt1, pnt2, sign) => {
       const len = Math.sqrt((pnt2.gry - pnt1.gry) ** 2 + (pnt2.grx - pnt1.grx) ** 2) * args.t,
-         a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
-         a1 = Math.atan2(sign * (pnt2.gry - pnt1.gry), sign * (pnt2.grx - pnt1.grx));
+            a2 = Math.atan2(pnt2.dgry, pnt2.dgrx),
+            a1 = Math.atan2(sign * (pnt2.gry - pnt1.gry), sign * (pnt2.grx - pnt1.grx));
 
       pnt1.dgrx = len * Math.cos(2 * a1 - a2);
       pnt1.dgry = len * Math.sin(2 * a1 - a2);
@@ -420,8 +420,8 @@ function buildSvgCurve(p, args) {
 
       for (let n = 1; n < npnts; ++n) {
          const bin = p[n],
-            dx = Math.round(bin.grx) - currx,
-            dy = Math.round(bin.gry) - curry;
+               dx = Math.round(bin.grx) - currx,
+               dy = Math.round(bin.gry) - curry;
          if (dx && dy) {
             flush();
             path += `l${dx},${dy}`;
@@ -442,13 +442,13 @@ function buildSvgCurve(p, args) {
    } else {
       // build line with trying optimize many vertical moves
       let currx = Math.round(p[0].grx), curry = Math.round(p[0].gry),
-         cminy = curry, cmaxy = curry, prevy = curry;
+          cminy = curry, cmaxy = curry, prevy = curry;
 
       for (let n = 1; n < npnts; ++n) {
          const bin = p[n],
-            lastx = Math.round(bin.grx),
-            lasty = Math.round(bin.gry),
-            dx = lastx - currx;
+               lastx = Math.round(bin.grx),
+               lasty = Math.round(bin.gry),
+               dx = lastx - currx;
          if (dx === 0) {
             // if X not change, just remember amplitude and
             cminy = Math.min(cminy, lasty);
@@ -495,14 +495,14 @@ function buildSvgCurve(p, args) {
   * @private */
 function compressSVG(svg) {
    svg = svg.replace(/url\(&quot;#(\w+)&quot;\)/g, 'url(#$1)')         // decode all URL
-      .replace(/ class="\w*"/g, '')                              // remove all classes
-      .replace(/ pad="\w*"/g, '')                                // remove all pad ids
-      .replace(/ title=""/g, '')                                 // remove all empty titles
-      .replace(/ style=""/g, '')                                 // remove all empty styles
-      .replace(/<g objname="\w*" objtype="\w*"/g, '<g')          // remove object ids
-      .replace(/<g transform="translate\([0-9,]+\)"><\/g>/g, '')  // remove all empty groups with transform
-      .replace(/<g transform="translate\([0-9,]+\)" style="display: none;"><\/g>/g, '') // remove hidden title
-      .replace(/<g><\/g>/g, '');                                 // remove all empty groups
+            .replace(/ class="\w*"/g, '')                              // remove all classes
+            .replace(/ pad="\w*"/g, '')                                // remove all pad ids
+            .replace(/ title=""/g, '')                                 // remove all empty titles
+            .replace(/ style=""/g, '')                                 // remove all empty styles
+            .replace(/<g objname="\w*" objtype="\w*"/g, '<g')          // remove object ids
+            .replace(/<g transform="translate\([0-9,]+\)"><\/g>/g, '')  // remove all empty groups with transform
+            .replace(/<g transform="translate\([0-9,]+\)" style="display: none;"><\/g>/g, '') // remove hidden title
+            .replace(/<g><\/g>/g, '');                                 // remove all empty groups
 
    // remove all empty frame svg, typically appears in 3D drawings, maybe should be improved in frame painter itself
    svg = svg.replace(/<svg x="0" y="0" overflow="hidden" width="\d+" height="\d+" viewBox="0 0 \d+ \d+"><\/svg>/g, '');
@@ -575,8 +575,8 @@ class BasePainter {
          return res;
 
       const use_enlarge = res.property('use_enlarge'),
-         layout = res.property('layout') || 'simple',
-         layout_selector = (layout === 'simple') ? '' : res.property('layout_selector');
+            layout = res.property('layout') || 'simple',
+            layout_selector = (layout === 'simple') ? '' : res.property('layout_selector');
 
       if (layout_selector)
          res = res.select(layout_selector);
@@ -644,17 +644,17 @@ class BasePainter {
      * @private */
    testMainResize(check_level, new_size, height_factor) {
       const enlarge = this.enlargeMain('state'),
-         origin = this.selectDom('origin'),
-         main = this.selectDom(),
-         lmt = 5; // minimal size
+            origin = this.selectDom('origin'),
+            main = this.selectDom(),
+            lmt = 5; // minimal size
 
       if ((enlarge !== 'on') && new_size?.width && new_size?.height) {
          origin.style('width', new_size.width + 'px')
-            .style('height', new_size.height + 'px');
+               .style('height', new_size.height + 'px');
       }
 
       const rect_origin = getElementRect(origin, true),
-         can_resize = origin.attr('can_resize');
+            can_resize = origin.attr('can_resize');
       let do_resize = false;
 
       if ((can_resize === 'height') && height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width)
@@ -674,8 +674,8 @@ class BasePainter {
       }
 
       const rect = getElementRect(main),
-         old_h = main.property('_jsroot_height'),
-         old_w = main.property('_jsroot_width');
+            old_h = main.property('_jsroot_height'),
+            old_w = main.property('_jsroot_width');
 
       rect.changed = false;
 
@@ -717,8 +717,8 @@ class BasePainter {
      * @protected */
    enlargeMain(action, skip_warning) {
       const main = this.selectDom(true),
-         origin = this.selectDom('origin'),
-         doc = getDocument();
+            origin = this.selectDom('origin'),
+            doc = getDocument();
 
       if (main.empty() || !settings.CanEnlarge || (origin.property('can_enlarge') === false))
          return false;
@@ -746,7 +746,7 @@ class BasePainter {
             .attr('style', 'position: fixed; margin: 0px; border: 0px; padding: 0px; left: 1px; top: 1px; bottom: 1px; right: 1px; background: white; opacity: 0.95; z-index: 100; overflow: hidden;');
 
          const rect1 = getElementRect(main),
-            rect2 = getElementRect(enlarge);
+               rect2 = getElementRect(enlarge);
 
          // if new enlarge area not big enough, do not do it
          if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height)) {
@@ -846,11 +846,11 @@ function makeTranslate(g, x, y, scale = 1) {
 function addHighlightStyle(elem, drag) {
    if (drag) {
       elem.style('stroke', 'steelblue')
-         .style('fill-opacity', '0.1');
+          .style('fill-opacity', '0.1');
    } else {
       elem.style('stroke', '#4572A7')
-         .style('fill', '#4572A7')
-         .style('opacity', '0');
+          .style('fill', '#4572A7')
+          .style('opacity', '0');
    }
 }
 
@@ -882,37 +882,19 @@ async function svgToImage(svg, image_format, args) {
       });
 
       const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
-      const RESVG_FEATURE_FLAG = true;
-      
-      if (RESVG_FEATURE_FLAG) {
-         return import('@resvg/resvg-js').then(({ Resvg }) => {
-            const rawSvg = decodeURIComponent(svg);
 
-            const resvg = new Resvg(rawSvg);
+      return import('canvas').then(async handle => {
+         return handle.default.loadImage(img_src).then(img => {
+            const canvas = handle.default.createCanvas(img.width, img.height);
 
-            const pngData = resvg.render();
-            const pngBuffer = pngData.asPng();
+            canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
 
-            if (args?.as_buffer) {
-               return pngBuffer;
-            }
+            if (args?.as_buffer)
+               return canvas.toBuffer('image/' + image_format);
 
-            return 'data:image/png;base64,' + pngBuffer.toString('base64');
+            return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
          });
-      } else {
-         return import('canvas').then(async handle => {
-            return handle.default.loadImage(img_src).then(img => {
-               const canvas = handle.default.createCanvas(img.width, img.height);
-
-               canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
-
-               if (args?.as_buffer)
-                  return canvas.toBuffer('image/' + image_format);
-
-               return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
-            });
-         });
-      }
+      });
    }
 
    const img_src = URL.createObjectURL(new Blob([doctype + svg], { type: 'image/svg+xml;charset=utf-8' }));
@@ -948,11 +930,11 @@ async function svgToImage(svg, image_format, args) {
  * @desc Always use UTC to avoid any variation between timezones */
 function getTDatime(dt) {
    const y = (dt.fDatime >>> 26) + 1995,
-      m = ((dt.fDatime << 6) >>> 28) - 1,
-      d = (dt.fDatime << 10) >>> 27,
-      h = (dt.fDatime << 15) >>> 27,
-      min = (dt.fDatime << 20) >>> 26,
-      s = (dt.fDatime << 26) >>> 26;
+         m = ((dt.fDatime << 6) >>> 28) - 1,
+         d = (dt.fDatime << 10) >>> 27,
+         h = (dt.fDatime << 15) >>> 27,
+         min = (dt.fDatime << 20) >>> 26,
+         s = (dt.fDatime << 26) >>> 26;
    return new Date(Date.UTC(y, m, d, h, min, s));
 }
 
@@ -975,11 +957,11 @@ function convertDate(dt) {
   * @private */
 function getBoxDecorations(xx, yy, ww, hh, bmode, pww, phh) {
    const side1 = `M${xx},${yy}h${ww}l${-pww},${phh}h${2 * pww - ww}v${hh - 2 * phh}l${-pww},${phh}z`,
-      side2 = `M${xx + ww},${yy + hh}v${-hh}l${-pww},${phh}v${hh - 2 * phh}h${2 * pww - ww}l${-pww},${phh}z`;
+         side2 = `M${xx + ww},${yy + hh}v${-hh}l${-pww},${phh}v${hh - 2 * phh}h${2 * pww - ww}l${-pww},${phh}z`;
    return bmode > 0 ? [side1, side2] : [side2, side1];
 }
 
 
 export { prSVG, prJSON, getElementRect, getAbsPosInCanvas, getTDatime, convertDate,
-   DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG, getBoxDecorations,
+         DrawOptions, TRandom, floatToString, buildSvgCurve, compressSVG, getBoxDecorations,
          BasePainter, _loadJSDOM, makeTranslate, addHighlightStyle, svgToImage };
