@@ -4,6 +4,7 @@
 1. Fix - correctly process `TLeafB` arrays in tree draw #384
 2. Fix - better detect default ranges in `TGraph` histogram
 3. Fix - convert BigInt before `RNtuple` drawing
+4. Fix - pages and clusters processing in `RNtuple` #390
 
 
 ## Changes in 7.10.1
