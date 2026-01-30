@@ -1062,12 +1062,8 @@ async function readNextCluster(rntuple, selector) {
             // Ensure blob is a DataView
             if (!(blob instanceof DataView))
                throw new Error(`Invalid blob type for page ${i}: ${Object.prototype.toString.call(blob)}`);
-            const {
-               page,
-               colDesc
-            } = pages[i],
-                field = builder.fieldDescriptors[colDesc.fieldId],
-                values = builder.deserializePage(blob, colDesc, page);
+            const colDesc = pages[i].colDesc,
+                  values = builder.deserializePage(blob, colDesc, pages[i].page);
 
             // Support multiple representations (e.g., string fields with offsets + payload)
             if (!rntuple._clusterData[colDesc.index])
