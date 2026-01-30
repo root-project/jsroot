@@ -12,6 +12,7 @@
 1. Fix - paint frame border mode/size from TCanvas
 1. Fix - correctly process `TLeafB` arrays in tree draw #384
 1. Fix - convert BigInt before `RNtuple` drawing
+1. Fix - pages and clusters processing in `RNtuple` #390
 
 
 ## Changes in 7.10.1
