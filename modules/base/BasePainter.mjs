@@ -1,5 +1,5 @@
 import { select as d3_select } from '../d3.mjs';
-import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument } from '../core.mjs';
+import { settings, internals, isNodeJs, isFunc, isStr, isObject, btoa_func, getDocument, constants } from '../core.mjs';
 import { getColor, addColor } from './colors.mjs';
 
 /** @summary Standard prefix for SVG file context as data url
@@ -882,10 +882,9 @@ async function svgToImage(svg, image_format, args) {
       });
 
       const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
-      const RESVG_FEATURE_FLAG = true;
       
       // Use the newer and stabler `resvg-js` backend for converting SVG to PNG
-      if (RESVG_FEATURE_FLAG) {
+      if (constants.Embed3D.UseResvgJs || constants.Render3D.UseResvgJs) {
          return import('@resvg/resvg-js').then(({ Resvg }) => {
             const rawSvg = decodeURIComponent(svg);   // raw SVG XML
 
