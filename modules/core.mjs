@@ -169,6 +169,8 @@ const constants = {
       SVG: 3,
       /** @summary Disable renderer, used for three.js model creation, only for internal use recommended */
       None: 4,
+      /** @summary Use `resvg-js` backend for converting SVGs */
+      UseResvgJs: true,
       fromString(s) {
          if ((s === 'webgl') || (s === 'gl'))
             return this.WebGL;
@@ -194,6 +196,8 @@ const constants = {
       Embed: 2,
       /** @summary Embedding, but when SVG rendering or SVG image conversion is used */
       EmbedSVG: 3,
+      /** @summary Use `resvg-js` backend for converting SVGs */
+      UseResvgJs: true,
       /** @summary Convert string values into number  */
       fromString(s) {
          if (s === 'embed')
