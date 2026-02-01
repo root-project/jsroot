@@ -66,18 +66,29 @@ class TPavePainter extends ObjectPainter {
             tm = pad?.fTopMargin ?? gStyle.fPadTopMargin,
             bm = pad?.fBottomMargin ?? gStyle.fPadBottomMargin;
 
-      return svgToImage(svg_code).then(canvas => {
-         if (!canvas)
+      return svgToImage(svg_code, 'rgba').then(image => {
+         if (!image)
             return false;
+ 
+         let arr;
+         const width = image.width;
+         const height = image.height;
 
-         let nX = 100, nY = 100;
-         const context = canvas.getContext('2d'),
-               arr = context.getImageData(0, 0, canvas.width, canvas.height).data,
-               boxW = Math.floor(canvas.width / nX), boxH = Math.floor(canvas.height / nY),
+         if (image.data && image.width && image.height) {
+            arr = image.data;
+         } else if (image.getContext('2d')) {
+            arr = image.getContext('2d').getImageData(0, 0, width, height).data;
+         } else {
+            return false;
+         }
+         
+         let nX = 100, nY = 100;     
+         const boxW = Math.floor(width / nX),
+               boxH = Math.floor(height / nY),
                raster = new Array(nX * nY);
 
-         if (arr.length !== canvas.width * canvas.height * 4) {
-            console.log(`Image size missmatch in TLegend autoplace ${arr.length} expected ${canvas.width * canvas.height * 4}`);
+         if (arr.length !== width * height * 4) {
+            console.log(`Image size missmatch in TLegend autoplace ${arr.length} expected ${width * height * 4}`);
             nX = nY = 0;
          }
 
@@ -89,7 +100,7 @@ class TPavePainter extends ObjectPainter {
 
                for (let x = px1; (x < px2) && !filled; ++x) {
                   for (let y = py1; y < py2; ++y) {
-                     const indx = (y * canvas.width + x) * 4;
+                     const indx = (y * width + x) * 4;
                      if (arr[indx] || arr[indx + 1] || arr[indx + 2] || arr[indx + 3]) {
                         filled = 1;
                         break;
