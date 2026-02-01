@@ -890,8 +890,17 @@ async function svgToImage(svg, image_format, args) {
 
             // Initialize Resvg and create the PNG buffer
             const resvg = new Resvg(rawSvg);
-            const pngData = resvg.render();
-            const pngBuffer = pngData.asPng();
+            const renderData = resvg.render();
+            const pngBuffer = renderData.asPng();
+
+            // Return raw RGBA pixels if caller requested it
+            if (image_format === 'rgba') {
+               return { 
+                  width: renderData.width, 
+                  height: renderData.height, 
+                  data: renderData.pixels
+               };
+            }
 
             if (args?.as_buffer) {
                return pngBuffer;
