@@ -8,6 +8,7 @@
 1. Implements `TTree` branches filtering via context menu #364
 1. Let define alternative draw function #378
 1. Implement padsN draw option for `THStack` and `TMultiGraph`
+1. Use `resvg-js` backend for PNG support in node.js #391, thanks to https://github.com/OmarMesqq
 1. Remove support for deprectaed `TH1K` class
 1. Fix - paint frame border mode/size from TCanvas
 1. Fix - correctly process `TLeafB` arrays in tree draw #384
