@@ -357,6 +357,10 @@ settings = {
      * @desc Allows to retry files reading if original URL fails
      * @private */
    FilesRemap: { 'https://root.cern/': 'https://root-eos.web.cern.ch/' },
+   /** @summary THttpServer read timeout in ms
+     * @desc Configures timeout for requests to THttpServer
+     * @default 0 */
+   ServerTimeout: 5,
    /** @summary Configure xhr.withCredentials = true when submitting http requests from JSROOT */
    WithCredentials: false,
    /** @summary Skip streamer infos from the GUI */
