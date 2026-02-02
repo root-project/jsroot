@@ -3165,14 +3165,11 @@ class TFile {
          if (file.fAcceptRanges && first_block)
             totalsz = Math.max(totalsz, 1e5);
 
-         return createHttpRequest(fullurl, 'buf', read_callback, undefined, true).then(xhr => {
+         return createHttpRequest(fullurl, 'buf', read_callback, undefined, true, file.fTimeout).then(xhr => {
             if (file.fAcceptRanges) {
                xhr.setRequestHeader('Range', ranges);
                xhr.expected_size = Math.max(Math.round(1.1 * totalsz), totalsz + 200); // 200 if offset for the potential gzip
             }
-
-            if (file.fTimeout)
-               xhr.timeout = file.fTimeout;
 
             if (isFunc(progress_callback) && isFunc(xhr.addEventListener)) {
                let sum1 = 0, sum2 = 0, sum_total = 0;
