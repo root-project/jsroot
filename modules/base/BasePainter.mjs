@@ -872,7 +872,8 @@ async function svgToImage(svg, image_format, args) {
       return internals.makePDF ? internals.makePDF(svg, args) : null;
 
    // required with df104.py/df105.py example with RCanvas or any special symbols in TLatex
-   const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+   const doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">',
+         is_rgba = image_format === 'rgba';
 
    if (isNodeJs()) {
       svg = encodeURIComponent(doctype + svg);
@@ -882,7 +883,7 @@ async function svgToImage(svg, image_format, args) {
       });
 
       const img_src = 'data:image/svg+xml;base64,' + btoa_func(decodeURIComponent(svg));
-      
+
       // Use the newer and stabler `resvg-js` backend for converting SVG to PNG
       if (constants.Embed3D.UseResvgJs || constants.Render3D.UseResvgJs) {
          return import('@resvg/resvg-js').then(({ Resvg }) => {
@@ -894,10 +895,10 @@ async function svgToImage(svg, image_format, args) {
             const pngBuffer = renderData.asPng();
 
             // Return raw RGBA pixels if caller requested it
-            if (image_format === 'rgba') {
-               return { 
-                  width: renderData.width, 
-                  height: renderData.height, 
+            if (is_rgba) {
+               return {
+                  width: renderData.width,
+                  height: renderData.height,
                   data: renderData.pixels
                };
             }
@@ -918,7 +919,7 @@ async function svgToImage(svg, image_format, args) {
                if (args?.as_buffer)
                   return canvas.toBuffer('image/' + image_format);
 
-               return image_format ? canvas.toDataURL('image/' + image_format) : canvas;
+               return image_format && !is_rgba ? canvas.toDataURL('image/' + image_format) : canvas;
             });
          });
       }
@@ -941,7 +942,7 @@ async function svgToImage(svg, image_format, args) {
          if (args?.as_buffer && image_format)
             canvas.toBlob(blob => blob.arrayBuffer().then(resolveFunc), 'image/' + image_format);
          else
-            resolveFunc(image_format ? canvas.toDataURL('image/' + image_format) : canvas);
+            resolveFunc(image_format && !is_rgba ? canvas.toDataURL('image/' + image_format) : canvas);
       };
       image.onerror = function(arg) {
          URL.revokeObjectURL(img_src);
