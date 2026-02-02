@@ -69,20 +69,17 @@ class TPavePainter extends ObjectPainter {
       return svgToImage(svg_code, 'rgba').then(image => {
          if (!image)
             return false;
- 
-         let arr;
-         const width = image.width;
-         const height = image.height;
 
-         if (image.data && image.width && image.height) {
-            arr = image.data;
-         } else if (image.getContext('2d')) {
+         let arr = image.data;
+         const width = image.width, height = image.height;
+
+         if (!arr && isFunc(image.getContext) && image.getContext('2d'))
             arr = image.getContext('2d').getImageData(0, 0, width, height).data;
-         } else {
+
+         if (!arr)
             return false;
-         }
-         
-         let nX = 100, nY = 100;     
+
+         let nX = 100, nY = 100;
          const boxW = Math.floor(width / nX),
                boxH = Math.floor(height / nY),
                raster = new Array(nX * nY);

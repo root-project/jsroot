@@ -887,12 +887,10 @@ async function svgToImage(svg, image_format, args) {
       // Use the newer and stabler `resvg-js` backend for converting SVG to PNG
       if (constants.Embed3D.UseResvgJs || constants.Render3D.UseResvgJs) {
          return import('@resvg/resvg-js').then(({ Resvg }) => {
-            const rawSvg = decodeURIComponent(svg);   // raw SVG XML
-
-            // Initialize Resvg and create the PNG buffer
-            const resvg = new Resvg(rawSvg);
-            const renderData = resvg.render();
-            const pngBuffer = renderData.asPng();
+            const rawSvg = decodeURIComponent(svg),    // raw SVG XML
+                  resvg = new Resvg(rawSvg), // Initialize Resvg and create the PNG buffer
+                  renderData = resvg.render(),
+                  pngBuffer = renderData.asPng();
 
             // Return raw RGBA pixels if caller requested it
             if (is_rgba) {
@@ -903,26 +901,26 @@ async function svgToImage(svg, image_format, args) {
                };
             }
 
-            if (args?.as_buffer) {
+            if (args?.as_buffer)
                return pngBuffer;
-            }
 
             return 'data:image/png;base64,' + pngBuffer.toString('base64');
          });
-      } else { // Fallback to `node-canvas`
-         return import('canvas').then(async handle => {
-            return handle.default.loadImage(img_src).then(img => {
-               const canvas = handle.default.createCanvas(img.width, img.height);
-
-               canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
-
-               if (args?.as_buffer)
-                  return canvas.toBuffer('image/' + image_format);
-
-               return image_format && !is_rgba ? canvas.toDataURL('image/' + image_format) : canvas;
-            });
-         });
       }
+
+      // Fallback to `node-canvas`
+      return import('canvas').then(async handle => {
+         return handle.default.loadImage(img_src).then(img => {
+            const canvas = handle.default.createCanvas(img.width, img.height);
+
+            canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+
+            if (args?.as_buffer)
+               return canvas.toBuffer('image/' + image_format);
+
+            return image_format && !is_rgba ? canvas.toDataURL('image/' + image_format) : canvas;
+         });
+      });
    }
 
    const img_src = URL.createObjectURL(new Blob([doctype + svg], { type: 'image/svg+xml;charset=utf-8' }));

@@ -1082,7 +1082,7 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
             this.did_abort = true;
             this.abort();
             this.error_callback(Error(`Request ${url} timeout`));
-         }
+         };
       }
 
       return xhr;
