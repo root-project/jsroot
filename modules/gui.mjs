@@ -73,6 +73,12 @@ function readStyleFromURL(url) {
    if (d.has('prefer_saved_points'))
       settings.PreferSavedPoints = true;
 
+   if (d.has('tmout'))
+      settings.ServerTimeout = parseFloat(d.get('tmout'));
+
+   if (d.has('ftmout'))
+      settings.FilesTimeout = parseFloat(d.get('ftmout'));
+
    const tf1_style = d.get('tf1');
    if (tf1_style === 'curve')
       settings.FuncAsCurve = true;
