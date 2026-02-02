@@ -961,11 +961,12 @@ function findFunction(name) {
 
 /** @summary Method to create http request, without promise can be used only in browser environment
   * @private */
-function createHttpRequest(url, kind, user_accept_callback, user_reject_callback, use_promise) {
+function createHttpRequest(url, kind, user_accept_callback, user_reject_callback, use_promise, tmout) {
    function configureXhr(xhr) {
       xhr.http_callback = isFunc(user_accept_callback) ? user_accept_callback.bind(xhr) : () => {};
       xhr.error_callback = isFunc(user_reject_callback) ? user_reject_callback.bind(xhr) : function(err) {
-         console.warn(err.message);
+         if (err?.message)
+            console.warn(err.message);
          this.http_callback(null);
       }.bind(xhr);
 
@@ -1073,6 +1074,15 @@ function createHttpRequest(url, kind, user_accept_callback, user_reject_callback
       if (nodejs && (method === 'GET') && (kind === 'object') && (url.indexOf('.json.gz') > 0)) {
          xhr.nodejs_checkzip = true;
          xhr.responseType = 'arraybuffer';
+      }
+
+      if (tmout && Number.isFinite(tmout)) {
+         xhr.timeout = tmout;
+         xhr.ontimeout = function() {
+            this.did_abort = true;
+            this.abort();
+            this.error_callback(Error(`Request ${url} timeout`));
+         }
       }
 
       return xhr;
