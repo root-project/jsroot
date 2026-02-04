@@ -876,6 +876,10 @@ async function svgToImage(svg, image_format, args) {
          is_rgba = image_format === 'rgba';
 
    if (isNodeJs()) {
+      if (image_format === 'jpeg') {
+         console.log('JPEG image format not supported in node.js, use PNG');
+         return null;
+      }
       svg = encodeURIComponent(doctype + svg);
       svg = svg.replace(/%([0-9A-F]{2})/g, (match, p1) => {
          const c = String.fromCharCode('0x' + p1);
