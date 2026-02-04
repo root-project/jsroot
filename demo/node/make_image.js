@@ -13,8 +13,8 @@ let outdir = '';
 if (process?.argv && process.argv[2])
   outdir = process.argv[2];
 
-function processResults(name, title, svg, pdf, png, jpeg) {
-   console.log(`${title} ${name}.svg ${svg.length} ${name}.pdf ${pdf.byteLength} ${name}.png ${png.byteLength} ${name}.jpeg ${jpeg.byteLength}`);
+function processResults(name, title, svg, pdf, png) {
+   console.log(`${title} ${name}.svg ${svg.length} ${name}.pdf ${pdf.byteLength} ${name}.png ${png.byteLength}`);
 
    if (svg.length)
       writeFileSync(`${outdir+name}.svg`, svg);
@@ -30,11 +30,6 @@ function processResults(name, title, svg, pdf, png, jpeg) {
       writeFileSync(`${outdir+name}.png`, png);
    else
       console.error(`Fail to create PNG for ${title}`);
-
-   if (jpeg.byteLength)
-      writeFileSync(`${outdir+name}.jpeg`, jpeg);
-   else
-      console.error(`Fail to create JPEG for ${title}`);
 }
 
 
@@ -51,32 +46,28 @@ console.log('Read all data');
 // testing 2D graphics
 const svg1 = await makeSVG({ object: hpxpy, option: 'col', width, height }),
       pdf1buf = await makeImage({ format: 'pdf', as_buffer: true, object: hpxpy, option: 'col', width, height }),
-      png1buf = await makeImage({ format: 'png', as_buffer: true, object: hpxpy, option: 'col', width, height }),
-      jpeg1buf = await makeImage({ format: 'jpeg', as_buffer: true, object: hpxpy, option: 'col', width, height });
+      png1buf = await makeImage({ format: 'png', as_buffer: true, object: hpxpy, option: 'col', width, height });
 
-processResults('hist2d', 'histogram col drawing', svg1, pdf1buf, png1buf, jpeg1buf);
+processResults('hist2d', 'histogram col drawing', svg1, pdf1buf, png1buf);
 
 // testing 3D graphics
 const svg2 = await makeSVG({ object: hpxpy, option: 'lego2', width, height }),
       pdf2buf = await makeImage({ format: 'pdf', as_buffer: true, object: hpxpy, option: 'lego2', width, height }),
-      png2buf = await makeImage({ format: 'png', as_buffer: true, object: hpxpy, option: 'lego2', width, height }),
-      jpeg2buf = await makeImage({ format: 'jpeg', as_buffer: true, object: hpxpy, option: 'lego2', width, height });
+      png2buf = await makeImage({ format: 'png', as_buffer: true, object: hpxpy, option: 'lego2', width, height });
 
-processResults('lego', 'histogram lego drawing', svg2, pdf2buf, png2buf, jpeg2buf);
+processResults('lego', 'histogram lego drawing', svg2, pdf2buf, png2buf);
 
 // testing geometry
 const svg3 = await makeSVG({ object: geom, option: '', width, height }),
       pdf3buf = await makeImage({ format: 'pdf', as_buffer: true, object: geom, option: '', width, height }),
-      png3buf = await makeImage({ format: 'png', as_buffer: true, object: geom, option: '', width, height }),
-      jpeg3buf = await makeImage({ format: 'jpeg', as_buffer: true, object: geom, option: '', width, height });
+      png3buf = await makeImage({ format: 'png', as_buffer: true, object: geom, option: '', width, height });
 
-processResults('geom', 'geometry drawing', svg3, pdf3buf, png3buf, jpeg3buf);
+processResults('geom', 'geometry drawing', svg3, pdf3buf, png3buf);
 
 // testing latex with special symbols
 const svg4 = await makeSVG({ object: latex, option: '', width, height }),
       pdf4buf = await makeImage({ format: 'pdf', as_buffer: true, object: latex, option: '', width, height }),
-      png4buf = await makeImage({ format: 'png', as_buffer: true, object: latex, option: '', width, height }),
-      jpeg4buf = await makeImage({ format: 'jpeg', as_buffer: true, object: latex, option: '', width, height });
+      png4buf = await makeImage({ format: 'png', as_buffer: true, object: latex, option: '', width, height });
 
-processResults('latex', 'Canvas with latex and symbols.ttf', svg4, pdf4buf, png4buf, jpeg4buf);
+processResults('latex', 'Canvas with latex and symbols.ttf', svg4, pdf4buf, png4buf);
 
