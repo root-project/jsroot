@@ -11,6 +11,7 @@
 1. Use `resvg-js` backend for PNG support in node.js #391, thanks to https://github.com/OmarMesqq
 1. Remove support for deprectaed `TH1K` class
 1. Introduce `settings.ServerTimeout` global timeout for THttpServer operations
+1. Let set custom color palette with `setColorPalette` function
 1. Fix - paint frame border mode/size from TCanvas
 1. Fix - correctly process `TLeafB` arrays in tree draw #384
 1. Fix - convert BigInt before `RNtuple` drawing
