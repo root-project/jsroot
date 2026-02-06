@@ -1181,9 +1181,7 @@ function assignReadFunc(item, item0) {
 }
 
 
-// TODO args can later be used to filter fields, limit entries, etc.
-// Create reader and deserialize doubles from the buffer
-function rntupleProcess(rntuple, selector, args) {
+function rntupleProcessNew(rntuple, selector, args) {
    const handle = {
       rntuple, // keep rntuple reference
       file: rntuple.$file, // keep file reference
@@ -1242,6 +1240,22 @@ function rntupleProcess(rntuple, selector, args) {
          }
       }
 
+      selector.currentCluster = 0;
+      selector.currentEntry = 0;
+      return readNextCluster(rntuple, selector, args);
+   }).then(() => selector);
+}
+
+
+// TODO args can later be used to filter fields, limit entries, etc.
+// Create reader and deserialize doubles from the buffer
+function rntupleProcess(rntuple, selector, args) {
+   selector.Begin();
+   return readHeaderFooter(rntuple).then(res => {
+      if (!res) {
+         selector.Terminate(false);
+         return selector;
+      }
       selector.currentCluster = 0;
       selector.currentEntry = 0;
       return readNextCluster(rntuple, selector, args);
