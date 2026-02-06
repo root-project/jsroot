@@ -1093,8 +1093,12 @@ function assignReadFunc(item, item0) {
    switch (item.coltype) {
       case ENTupleColumnType.kBit: {
          item.func = function(view, obj) {
+            console.log('bit reading not properly implemented');
             obj[this.name] = false;
             this.o++;
+         };
+         item.shift = function() {
+            console.log('bit shift not implemented');
          };
          break;
       }
@@ -1103,12 +1107,14 @@ function assignReadFunc(item, item0) {
             obj[this.name] = view.getFloat64(this.o, LITTLE_ENDIAN);
             this.o += 8;
          };
+         item.sz = 8;
          break;
       case ENTupleColumnType.kReal32:
          item.func = function(view, obj) {
             obj[this.name] = view.getFloat32(this.o, LITTLE_ENDIAN);
             this.o += 4;
          };
+         item.sz = 4;
          break;
       case ENTupleColumnType.kInt64:
       case ENTupleColumnType.kIndex64:
@@ -1116,12 +1122,14 @@ function assignReadFunc(item, item0) {
             obj[this.name] = view.getBigInt64(this.o, LITTLE_ENDIAN);
             this.o += 8;
          };
+         item.sz = 8;
          break;
       case ENTupleColumnType.kUInt64:
          item.func = function(view, obj) {
             obj[this.name] = view.getBigUint64(this.o, LITTLE_ENDIAN);
             this.o += 8;
          };
+         item.sz = 8;
          break;
       case ENTupleColumnType.kInt32:
       case ENTupleColumnType.kIndex32:
@@ -1129,35 +1137,41 @@ function assignReadFunc(item, item0) {
             obj[this.name] = view.getInt32(this.o, LITTLE_ENDIAN);
             this.o += 4;
          };
+         item.sz = 4;
          break;
       case ENTupleColumnType.kUInt32:
          item.func = function(view, obj) {
             obj[this.name] = view.getUint32(this.o, LITTLE_ENDIAN);
             this.o += 4;
          };
+         item.sz = 4;
          break;
       case ENTupleColumnType.kInt16:
          item.func = function(view, obj) {
             obj[this.name] = view.getInt16(this.o, LITTLE_ENDIAN);
             this.o += 2;
          };
+         item.sz = 2;
          break;
       case ENTupleColumnType.kUInt16:
          item.func = function(view, obj) {
             obj[this.name] = view.getUint16(this.o, LITTLE_ENDIAN);
             this.o += 2;
          };
+         item.sz = 2;
          break;
       case ENTupleColumnType.kInt8:
          item.func = function(view, obj) {
             obj[this.name] = view.getInt8(this.o++);
          };
+         item.sz = 1;
          break;
       case ENTupleColumnType.kUInt8:
       case ENTupleColumnType.kByte:
          item.func = function(view, obj) {
             obj[this.name] = view.getUint8(this.o++);
          };
+         item.sz = 1;
          break;
       case ENTupleColumnType.kChar:
          if (item0) {
@@ -1169,37 +1183,166 @@ function assignReadFunc(item, item0) {
                   s += String.fromCharCode(view.getInt8(this.o++));
                obj[this.name] = s;
             };
+            item.shift = function() {
+               console.log('not implemented');
+            };
          } else {
             item.func = function(view, obj) {
                obj[this.name] = String.fromCharCode(view.getInt8(this.o++));
             };
+            item.sz = 1;
          }
          break;
       default:
          throw new Error(`Unsupported column type: ${item.coltype}`);
    }
+
+   if (item.sz && !item.shift) {
+      item.shift = function(entries) {
+         this.o += entries * this.sz;
+      };
+   }
+}
+
+function reconstructBlob(blob, columnDescriptor) {
+   const originalColtype = columnDescriptor.coltype,
+         data = recontructUnsplitBuffer(blob, columnDescriptor);
+
+   // Handle split index types
+   if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64)
+      return DecodeDeltaIndex(data.blob, data.coltype).blob;
+
+   // Handle Split Signed Int types
+   if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64)
+      return decodeZigzag(data.blob, data.coltype).blob;
+
+   return data.blob;
 }
 
 
-function rntupleProcessNew(rntuple, selector, args) {
+async function rntupleProcessNew(rntuple, selector, args) {
    const handle = {
       rntuple, // keep rntuple reference
       file: rntuple.$file, // keep file reference
       selector, // reference on selector
       arr: [], // list of special handles per columns, more than one column per field may exist
       curr: -1,  // current entry ID
+      current_cluster: -1, // current cluster to process
+      current_cluster_first_entry: 0, // first entry in current cluster
       current_entry: -1, // current processed entry
       simple_read: true, // all baskets in all used branches are in sync,
-      process_arrays: false // one can process all branches as arrays
+      process_arrays: false, // one can process all branches as arrays
+      firstentry: 0,  // first entry in the rntuple
+      lastentry: 0    // last entry in the rntuple
    };
 
-   selector.Begin();
+   function readNextPortion(inc_cluster) {
+      if (inc_cluster !== undefined) {
+         if (inc_cluster === 1)
+            handle.current_cluster_first_entry += rntuple.builder.clusterSummaries[handle.current_cluster].numEntries;
+         handle.current_cluster += inc_cluster;
+         handle.arr.forEach(item => {
+            item.page = 0;
+            item.e0 = handle.current_cluster_first_entry;
+         });
+      }
 
-   return readHeaderFooter(rntuple).then(res => {
-      if (!res) {
-         selector.Terminate(false);
+      const locations = rntuple.builder.pageLocations[handle.current_cluster];
+      if (!locations) {
+         selector.Terminate(true);
          return selector;
       }
+      let end_of_cluster = 0;
+      const dataToRead = [], itemsToRead = [];
+
+      // loop over all columns and request buffer
+      for (let i = 0; i < handle.arr.length; ++i) {
+         const item = handle.arr[i];
+
+         if (!item.view) {
+            const pages = locations[item.id].pages;
+            while (pages[item.page] && (item.e0 + pages[item.page].numElements < handle.current_entry)) {
+               item.e0 += pages[item.page].numElements;
+               item.page++;
+            }
+            if (!pages[item.page])
+               end_of_cluster++;
+            else {
+               item.e1 = item.e0 + pages[item.page].numElements;
+               itemsToRead.push(item);
+               dataToRead.push(pages[item.page].locator.offset, pages[item.page].locator.size);
+            }
+         }
+      }
+
+      if (end_of_cluster) {
+         if (end_of_cluster !== handle.arr.length)
+            throw new Error('Missmatch at the cluster boundary');
+         return readNextPortion(1);
+      }
+
+      return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
+         const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
+               unzipPromises = blobs.map((blob, idx) => {
+                  const item = itemsToRead[idx],
+                        colEntry = locations[item.id], // Access column entry
+                        page = locations[item.page], // requested page
+                        numElements = Number(page.numElements),
+                        elementSize = item.column.bitsOnStorage / 8;
+
+                  let expectedSize = numElements * elementSize;
+                  // Special handling for boolean fields
+                  if (item.coltype === ENTupleColumnType.kBit)
+                     expectedSize = Math.ceil(numElements / 8);
+
+                  // Check if data is compressed
+                  if ((colEntry.compression === 0) || (blob.byteLength === expectedSize))
+                     return Promise.resolve(blob); // Uncompressed: use blob directly
+
+                  // Try decompression
+                  return R__unzip(blob, expectedSize).then(result => {
+                     return result || blob; // Fallback to original blob ??
+                  }).catch(err => {
+                     throw new Error(`Failed to unzip page ${idx}: ${err.message}`);
+                  });
+               });
+
+         return Promise.all(unzipPromises).then(unzipBlobs => {
+            for (let i = 0; i < unzipBlobs.length; ++i) {
+               const rawblob = unzipBlobs[i],
+                     item = itemsToRead[i];
+               // Ensure blob is a DataView
+               if (!(rawblob instanceof DataView))
+                  throw new Error(`Invalid blob type for page ${i}: ${Object.prototype.toString.call(rawblob)}`);
+
+               item.view = reconstructBlob(rawblob, item.column);
+               item.o = 0;
+               if (item.e0 > handle.current_entry)
+                  item.shift(handle.current_entry - item.e0); // FIXME - string will not work this way
+            }
+
+            let hasData = true;
+
+            while (hasData) {
+               for (let i = 0; i < handle.items.length; ++i) {
+                  const item = handle.items[i];
+                  item.func(item.view, selector.tgtobj);
+                  if (++item.e0 >= item.e1) {
+                     delete item.view; // data is over
+                     hasData = false;
+                  }
+               }
+               selector.Process(handle.current_entry++);
+            }
+
+            return readNextPortion();
+         });
+      });
+   }
+
+   return readHeaderFooter(rntuple).then(res => {
+      if (!res)
+         throw new Error('Not able to read header for the RNtuple');
 
       for (let i = 0; i < selector.numBranches(); ++i) {
          const name = getSelectorFieldName(selector, i);
@@ -1213,10 +1356,13 @@ function rntupleProcessNew(rntuple, selector, args) {
          let item0 = null;
 
          for (let k = 0; k < columns.length; ++k) {
+            // TODO - make extra class for the item
             const item = {
                column: columns[k],
+               id: columns[k].index,
                coltype: columns[k].coltype,
-               splittype: 0
+               splittype: 0,
+               page: 0 // current page for the reading
             };
 
             // special handling of split types
@@ -1232,7 +1378,7 @@ function rntupleProcessNew(rntuple, selector, args) {
             // case when two columns read like for the std::string,
             // but most probably for some other cases
             if ((columns.length === 2) && (k === 0)) {
-               item.name = `___indx${i}`;
+               item.name = `___indx${i}`; // TODO - use not a target object in the future
                item0 = item;
             }
 
@@ -1240,9 +1386,43 @@ function rntupleProcessNew(rntuple, selector, args) {
          }
       }
 
-      selector.currentCluster = 0;
-      selector.currentEntry = 0;
-      return readNextCluster(rntuple, selector, args);
+      // calculate number of entries
+      rntuple.builder.clusterSummaries.forEach(summary => { handle.lastentry += summary.numEntries; });
+
+      if (handle.firstentry >= handle.lastentry)
+         throw new Error('Not able to find entries in the RNtuple');
+
+      // select range of entries to process
+      handle.process_min = handle.firstentry;
+      handle.process_max = handle.lastentry;
+
+      if (Number.isInteger(args.firstentry) && (args.firstentry > handle.firstentry) && (args.firstentry < handle.lastentry))
+         handle.process_min = args.firstentry;
+
+      if (Number.isInteger(args.numentries) && (args.numentries > 0))
+         handle.process_max = Math.min(handle.process_max, handle.process_min + args.numentries);
+
+      // first check from which cluster one should start
+
+      for (let indx = 0, emin = 0; indx < rntuple.builder.clusterSummaries.length; ++indx) {
+         const summary = rntuple.builder.clusterSummaries[indx],
+               emax = emin + summary.numEntries;
+         if ((handle.process_min >= emin) && (handle.process_min < emax)) {
+            handle.current_cluster = indx;
+            handle.current_cluster_first_entry = emin;
+            break;
+         }
+         emin = emax;
+      }
+
+      if (handle.current_cluster < 0)
+         throw new Error(`Not able to find cluster for entry ${handle.process_min} in the RNtuple`);
+
+      handle.current_entry = handle.staged_now = handle.process_min;
+
+      selector.Begin(rntuple);
+
+      return readNextPortion(0);
    }).then(() => selector);
 }
 
