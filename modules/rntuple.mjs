@@ -114,6 +114,7 @@ class RBufferReader {
 
 }
 
+
 const ENTupleColumnType = {
    kBit: 0x00,
    kByte: 0x01,
@@ -1088,6 +1089,98 @@ async function readNextCluster(rntuple, selector) {
    });
 }
 
+function assignReadFunc(item, item0) {
+   switch (item.coltype) {
+      case ENTupleColumnType.kBit: {
+         item.func = function(view, obj) {
+            obj[this.name] = false;
+            this.o++;
+         };
+         break;
+      }
+      case ENTupleColumnType.kReal64:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getFloat64(this.o, LITTLE_ENDIAN);
+            this.o += 8;
+         };
+         break;
+      case ENTupleColumnType.kReal32:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getFloat32(this.o, LITTLE_ENDIAN);
+            this.o += 4;
+         };
+         break;
+      case ENTupleColumnType.kInt64:
+      case ENTupleColumnType.kIndex64:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getBigInt64(this.o, LITTLE_ENDIAN);
+            this.o += 8;
+         };
+         break;
+      case ENTupleColumnType.kUInt64:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getBigUint64(this.o, LITTLE_ENDIAN);
+            this.o += 8;
+         };
+         break;
+      case ENTupleColumnType.kInt32:
+      case ENTupleColumnType.kIndex32:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getInt32(this.o, LITTLE_ENDIAN);
+            this.o += 4;
+         };
+         break;
+      case ENTupleColumnType.kUInt32:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getUint32(this.o, LITTLE_ENDIAN);
+            this.o += 4;
+         };
+         break;
+      case ENTupleColumnType.kInt16:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getInt16(this.o, LITTLE_ENDIAN);
+            this.o += 2;
+         };
+         break;
+      case ENTupleColumnType.kUInt16:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getUint16(this.o, LITTLE_ENDIAN);
+            this.o += 2;
+         };
+         break;
+      case ENTupleColumnType.kInt8:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getInt8(this.o++);
+         };
+         break;
+      case ENTupleColumnType.kUInt8:
+      case ENTupleColumnType.kByte:
+         item.func = function(view, obj) {
+            obj[this.name] = view.getUint8(this.o++);
+         };
+         break;
+      case ENTupleColumnType.kChar:
+         if (item0) {
+            item.namecnt = item0.name;
+            item.func = function(view, obj) {
+               const len = obj[this.namecnt];
+               let s = '';
+               for (let i = 0; i < len; ++i)
+                  s += String.fromCharCode(view.getInt8(this.o++));
+               obj[this.name] = s;
+            };
+         } else {
+            item.func = function(view, obj) {
+               obj[this.name] = String.fromCharCode(view.getInt8(this.o++));
+            };
+         }
+         break;
+      default:
+         throw new Error(`Unsupported column type: ${item.coltype}`);
+   }
+}
+
+
 // TODO args can later be used to filter fields, limit entries, etc.
 // Create reader and deserialize doubles from the buffer
 function rntupleProcess(rntuple, selector, args) {
@@ -1119,16 +1212,30 @@ function rntupleProcess(rntuple, selector, args) {
          if (!columns)
             throw new Error(`No columns found for field '${name}' in RNTuple`);
 
+         let item0 = null;
+
          for (let k = 0; k < columns.length; ++k) {
             const item = {
                column: columns[k],
-               coltype: columns[k].coltype
+               coltype: columns[k].coltype,
+               splittype: 0
             };
 
             // special handling of split types
             if ((item.coltype >= ENTupleColumnType.kSplitInt16) && (item.coltype <= ENTupleColumnType.kSplitIndex64)) {
                item.splittype = item.coltype;
                item.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
+            }
+
+            assignReadFunc(item, item0);
+
+            item.name = selector.nameOfBranch(i); // target object name
+
+            // case when two columns read like for the std::string,
+            // but most probably for some other cases
+            if ((columns.length === 2) && (k === 0)) {
+               item.name = `___indx${i}`;
+               item0 = item;
             }
 
             handle.arr.push(item);
