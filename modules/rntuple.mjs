@@ -1091,8 +1091,50 @@ async function readNextCluster(rntuple, selector) {
 // TODO args can later be used to filter fields, limit entries, etc.
 // Create reader and deserialize doubles from the buffer
 function rntupleProcess(rntuple, selector, args) {
-   return readHeaderFooter(rntuple).then(() => {
-      selector.Begin();
+   const handle = {
+      rntuple, // keep rntuple reference
+      file: rntuple.$file, // keep file reference
+      selector, // reference on selector
+      arr: [], // list of special handles per columns, more than one column per field may exist
+      curr: -1,  // current entry ID
+      current_entry: -1, // current processed entry
+      simple_read: true, // all baskets in all used branches are in sync,
+      process_arrays: false // one can process all branches as arrays
+   };
+
+   selector.Begin();
+
+   return readHeaderFooter(rntuple).then(res => {
+      if (!res) {
+         selector.Terminate(false);
+         return selector;
+      }
+
+      for (let i = 0; i < selector.numBranches(); ++i) {
+         const name = getSelectorFieldName(selector, i);
+         if (!name)
+            throw new Error(`Not able to extract name for field ${i}`);
+
+         const columns = rntuple.fieldToColumns[name];
+         if (!columns)
+            throw new Error(`No columns found for field '${name}' in RNTuple`);
+
+         for (let k = 0; k < columns.length; ++k) {
+            const item = {
+               column: columns[k],
+               coltype: columns[k].coltype
+            };
+
+            // special handling of split types
+            if ((item.coltype >= ENTupleColumnType.kSplitInt16) && (item.coltype <= ENTupleColumnType.kSplitIndex64)) {
+               item.splittype = item.coltype;
+               item.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
+            }
+
+            handle.arr.push(item);
+         }
+      }
+
       selector.currentCluster = 0;
       selector.currentEntry = 0;
       return readNextCluster(rntuple, selector, args);
