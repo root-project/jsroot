@@ -1242,8 +1242,10 @@ async function rntupleProcess(rntuple, selector, args) {
             handle.current_cluster_first_entry += rntuple.builder.clusterSummaries[handle.current_cluster].numEntries;
          handle.current_cluster += inc_cluster;
          handle.arr.forEach(item => {
-            item.page = 0;
+            item.page = -1;
             item.e0 = handle.current_cluster_first_entry;
+            if (item.view)
+               throw new Error(`still data when processing column ${item.name}`);
          });
       }
 
@@ -1261,17 +1263,19 @@ async function rntupleProcess(rntuple, selector, args) {
 
          if (!item.view) {
             const pages = locations[item.id].pages;
-            while (pages[item.page] && (item.e0 + Number(pages[item.page].numElements) < handle.current_entry)) {
-               item.e0 += Number(pages[item.page].numElements);
-               item.page++;
+            while (++item.page < pages.length) {
+               const page = pages[item.page];
+               // if current entry inside the page - read buffer
+               if (handle.current_entry < item.e0 + Number(page.numElements))
+                  break;
+               item.e0 += Number(page.numElements);
             }
-            if (!pages[item.page])
+            if (item.page >= pages.length) {
                end_of_cluster++;
-            else {
+               item.page = -1;
+            } else {
                item.e1 = item.e0 + Number(pages[item.page].numElements);
                itemsToRead.push(item);
-               console.log('submit ', pages[item.page].locator.offset, pages[item.page].locator.size)
-
                dataToRead.push(Number(pages[item.page].locator.offset), pages[item.page].locator.size);
             }
          }
@@ -1292,10 +1296,7 @@ async function rntupleProcess(rntuple, selector, args) {
                         numElements = Number(page.numElements),
                         elementSize = item.column.bitsOnStorage / 8;
 
-                  console.log('page', page)
-
                   let expectedSize = numElements * elementSize;
-                  console.log('expected size', expectedSize, numElements, elementSize, item.column.bitsOnStorage)
                   // Special handling for boolean fields
                   if (item.coltype === ENTupleColumnType.kBit)
                      expectedSize = Math.ceil(numElements / 8);
@@ -1321,7 +1322,6 @@ async function rntupleProcess(rntuple, selector, args) {
                   throw new Error(`Invalid blob type for page ${i}: ${Object.prototype.toString.call(rawblob)}`);
 
                item.view = new DataView(reconstructBlob(rawblob, item.column));
-               console.log('item.view', item.view, typeof item.view);
                item.o = 0;
                if (item.e0 > handle.current_entry)
                   item.shift(handle.current_entry - item.e0); // FIXME - string will not work this way
@@ -1336,7 +1336,6 @@ async function rntupleProcess(rntuple, selector, args) {
                   if (++item.e0 >= item.e1) {
                      delete item.view; // data is over
                      hasData = false;
-                     item.page++;
                   }
                }
                selector.Process(handle.current_entry++);
@@ -1369,7 +1368,7 @@ async function rntupleProcess(rntuple, selector, args) {
                id: columns[k].index,
                coltype: columns[k].coltype,
                splittype: 0,
-               page: 0 // current page for the reading
+               page: -1 // current page for the reading
             };
 
             // special handling of split types
