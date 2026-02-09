@@ -1089,135 +1089,184 @@ async function readNextCluster(rntuple, selector) {
    });
 }
 
-function assignReadFunc(item, item0) {
-   switch (item.coltype) {
-      case ENTupleColumnType.kBit: {
-         item.func = function(view, obj) {
-            console.log('bit reading not properly implemented');
-            obj[this.name] = false;
-            this.o++;
-         };
-         item.shift = function() {
-            console.log('bit shift not implemented');
-         };
-         break;
+class ReaderItem {
+
+   constructor(column) {
+      this.column = column;
+      this.id = column.index;
+      this.coltype = column.coltype;
+      this.splittype = 0;
+      this.page = -1; // current page for the reading
+
+      // special handling of split types
+      if ((this.coltype >= ENTupleColumnType.kSplitInt16) && (this.coltype <= ENTupleColumnType.kSplitIndex64)) {
+         this.splittype = this.coltype;
+         this.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
       }
-      case ENTupleColumnType.kReal64:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getFloat64(this.o, LITTLE_ENDIAN);
-            this.o += 8;
-         };
-         item.sz = 8;
-         break;
-      case ENTupleColumnType.kReal32:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getFloat32(this.o, LITTLE_ENDIAN);
-            this.o += 4;
-         };
-         item.sz = 4;
-         break;
-      case ENTupleColumnType.kInt64:
-      case ENTupleColumnType.kIndex64:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getBigInt64(this.o, LITTLE_ENDIAN);
-            this.o += 8;
-         };
-         item.sz = 8;
-         break;
-      case ENTupleColumnType.kUInt64:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getBigUint64(this.o, LITTLE_ENDIAN);
-            this.o += 8;
-         };
-         item.sz = 8;
-         break;
-      case ENTupleColumnType.kInt32:
-      case ENTupleColumnType.kIndex32:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getInt32(this.o, LITTLE_ENDIAN);
-            this.o += 4;
-         };
-         item.sz = 4;
-         break;
-      case ENTupleColumnType.kUInt32:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getUint32(this.o, LITTLE_ENDIAN);
-            this.o += 4;
-         };
-         item.sz = 4;
-         break;
-      case ENTupleColumnType.kInt16:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getInt16(this.o, LITTLE_ENDIAN);
-            this.o += 2;
-         };
-         item.sz = 2;
-         break;
-      case ENTupleColumnType.kUInt16:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getUint16(this.o, LITTLE_ENDIAN);
-            this.o += 2;
-         };
-         item.sz = 2;
-         break;
-      case ENTupleColumnType.kInt8:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getInt8(this.o++);
-         };
-         item.sz = 1;
-         break;
-      case ENTupleColumnType.kUInt8:
-      case ENTupleColumnType.kByte:
-         item.func = function(view, obj) {
-            obj[this.name] = view.getUint8(this.o++);
-         };
-         item.sz = 1;
-         break;
-      case ENTupleColumnType.kChar:
-         if (item0) {
-            item.namecnt = item0.name;
-            item.func = function(view, obj) {
-               const len = obj[this.namecnt];
-               let s = '';
-               for (let i = 0; i < len; ++i)
-                  s += String.fromCharCode(view.getInt8(this.o++));
-               obj[this.name] = s;
+   }
+
+   assignReadFunc(item0) {
+      switch (this.coltype) {
+         case ENTupleColumnType.kBit: {
+            this.func = function(obj) {
+               console.log('bit reading not properly implemented');
+               obj[this.name] = false;
+               this.o++;
             };
-            item.shift = function() {
-               console.log('not implemented');
+            this.shift = function() {
+               console.log('bit shift not implemented');
             };
-         } else {
-            item.func = function(view, obj) {
-               obj[this.name] = String.fromCharCode(view.getInt8(this.o++));
-            };
-            item.sz = 1;
+            break;
          }
-         break;
-      default:
-         throw new Error(`Unsupported column type: ${item.coltype}`);
+         case ENTupleColumnType.kReal64:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getFloat64(this.o, LITTLE_ENDIAN);
+               this.o += 8;
+            };
+            this.sz = 8;
+            break;
+         case ENTupleColumnType.kReal32:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getFloat32(this.o, LITTLE_ENDIAN);
+               this.o += 4;
+            };
+            this.sz = 4;
+            break;
+         case ENTupleColumnType.kInt64:
+         case ENTupleColumnType.kIndex64:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getBigInt64(this.o, LITTLE_ENDIAN);
+               this.o += 8;
+            };
+            this.sz = 8;
+            break;
+         case ENTupleColumnType.kUInt64:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getBigUint64(this.o, LITTLE_ENDIAN);
+               this.o += 8;
+            };
+            this.sz = 8;
+            break;
+         case ENTupleColumnType.kInt32:
+         case ENTupleColumnType.kIndex32:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getInt32(this.o, LITTLE_ENDIAN);
+               this.o += 4;
+            };
+            this.sz = 4;
+            break;
+         case ENTupleColumnType.kUInt32:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getUint32(this.o, LITTLE_ENDIAN);
+               this.o += 4;
+            };
+            this.sz = 4;
+            break;
+         case ENTupleColumnType.kInt16:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getInt16(this.o, LITTLE_ENDIAN);
+               this.o += 2;
+            };
+            this.sz = 2;
+            break;
+         case ENTupleColumnType.kUInt16:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getUint16(this.o, LITTLE_ENDIAN);
+               this.o += 2;
+            };
+            this.sz = 2;
+            break;
+         case ENTupleColumnType.kInt8:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getInt8(this.o++);
+            };
+            this.sz = 1;
+            break;
+         case ENTupleColumnType.kUInt8:
+         case ENTupleColumnType.kByte:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getUint8(this.o++);
+            };
+            this.sz = 1;
+            break;
+         case ENTupleColumnType.kChar:
+            if (item0) {
+               this.namecnt = item0.name;
+               this.func = function(obj) {
+                  const len = obj[this.namecnt];
+                  let s = '';
+                  for (let i = 0; i < len; ++i)
+                     s += String.fromCharCode(this.view.getInt8(this.o++));
+                  obj[this.name] = s;
+               };
+               this.shift = function() {
+                  console.log('not implemented for string');
+               };
+            } else {
+               this.func = function(obj) {
+                  obj[this.name] = String.fromCharCode(this.view.getInt8(this.o++));
+               };
+               this.sz = 1;
+            }
+            break;
+         default:
+            throw new Error(`Unsupported column type: ${this.coltype}`);
+      }
+
+      if (this.sz && !this.shift) {
+         this.shift = function(entries) {
+            this.o += entries * this.sz;
+         };
+      }
    }
 
-   if (item.sz && !item.shift) {
-      item.shift = function(entries) {
-         this.o += entries * this.sz;
-      };
+   async unzipBlob(blob, cluster_locations) {
+      const colEntry = cluster_locations[this.id], // Access column entry
+            page = colEntry.pages[this.page], // requested page
+            numElements = Number(page.numElements),
+            elementSize = this.column.bitsOnStorage / 8;
+
+      let expectedSize = numElements * elementSize;
+      // Special handling for boolean fields
+      if (this.coltype === ENTupleColumnType.kBit)
+         expectedSize = Math.ceil(numElements / 8);
+
+      // Check if data is compressed
+      if ((colEntry.compression === 0) || (blob.byteLength === expectedSize))
+         return blob; // Uncompressed: use blob directly
+
+      // Try decompression
+      return R__unzip(blob, expectedSize).then(result => {
+         return result || blob; // Fallback to original blob ??
+      }).catch(err => {
+         throw new Error(`Failed to unzip page for column ${this.id}: ${err.message}`);
+      });
    }
+
+   reconstructBlob(rawblob) {
+      if (!(rawblob instanceof DataView))
+         throw new Error(`Invalid blob type for column ${this.id}: ${Object.prototype.toString.call(rawblob)}`);
+
+      const originalColtype = this.column.coltype,
+            data = recontructUnsplitBuffer(rawblob, this.column);
+
+      let blob;
+      // Handle split index types
+      if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64)
+         blob = DecodeDeltaIndex(data.blob, data.coltype).blob;
+      // Handle Split Signed Int types
+      else if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64)
+         blob = decodeZigzag(data.blob, data.coltype).blob;
+      else
+         blob = data.blob;
+
+      this.view = new DataView(blob);
+      this.o = 0;
+   }
+
 }
 
-function reconstructBlob(blob, columnDescriptor) {
-   const originalColtype = columnDescriptor.coltype,
-         data = recontructUnsplitBuffer(blob, columnDescriptor);
 
-   // Handle split index types
-   if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64)
-      return DecodeDeltaIndex(data.blob, data.coltype).blob;
-
-   // Handle Split Signed Int types
-   if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64)
-      return decodeZigzag(data.blob, data.coltype).blob;
-
-   return data.blob;
-}
 
 
 async function rntupleProcess(rntuple, selector, args) {
@@ -1289,40 +1338,15 @@ async function rntupleProcess(rntuple, selector, args) {
 
       return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
          const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
-               unzipPromises = blobs.map((blob, idx) => {
-                  const item = itemsToRead[idx],
-                        colEntry = locations[item.id], // Access column entry
-                        page = colEntry.pages[item.page], // requested page
-                        numElements = Number(page.numElements),
-                        elementSize = item.column.bitsOnStorage / 8;
-
-                  let expectedSize = numElements * elementSize;
-                  // Special handling for boolean fields
-                  if (item.coltype === ENTupleColumnType.kBit)
-                     expectedSize = Math.ceil(numElements / 8);
-
-                  // Check if data is compressed
-                  if ((colEntry.compression === 0) || (blob.byteLength === expectedSize))
-                     return Promise.resolve(blob); // Uncompressed: use blob directly
-
-                  // Try decompression
-                  return R__unzip(blob, expectedSize).then(result => {
-                     return result || blob; // Fallback to original blob ??
-                  }).catch(err => {
-                     throw new Error(`Failed to unzip page ${idx}: ${err.message}`);
-                  });
-               });
+               unzipPromises = blobs.map((blob, idx) => itemsToRead[idx].unzipBlob(blob, locations));
 
          return Promise.all(unzipPromises).then(unzipBlobs => {
-            for (let i = 0; i < unzipBlobs.length; ++i) {
-               const rawblob = unzipBlobs[i],
-                     item = itemsToRead[i];
-               // Ensure blob is a DataView
-               if (!(rawblob instanceof DataView))
-                  throw new Error(`Invalid blob type for page ${i}: ${Object.prototype.toString.call(rawblob)}`);
+            for (let idx = 0; idx < unzipBlobs.length; ++idx) {
+               const rawblob = unzipBlobs[idx],
+                     item = itemsToRead[idx];
 
-               item.view = new DataView(reconstructBlob(rawblob, item.column));
-               item.o = 0;
+               item.reconstructBlob(rawblob);
+
                if (item.e0 > handle.current_entry)
                   item.shift(handle.current_entry - item.e0); // FIXME - string will not work this way
             }
@@ -1332,7 +1356,7 @@ async function rntupleProcess(rntuple, selector, args) {
             while (hasData) {
                for (let i = 0; i < handle.arr.length; ++i) {
                   const item = handle.arr[i];
-                  item.func(item.view, selector.tgtobj);
+                  item.func(selector.tgtobj);
                   if (++item.e0 >= item.e1) {
                      delete item.view; // data is over
                      hasData = false;
@@ -1368,21 +1392,9 @@ async function rntupleProcess(rntuple, selector, args) {
 
          for (let k = 0; k < columns.length; ++k) {
             // TODO - make extra class for the item
-            const item = {
-               column: columns[k],
-               id: columns[k].index,
-               coltype: columns[k].coltype,
-               splittype: 0,
-               page: -1 // current page for the reading
-            };
+            const item = new ReaderItem(columns[k]);
 
-            // special handling of split types
-            if ((item.coltype >= ENTupleColumnType.kSplitInt16) && (item.coltype <= ENTupleColumnType.kSplitIndex64)) {
-               item.splittype = item.coltype;
-               item.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
-            }
-
-            assignReadFunc(item, item0);
+            item.assignReadFunc(item0);
 
             item.name = selector.nameOfBranch(i); // target object name
 
