@@ -1099,6 +1099,7 @@ class ReaderItem {
       this.page = -1; // current page for the reading
       this.name = name;
       this.simple = true; // simple type, no index, no refs
+      this.sz = 1;
 
       // special handling of split types
       if ((this.coltype >= ENTupleColumnType.kSplitInt16) && (this.coltype <= ENTupleColumnType.kSplitIndex64)) {
@@ -1107,7 +1108,31 @@ class ReaderItem {
       }
    }
 
-   assignReadFunc(item0) {
+   init_o() {
+      this.o = 0;
+      this.view = this.views.shift();
+      this.view_len = this.view.byteLength;
+   }
+
+   shift_o(sz) {
+      this.o += sz;
+      while ((this.o >= this.view_len) && this.view_len) {
+         this.o -= this.view_len;
+         if (this.views.length) {
+            this.view = this.views.shift();
+            this.view_len = this.view.byteLength;
+         } else {
+            this.view = null;
+            this.view_len = 0;
+         }
+      }
+   }
+
+   shift(entries) {
+      this.shift_o(this.sz * entries);
+   }
+
+   assignReadFunc() {
       switch (this.coltype) {
          case ENTupleColumnType.kBit: {
             this.simple = false;
@@ -1124,14 +1149,14 @@ class ReaderItem {
          case ENTupleColumnType.kReal64:
             this.func = function(obj) {
                obj[this.name] = this.view.getFloat64(this.o, LITTLE_ENDIAN);
-               this.o += 8;
+               this.shift_o(8);
             };
             this.sz = 8;
             break;
          case ENTupleColumnType.kReal32:
             this.func = function(obj) {
                obj[this.name] = this.view.getFloat32(this.o, LITTLE_ENDIAN);
-               this.o += 4;
+               this.shift_o(4);
             };
             this.sz = 4;
             break;
@@ -1139,14 +1164,14 @@ class ReaderItem {
          case ENTupleColumnType.kIndex64:
             this.func = function(obj) {
                obj[this.name] = this.view.getBigInt64(this.o, LITTLE_ENDIAN);
-               this.o += 8;
+               this.shift_o(8);
             };
             this.sz = 8;
             break;
          case ENTupleColumnType.kUInt64:
             this.func = function(obj) {
                obj[this.name] = this.view.getBigUint64(this.o, LITTLE_ENDIAN);
-               this.o += 8;
+               this.shift_o(8);
             };
             this.sz = 8;
             break;
@@ -1154,80 +1179,107 @@ class ReaderItem {
          case ENTupleColumnType.kIndex32:
             this.func = function(obj) {
                obj[this.name] = this.view.getInt32(this.o, LITTLE_ENDIAN);
-               this.o += 4;
+               this.shift_o(4);
             };
             this.sz = 4;
             break;
          case ENTupleColumnType.kUInt32:
             this.func = function(obj) {
                obj[this.name] = this.view.getUint32(this.o, LITTLE_ENDIAN);
-               this.o += 4;
+               this.shift_o(4);
             };
             this.sz = 4;
             break;
          case ENTupleColumnType.kInt16:
             this.func = function(obj) {
                obj[this.name] = this.view.getInt16(this.o, LITTLE_ENDIAN);
-               this.o += 2;
+               this.shift_o(2);
             };
             this.sz = 2;
             break;
          case ENTupleColumnType.kUInt16:
             this.func = function(obj) {
                obj[this.name] = this.view.getUint16(this.o, LITTLE_ENDIAN);
-               this.o += 2;
+               this.shift_o(2);
             };
             this.sz = 2;
             break;
          case ENTupleColumnType.kInt8:
             this.func = function(obj) {
-               obj[this.name] = this.view.getInt8(this.o++);
+               obj[this.name] = this.view.getInt8(this.o);
+               this.shift_o(1);
             };
             this.sz = 1;
             break;
          case ENTupleColumnType.kUInt8:
          case ENTupleColumnType.kByte:
             this.func = function(obj) {
-               obj[this.name] = this.view.getUint8(this.o++);
+               obj[this.name] = this.view.getUint8(this.o);
+               this.shift_o(1);
             };
             this.sz = 1;
             break;
          case ENTupleColumnType.kChar:
-            if (item0) {
-               this.simple = item0.simple = false; // no shift can be used
-               this.namecnt = item0.name = `__${this.name}__cnt__`;
-               this.func = function(obj) {
-                  const len = Number(obj[this.namecnt]);
-                  console.log('reading len', len);
-                  let s = '';
-                  for (let i = 0; i < len; ++i)
-                     s += String.fromCharCode(this.view.getInt8(this.o++));
-                  obj[this.name] = s;
-               };
-               this.shift = function() {
-                  console.log('not implemented for string');
-               };
-            } else {
-               this.func = function(obj) {
-                  obj[this.name] = String.fromCharCode(this.view.getInt8(this.o++));
-               };
-               this.sz = 1;
-            }
+            this.func = function(obj) {
+               obj[this.name] = String.fromCharCode(this.view.getInt8(this.o));
+               this.shift_o(1);
+            };
+            this.sz = 1;
             break;
          default:
             throw new Error(`Unsupported column type: ${this.coltype}`);
       }
-
-      if (this.sz && !this.shift) {
-         this.shift = function(entries) {
-            this.o += entries * this.sz;
-         };
-      }
    }
 
-   async unzipBlob(blob, cluster_locations) {
+   assignStringReader(item1) {
+      this.item1 = item1;
+      this.off0 = 0;
+      this.$tgt = {};
+
+      item1.func0 = item1.func;
+      item1.shift0 = item1.shift;
+
+      // assign noop
+      item1.func = item1.shift = () => {};
+
+      this.func = function(tgtobj) {
+         this.item1.func0(this.$tgt);
+         const off = Number(this.$tgt[this.name]);
+         let len = off - this.off0, s = '';
+         while (len-- > 0) {
+            s += String.fromCharCode(this.view.getInt8(this.o));
+            this.shift_o(1);
+         }
+         tgtobj[this.name] = s;
+         this.off0 = off;
+      };
+
+      this.shift = function(entries) {
+         if (entries > 0) {
+            this.item1.shift0(entries);
+            this.item1.func0(this.$tgt);
+            this.off0 = Number(this.$tgt[this.name]);
+            this.shift_o(this.off0);
+         }
+      };
+   }
+
+   collectPages(cluster_locations, dataToRead, itemsToRead, pagesToRead) {
+      const pages = cluster_locations[this.id].pages;
+      for (let p = 0; p < pages.length; ++p) {
+         const locator = pages[p].locator;
+         itemsToRead.push(this);
+         dataToRead.push(Number(locator.offset), locator.size);
+         pagesToRead.push(pages[p]);
+      }
+      this.views = [];
+      this.view = null;
+      this.view_len = 0;
+      this.o = 0;
+   }
+
+   async unzipBlob(blob, cluster_locations, page) {
       const colEntry = cluster_locations[this.id], // Access column entry
-            page = colEntry.pages[this.page], // requested page
             numElements = Number(page.numElements),
             elementSize = this.column.bitsOnStorage / 8;
 
@@ -1255,23 +1307,25 @@ class ReaderItem {
       const originalColtype = this.column.coltype,
             data = recontructUnsplitBuffer(rawblob, this.column);
 
+      let view;
+
       // Handle split index types
       if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64) {
          console.log(this.name, 'split first');
-         this.view = new DataView(DecodeDeltaIndex(data.blob, data.coltype).blob.buffer);
+         view = new DataView(DecodeDeltaIndex(data.blob, data.coltype).blob.buffer);
       // Handle Split Signed Int types
       } else if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
          console.log(this.name, 'split second');
-         this.view = new DataView(decodeZigzag(data.blob, data.coltype).blob.buffer);
+         view = new DataView(decodeZigzag(data.blob, data.coltype).blob.buffer);
       } else if (data.blob instanceof DataView) {
          console.log(this.name, 'get data as DataView');
-         this.view = data.blob;
+         view = data.blob;
       } else {
          console.log(this.name, 'get data as buffer');
-         this.view = new DataView(data.blob);
+         view = new DataView(data.blob);
       }
 
-      this.o = 0;
+      this.views.push(view);
    }
 
 }
@@ -1284,9 +1338,10 @@ async function rntupleProcess(rntuple, selector, args) {
       arr: [], // list of special handles per columns, more than one column per field may exist
       curr: -1,  // current entry ID
       simple: true, // if all columns are simple data types which can be manipulated easily
-      current_cluster: -1, // current cluster to process
+      current_cluster: 0, // current cluster to process
       current_cluster_first_entry: 0, // first entry in current cluster
-      current_entry: -1, // current processed entry
+      current_cluster_last_entry: 0, // last entry in current cluster
+      current_entry: 0, // current processed entry
       simple_read: true, // all baskets in all used branches are in sync,
       process_arrays: false, // one can process all branches as arrays
       firstentry: 0,  // first entry in the rntuple
@@ -1294,16 +1349,9 @@ async function rntupleProcess(rntuple, selector, args) {
    };
 
    function readNextPortion(inc_cluster) {
-      if (inc_cluster !== undefined) {
-         if (inc_cluster === 1)
-            handle.current_cluster_first_entry += rntuple.builder.clusterSummaries[handle.current_cluster].numEntries;
-         handle.current_cluster += inc_cluster;
-         handle.arr.forEach(item => {
-            item.page = -1;
-            item.e0 = handle.current_cluster_first_entry;
-            if (item.view)
-               throw new Error(`still data when processing column ${item.name}`);
-         });
+      if (inc_cluster) {
+         handle.current_cluster++;
+         handle.current_cluster_first_entry = handle.current_cluster_last_entry;
       }
 
       const locations = rntuple.builder.pageLocations[handle.current_cluster];
@@ -1311,95 +1359,41 @@ async function rntupleProcess(rntuple, selector, args) {
          selector.Terminate(true);
          return selector;
       }
-      let end_of_cluster = 0;
-      const dataToRead = [], itemsToRead = [];
 
-      // loop over all columns and request buffer
-      for (let i = 0; i < handle.arr.length; ++i) {
-         const item = handle.arr[i];
+      handle.current_cluster_last_entry = handle.current_cluster_first_entry + rntuple.builder.clusterSummaries[handle.current_cluster].numEntries;
 
-         if (!item.view) {
-            const pages = locations[item.id].pages;
-            while (++item.page < pages.length) {
-               const page = pages[item.page];
-               // if current entry inside the page - read buffer
-               if (handle.current_entry < item.e0 + Number(page.numElements))
-                  break;
-               item.e0 += Number(page.numElements);
-            }
-            if (item.page >= pages.length) {
-               end_of_cluster++;
-               item.page = -1;
-            } else {
-               item.e1 = item.e0 + Number(pages[item.page].numElements);
-               itemsToRead.push(item);
-               dataToRead.push(Number(pages[item.page].locator.offset), pages[item.page].locator.size);
-            }
-         }
-      }
+      const dataToRead = [], itemsToRead = [], pagesToRead = [];
 
-      if (end_of_cluster) {
-         if (end_of_cluster !== handle.arr.length)
-            throw new Error('Missmatch at the cluster boundary');
-         return readNextPortion(1);
-      }
+      // loop over all columns and request all pages
+      for (let i = 0; i < handle.arr.length; ++i)
+         handle.arr[i].collectPages(locations, dataToRead, itemsToRead, pagesToRead);
 
       return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
          const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
-               unzipPromises = blobs.map((blob, idx) => itemsToRead[idx].unzipBlob(blob, locations));
-
+               unzipPromises = blobs.map((blob, idx) => itemsToRead[idx].unzipBlob(blob, locations, pagesToRead[idx]));
          return Promise.all(unzipPromises);
       }).then(unzipBlobs => {
-         let need_plain_skip = false;
-         for (let idx = 0; idx < unzipBlobs.length; ++idx) {
-            const rawblob = unzipBlobs[idx],
-                  item = itemsToRead[idx];
+         unzipBlobs.map((rawblob, idx) => itemsToRead[idx].reconstructBlob(rawblob));
 
-            item.reconstructBlob(rawblob);
-
-            if (item.e0 > handle.current_entry) {
-               if (handle.simple) {
-                  item.shift(handle.current_entry - item.e0);
-                  item.e0 = handle.current_entry;
-               } else
-                  need_plain_skip = true;
-            }
+         for (let indx = 0; indx < handle.arr.length; ++indx) {
+            handle.arr[indx].init_o();
+            if (handle.current_entry > handle.current_cluster_first_entry)
+               handle.arr[indx].shift(handle.current_entry - handle.current_cluster_first_entry);
          }
 
-         // allign all collumns to the next processing event
-         while (need_plain_skip) {
-            let isany = false;
-            for (let i = 0; i < handle.arr.length; ++i) {
-               const item = handle.arr[i];
-               if (item.e0 < handle.current_entry) {
-                  item.func(selector.tgtobj);
-                  isany = true;
-                  item.e0++;
-               }
-            }
-            need_plain_skip = isany;
-         }
+         while (handle.current_entry < handle.current_cluster_last_entry) {
+            for (let i = 0; i < handle.arr.length; ++i)
+               handle.arr[i].func(selector.tgtobj);
 
-         let hasData = true;
-
-         while (hasData) {
-            for (let i = 0; i < handle.arr.length; ++i) {
-               const item = handle.arr[i];
-               item.func(selector.tgtobj);
-               if (++item.e0 >= item.e1) {
-                  delete item.view; // data is over
-                  hasData = false;
-               }
-            }
             selector.Process(handle.current_entry++);
 
             if (handle.current_entry >= handle.process_max) {
                selector.Terminate(true);
-               return true;
+               return selector;
             }
          }
 
-         return readNextPortion();
+         return readNextPortion(true);
       });
    }
 
@@ -1412,25 +1406,20 @@ async function rntupleProcess(rntuple, selector, args) {
          if (!name)
             throw new Error(`Not able to extract name for field ${i}`);
 
+         // TODO: fieldToColumns can be out out
          const columns = rntuple.fieldToColumns[name];
          if (!columns)
             throw new Error(`No columns found for field '${name}' in RNTuple`);
 
-         let item0 = null;
+         const tgtname = selector.nameOfBranch(i),
+               item = new ReaderItem(columns[0], tgtname);
+         item.assignReadFunc();
+         handle.arr.push(item);
 
-         for (let k = 0; k < columns.length; ++k) {
-            const item = new ReaderItem(columns[k], selector.nameOfBranch(i));
-
-            item.assignReadFunc(item0);
-
-            // if there are two columns, first used as length
-            if (k === 0)
-               item0 = item;
-
-            handle.arr.push(item);
-
-            if (!item.simple)
-               handle.simple = false;
+         if (columns.length === 2) {
+            const item2 = new ReaderItem(columns[1], tgtname);
+            item2.assignStringReader(item);
+            handle.arr.push(item2);
          }
       }
 
@@ -1470,7 +1459,7 @@ async function rntupleProcess(rntuple, selector, args) {
 
       selector.Begin(rntuple);
 
-      return readNextPortion(0);
+      return readNextPortion();
    }).then(() => selector);
 }
 
