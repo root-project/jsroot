@@ -1091,12 +1091,14 @@ async function readNextCluster(rntuple, selector) {
 
 class ReaderItem {
 
-   constructor(column) {
+   constructor(column, name) {
       this.column = column;
       this.id = column.index;
       this.coltype = column.coltype;
       this.splittype = 0;
       this.page = -1; // current page for the reading
+      this.name = name;
+      this.simple = true; // simple type, no index, no refs
 
       // special handling of split types
       if ((this.coltype >= ENTupleColumnType.kSplitInt16) && (this.coltype <= ENTupleColumnType.kSplitIndex64)) {
@@ -1108,6 +1110,7 @@ class ReaderItem {
    assignReadFunc(item0) {
       switch (this.coltype) {
          case ENTupleColumnType.kBit: {
+            this.simple = false;
             this.func = function(obj) {
                console.log('bit reading not properly implemented');
                obj[this.name] = false;
@@ -1191,9 +1194,11 @@ class ReaderItem {
             break;
          case ENTupleColumnType.kChar:
             if (item0) {
-               this.namecnt = item0.name;
+               this.simple = item0.simple = false; // no shift can be used
+               this.namecnt = item0.name = `__${this.name}__cnt__`;
                this.func = function(obj) {
-                  const len = obj[this.namecnt];
+                  const len = Number(obj[this.namecnt]);
+                  console.log('reading len', len);
                   let s = '';
                   for (let i = 0; i < len; ++i)
                      s += String.fromCharCode(this.view.getInt8(this.o++));
@@ -1250,24 +1255,26 @@ class ReaderItem {
       const originalColtype = this.column.coltype,
             data = recontructUnsplitBuffer(rawblob, this.column);
 
-      let blob;
       // Handle split index types
-      if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64)
-         blob = DecodeDeltaIndex(data.blob, data.coltype).blob;
+      if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64) {
+         console.log(this.name, 'split first');
+         this.view = new DataView(DecodeDeltaIndex(data.blob, data.coltype).blob.buffer);
       // Handle Split Signed Int types
-      else if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64)
-         blob = decodeZigzag(data.blob, data.coltype).blob;
-      else
-         blob = data.blob;
+      } else if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
+         console.log(this.name, 'split second');
+         this.view = new DataView(decodeZigzag(data.blob, data.coltype).blob.buffer);
+      } else if (data.blob instanceof DataView) {
+         console.log(this.name, 'get data as DataView');
+         this.view = data.blob;
+      } else {
+         console.log(this.name, 'get data as buffer');
+         this.view = new DataView(data.blob);
+      }
 
-      this.view = new DataView(blob);
       this.o = 0;
    }
 
 }
-
-
-
 
 async function rntupleProcess(rntuple, selector, args) {
    const handle = {
@@ -1276,6 +1283,7 @@ async function rntupleProcess(rntuple, selector, args) {
       selector, // reference on selector
       arr: [], // list of special handles per columns, more than one column per field may exist
       curr: -1,  // current entry ID
+      simple: true, // if all columns are simple data types which can be manipulated easily
       current_cluster: -1, // current cluster to process
       current_cluster_first_entry: 0, // first entry in current cluster
       current_entry: -1, // current processed entry
@@ -1340,38 +1348,58 @@ async function rntupleProcess(rntuple, selector, args) {
          const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
                unzipPromises = blobs.map((blob, idx) => itemsToRead[idx].unzipBlob(blob, locations));
 
-         return Promise.all(unzipPromises).then(unzipBlobs => {
-            for (let idx = 0; idx < unzipBlobs.length; ++idx) {
-               const rawblob = unzipBlobs[idx],
-                     item = itemsToRead[idx];
+         return Promise.all(unzipPromises);
+      }).then(unzipBlobs => {
+         let need_plain_skip = false;
+         for (let idx = 0; idx < unzipBlobs.length; ++idx) {
+            const rawblob = unzipBlobs[idx],
+                  item = itemsToRead[idx];
 
-               item.reconstructBlob(rawblob);
+            item.reconstructBlob(rawblob);
 
-               if (item.e0 > handle.current_entry)
-                  item.shift(handle.current_entry - item.e0); // FIXME - string will not work this way
+            if (item.e0 > handle.current_entry) {
+               if (handle.simple) {
+                  item.shift(handle.current_entry - item.e0);
+                  item.e0 = handle.current_entry;
+               } else
+                  need_plain_skip = true;
             }
+         }
 
-            let hasData = true;
-
-            while (hasData) {
-               for (let i = 0; i < handle.arr.length; ++i) {
-                  const item = handle.arr[i];
+         // allign all collumns to the next processing event
+         while (need_plain_skip) {
+            let isany = false;
+            for (let i = 0; i < handle.arr.length; ++i) {
+               const item = handle.arr[i];
+               if (item.e0 < handle.current_entry) {
                   item.func(selector.tgtobj);
-                  if (++item.e0 >= item.e1) {
-                     delete item.view; // data is over
-                     hasData = false;
-                  }
-               }
-               selector.Process(handle.current_entry++);
-
-               if (handle.current_entry >= handle.process_max) {
-                  selector.Terminate(true);
-                  return true;
+                  isany = true;
+                  item.e0++;
                }
             }
+            need_plain_skip = isany;
+         }
 
-            return readNextPortion();
-         });
+         let hasData = true;
+
+         while (hasData) {
+            for (let i = 0; i < handle.arr.length; ++i) {
+               const item = handle.arr[i];
+               item.func(selector.tgtobj);
+               if (++item.e0 >= item.e1) {
+                  delete item.view; // data is over
+                  hasData = false;
+               }
+            }
+            selector.Process(handle.current_entry++);
+
+            if (handle.current_entry >= handle.process_max) {
+               selector.Terminate(true);
+               return true;
+            }
+         }
+
+         return readNextPortion();
       });
    }
 
@@ -1391,21 +1419,18 @@ async function rntupleProcess(rntuple, selector, args) {
          let item0 = null;
 
          for (let k = 0; k < columns.length; ++k) {
-            // TODO - make extra class for the item
-            const item = new ReaderItem(columns[k]);
+            const item = new ReaderItem(columns[k], selector.nameOfBranch(i));
 
             item.assignReadFunc(item0);
 
-            item.name = selector.nameOfBranch(i); // target object name
-
-            // case when two columns read like for the std::string,
-            // but most probably for some other cases
-            if ((columns.length === 2) && (k === 0)) {
-               item.name = `___indx${i}`; // TODO - use not a target object in the future
+            // if there are two columns, first used as length
+            if (k === 0)
                item0 = item;
-            }
 
             handle.arr.push(item);
+
+            if (!item.simple)
+               handle.simple = false;
          }
       }
 
