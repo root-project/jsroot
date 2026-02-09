@@ -1339,6 +1339,11 @@ async function rntupleProcess(rntuple, selector, args) {
                   }
                }
                selector.Process(handle.current_entry++);
+
+               if (handle.current_entry >= handle.process_max) {
+                  selector.Terminate(true);
+                  return true;
+               }
             }
 
             return readNextPortion();
