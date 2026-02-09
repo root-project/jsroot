@@ -1220,7 +1220,7 @@ function reconstructBlob(blob, columnDescriptor) {
 }
 
 
-async function rntupleProcessNew(rntuple, selector, args) {
+async function rntupleProcess(rntuple, selector, args) {
    const handle = {
       rntuple, // keep rntuple reference
       file: rntuple.$file, // keep file reference
@@ -1261,16 +1261,18 @@ async function rntupleProcessNew(rntuple, selector, args) {
 
          if (!item.view) {
             const pages = locations[item.id].pages;
-            while (pages[item.page] && (item.e0 + pages[item.page].numElements < handle.current_entry)) {
-               item.e0 += pages[item.page].numElements;
+            while (pages[item.page] && (item.e0 + Number(pages[item.page].numElements) < handle.current_entry)) {
+               item.e0 += Number(pages[item.page].numElements);
                item.page++;
             }
             if (!pages[item.page])
                end_of_cluster++;
             else {
-               item.e1 = item.e0 + pages[item.page].numElements;
+               item.e1 = item.e0 + Number(pages[item.page].numElements);
                itemsToRead.push(item);
-               dataToRead.push(pages[item.page].locator.offset, pages[item.page].locator.size);
+               console.log('submit ', pages[item.page].locator.offset, pages[item.page].locator.size)
+
+               dataToRead.push(Number(pages[item.page].locator.offset), pages[item.page].locator.size);
             }
          }
       }
@@ -1286,11 +1288,14 @@ async function rntupleProcessNew(rntuple, selector, args) {
                unzipPromises = blobs.map((blob, idx) => {
                   const item = itemsToRead[idx],
                         colEntry = locations[item.id], // Access column entry
-                        page = locations[item.page], // requested page
+                        page = colEntry.pages[item.page], // requested page
                         numElements = Number(page.numElements),
                         elementSize = item.column.bitsOnStorage / 8;
 
+                  console.log('page', page)
+
                   let expectedSize = numElements * elementSize;
+                  console.log('expected size', expectedSize, numElements, elementSize, item.column.bitsOnStorage)
                   // Special handling for boolean fields
                   if (item.coltype === ENTupleColumnType.kBit)
                      expectedSize = Math.ceil(numElements / 8);
@@ -1315,7 +1320,8 @@ async function rntupleProcessNew(rntuple, selector, args) {
                if (!(rawblob instanceof DataView))
                   throw new Error(`Invalid blob type for page ${i}: ${Object.prototype.toString.call(rawblob)}`);
 
-               item.view = reconstructBlob(rawblob, item.column);
+               item.view = new DataView(reconstructBlob(rawblob, item.column));
+               console.log('item.view', item.view, typeof item.view);
                item.o = 0;
                if (item.e0 > handle.current_entry)
                   item.shift(handle.current_entry - item.e0); // FIXME - string will not work this way
@@ -1324,12 +1330,13 @@ async function rntupleProcessNew(rntuple, selector, args) {
             let hasData = true;
 
             while (hasData) {
-               for (let i = 0; i < handle.items.length; ++i) {
-                  const item = handle.items[i];
+               for (let i = 0; i < handle.arr.length; ++i) {
+                  const item = handle.arr[i];
                   item.func(item.view, selector.tgtobj);
                   if (++item.e0 >= item.e1) {
                      delete item.view; // data is over
                      hasData = false;
+                     item.page++;
                   }
                }
                selector.Process(handle.current_entry++);
@@ -1429,7 +1436,7 @@ async function rntupleProcessNew(rntuple, selector, args) {
 
 // TODO args can later be used to filter fields, limit entries, etc.
 // Create reader and deserialize doubles from the buffer
-function rntupleProcess(rntuple, selector, args) {
+function rntupleProcessOld(rntuple, selector, args) {
    selector.Begin();
    return readHeaderFooter(rntuple).then(res => {
       if (!res) {
