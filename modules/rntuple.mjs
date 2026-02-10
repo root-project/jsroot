@@ -1170,14 +1170,16 @@ class ReaderItem {
          case ENTupleColumnType.kInt64:
          case ENTupleColumnType.kIndex64:
             this.func = function(obj) {
-               obj[this.name] = this.view.getBigInt64(this.o, LITTLE_ENDIAN);
+               // FIXME: let process BigInt in the TTree::Draw
+               obj[this.name] = Number(this.view.getBigInt64(this.o, LITTLE_ENDIAN));
                this.shift_o(8);
             };
             this.sz = 8;
             break;
          case ENTupleColumnType.kUInt64:
             this.func = function(obj) {
-               obj[this.name] = this.view.getBigUint64(this.o, LITTLE_ENDIAN);
+               // FIXME: let process BigInt in the TTree::Draw
+               obj[this.name] = Number(this.view.getBigUint64(this.o, LITTLE_ENDIAN));
                this.shift_o(8);
             };
             this.sz = 8;
@@ -1501,30 +1503,6 @@ class TDrawSelectorTuple extends TDrawSelector {
 
    /** @summary Returns true if field can be used as array */
    isArrayBranch(/* tuple, br */) { return false; }
-
-   /** @summary Begin of processing */
-   Begin(tree) {
-      super.Begin(tree);
-      this._first_entry = true;
-      this._has_bigint = false;
-   }
-
-   /** @summary Process entry */
-   Process(entry) {
-      if (this._first_entry || this._has_bigint) {
-         for (let n = 0; n < this.numBranches(); ++n) {
-            const name = this.nameOfBranch(n);
-            if (typeof this.tgtobj[name] === 'bigint') {
-               this.tgtobj[name] = Number(this.tgtobj[name]);
-               this._has_bigint = true;
-            }
-         }
-      }
-
-      this._first_entry = false;
-
-      super.Process(entry);
-   }
 
 } // class TDrawSelectorTuple
 
