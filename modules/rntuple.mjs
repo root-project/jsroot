@@ -1098,7 +1098,6 @@ class ReaderItem {
       this.splittype = 0;
       this.page = -1; // current page for the reading
       this.name = name;
-      this.simple = true; // simple type, no index, no refs
       this.sz = 0;
 
       // special handling of split types
@@ -1106,6 +1105,12 @@ class ReaderItem {
          this.splittype = this.coltype;
          this.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
       }
+   }
+
+   cleanup() {
+      this.views = null;
+      this.view = null;
+      this.view_len = 0;
    }
 
    init_o() {
@@ -1144,7 +1149,6 @@ class ReaderItem {
    assignReadFunc() {
       switch (this.coltype) {
          case ENTupleColumnType.kBit: {
-            this.simple = false;
             this.func = function(obj) {
                if (this.o2 === 0)
                   this.byte = this.view.getUint8(this.o);
@@ -1243,6 +1247,9 @@ class ReaderItem {
       }
    }
 
+   /** @summary identify if this item used as offset for std::string or similar */
+   is_offset_item() { return this.item1; }
+
    assignStringReader(item1) {
       this.item1 = item1;
       this.off0 = 0;
@@ -1280,20 +1287,18 @@ class ReaderItem {
       const pages = cluster_locations[this.id].pages;
 
       this.views = new Array(pages.length);
-      this.view = null;
-      this.view_len = 0;
-      this.o = 0;
-      this.o2 = 0;
 
       let e0 = 0;
       for (let p = 0; p < pages.length; ++p) {
-         const page = pages[p], e1 = e0 + Number(page.numElements);
+         const page = pages[p],
+               e1 = e0 + Number(page.numElements),
+               margin = this.is_offset_item() ? 1 : 0; // offset for previous entry has to be read as well
 
          let is_entries_inside = false;
          if (elist?.length)
-            elist.forEach(e => { is_entries_inside ||= (e >= e0) && (e < e1); });
+            elist.forEach(e => { is_entries_inside ||= (e >= e0) && (e - margin < e1); });
          else
-            is_entries_inside = ((e0 >= emin) && (e0 < emax)) || ((e1 > emin) && (e1 <= emax));
+            is_entries_inside = ((e0 >= emin - margin) && (e0 < emax)) || ((e1 > emin - margin) && (e1 <= emax));
 
          if (!this.is_simple() || is_entries_inside) {
             itemsToRead.push(this);
@@ -1360,13 +1365,10 @@ async function rntupleProcess(rntuple, selector, args) {
       file: rntuple.$file, // keep file reference
       selector, // reference on selector
       arr: [], // list of special handles per columns, more than one column per field may exist
-      curr: -1,  // current entry ID
-      simple: true, // if all columns are simple data types which can be manipulated easily
       current_cluster: 0, // current cluster to process
       current_cluster_first_entry: 0, // first entry in current cluster
       current_cluster_last_entry: 0, // last entry in current cluster
       current_entry: 0, // current processed entry
-      simple_read: true, // all baskets in all used branches are in sync,
       process_arrays: false, // one can process all branches as arrays
       firstentry: 0,  // first entry in the rntuple
       lastentry: 0    // last entry in the rntuple
@@ -1403,9 +1405,6 @@ async function rntupleProcess(rntuple, selector, args) {
          emax = Math.min(numClusterEntries, handle.process_max - handle.current_cluster_first_entry);
       }
 
-
-      console.log(emin, emax, elist);
-
       // loop over all columns and request required pages
       for (let i = 0; i < handle.arr.length; ++i)
          handle.arr[i].collectPages(locations, dataToRead, itemsToRead, pagesToRead, emin, emax, elist);
@@ -1417,19 +1416,30 @@ async function rntupleProcess(rntuple, selector, args) {
       }).then(unzipBlobs => {
          unzipBlobs.map((rawblob, idx) => itemsToRead[idx].reconstructBlob(rawblob, pagesToRead[idx]));
 
-         for (let indx = 0; indx < handle.arr.length; ++indx) {
+         for (let indx = 0; indx < handle.arr.length; ++indx)
             handle.arr[indx].init_o();
-            if (handle.current_entry > handle.current_cluster_first_entry)
-               handle.arr[indx].shift(handle.current_entry - handle.current_cluster_first_entry);
-         }
+
+         let skip_entries = handle.current_entry - handle.current_cluster_first_entry;
 
          while (handle.current_entry < handle.current_cluster_last_entry) {
-            for (let i = 0; i < handle.arr.length; ++i)
+            for (let i = 0; i < handle.arr.length; ++i) {
+               if (skip_entries > 0)
+                  handle.arr[i].shift(skip_entries);
                handle.arr[i].func(selector.tgtobj);
+            }
+            skip_entries = 0;
 
-            selector.Process(handle.current_entry++);
+            selector.Process(handle.current_entry);
 
-            if (handle.current_entry >= handle.process_max) {
+            if (handle.process_entries) {
+               if (++handle.process_entries_indx >= handle.process_entries.length) {
+                  selector.Terminate(true);
+                  return selector;
+               }
+               const prev_entry = handle.current_entry;
+               handle.current_entry = handle.process_entries[handle.process_entries_indx];
+               skip_entries = handle.current_entry - prev_entry - 1;
+            } else if (++handle.current_entry >= handle.process_max) {
                selector.Terminate(true);
                return selector;
             }
@@ -1504,7 +1514,7 @@ async function rntupleProcess(rntuple, selector, args) {
       if (handle.current_cluster < 0)
          throw new Error(`Not able to find cluster for entry ${handle.process_min} in the RNtuple`);
 
-      handle.current_entry = handle.staged_now = handle.process_min;
+      handle.current_entry = handle.process_min;
 
       selector.Begin(rntuple);
 
