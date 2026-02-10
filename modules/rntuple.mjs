@@ -1099,7 +1099,7 @@ class ReaderItem {
       this.page = -1; // current page for the reading
       this.name = name;
       this.simple = true; // simple type, no index, no refs
-      this.sz = 1;
+      this.sz = 0;
 
       // special handling of split types
       if ((this.coltype >= ENTupleColumnType.kSplitInt16) && (this.coltype <= ENTupleColumnType.kSplitIndex64)) {
@@ -1137,6 +1137,9 @@ class ReaderItem {
             this.func({});
       }
    }
+
+   /** @summary Simple column which fixed element size */
+   is_simple() { return this.sz > 0; }
 
    assignReadFunc() {
       switch (this.coltype) {
@@ -1273,23 +1276,40 @@ class ReaderItem {
       };
    }
 
-   collectPages(cluster_locations, dataToRead, itemsToRead, pagesToRead) {
+   collectPages(cluster_locations, dataToRead, itemsToRead, pagesToRead, emin, emax, elist) {
       const pages = cluster_locations[this.id].pages;
-      for (let p = 0; p < pages.length; ++p) {
-         const locator = pages[p].locator;
-         itemsToRead.push(this);
-         dataToRead.push(Number(locator.offset), locator.size);
-         pagesToRead.push(pages[p]);
-      }
-      this.views = [];
+
+      this.views = new Array(pages.length);
       this.view = null;
       this.view_len = 0;
       this.o = 0;
+      this.o2 = 0;
+
+      let e0 = 0;
+      for (let p = 0; p < pages.length; ++p) {
+         const page = pages[p], e1 = e0 + Number(page.numElements);
+
+         let is_entries_inside = false;
+         if (elist?.length)
+            elist.forEach(e => { is_entries_inside ||= (e >= e0) && (e < e1); });
+         else
+            is_entries_inside = ((e0 >= emin) && (e0 < emax)) || ((e1 > emin) && (e1 <= emax));
+
+         if (!this.is_simple() || is_entries_inside) {
+            itemsToRead.push(this);
+            dataToRead.push(Number(page.locator.offset), page.locator.size);
+            pagesToRead.push(p);
+            this.views[p] = null; // placeholder, filled after request
+         } else
+            this.views[p] = { byteLength: this.sz * Number(page.numElements) }; // dummy entry only to allow proper navigation
+
+         e0 = e1;
+      }
    }
 
-   async unzipBlob(blob, cluster_locations, page) {
+   async unzipBlob(blob, cluster_locations, page_indx) {
       const colEntry = cluster_locations[this.id], // Access column entry
-            numElements = Number(page.numElements),
+            numElements = Number(colEntry.pages[page_indx].numElements),
             elementSize = this.column.bitsOnStorage / 8;
 
       let expectedSize = numElements * elementSize;
@@ -1305,11 +1325,11 @@ class ReaderItem {
       return R__unzip(blob, expectedSize).then(result => {
          return result || blob; // Fallback to original blob ??
       }).catch(err => {
-         throw new Error(`Failed to unzip page for column ${this.id}: ${err.message}`);
+         throw new Error(`Failed to unzip page ${page_indx} for column ${this.id}: ${err.message}`);
       });
    }
 
-   reconstructBlob(rawblob) {
+   reconstructBlob(rawblob, page_indx) {
       if (!(rawblob instanceof DataView))
          throw new Error(`Invalid blob type for column ${this.id}: ${Object.prototype.toString.call(rawblob)}`);
 
@@ -1329,7 +1349,7 @@ class ReaderItem {
       else
          view = new DataView(data.blob);
 
-      this.views.push(view);
+      this.views[page_indx] = view;
    }
 
 }
@@ -1364,20 +1384,38 @@ async function rntupleProcess(rntuple, selector, args) {
          return selector;
       }
 
-      handle.current_cluster_last_entry = handle.current_cluster_first_entry + rntuple.builder.clusterSummaries[handle.current_cluster].numEntries;
+      const numClusterEntries = rntuple.builder.clusterSummaries[handle.current_cluster].numEntries;
 
-      const dataToRead = [], itemsToRead = [], pagesToRead = [];
+      handle.current_cluster_last_entry = handle.current_cluster_first_entry + numClusterEntries;
 
-      // loop over all columns and request all pages
+      // calculate entries which can be extracted from the cluster
+      let emin, emax;
+      const dataToRead = [], itemsToRead = [], pagesToRead = [], elist = [];
+
+      if (handle.process_entries) {
+         let i = handle.process_entries_indx;
+         while ((i < handle.process_entries.length) && (handle.process_entries[i] < handle.current_cluster_last_entry))
+            elist.push(handle.process_entries[i++] - handle.current_cluster_first_entry);
+         emin = elist[0];
+         emax = elist[elist.length - 1];
+      } else {
+         emin = handle.current_entry - handle.current_cluster_first_entry;
+         emax = Math.min(numClusterEntries, handle.process_max - handle.current_cluster_first_entry);
+      }
+
+
+      console.log(emin, emax, elist);
+
+      // loop over all columns and request required pages
       for (let i = 0; i < handle.arr.length; ++i)
-         handle.arr[i].collectPages(locations, dataToRead, itemsToRead, pagesToRead);
+         handle.arr[i].collectPages(locations, dataToRead, itemsToRead, pagesToRead, emin, emax, elist);
 
       return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
          const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
                unzipPromises = blobs.map((blob, idx) => itemsToRead[idx].unzipBlob(blob, locations, pagesToRead[idx]));
          return Promise.all(unzipPromises);
       }).then(unzipBlobs => {
-         unzipBlobs.map((rawblob, idx) => itemsToRead[idx].reconstructBlob(rawblob));
+         unzipBlobs.map((rawblob, idx) => itemsToRead[idx].reconstructBlob(rawblob, pagesToRead[idx]));
 
          for (let indx = 0; indx < handle.arr.length; ++indx) {
             handle.arr[indx].init_o();
@@ -1437,6 +1475,14 @@ async function rntupleProcess(rntuple, selector, args) {
       handle.process_min = handle.firstentry;
       handle.process_max = handle.lastentry;
 
+      if (args.elist) {
+         args.firstentry = args.elist.at(0);
+         args.numentries = args.elist.at(-1) - args.elist.at(0) + 1;
+         handle.process_entries = args.elist;
+         handle.process_entries_indx = 0;
+         handle.process_arrays = false; // do not use arrays process for selected entries
+      }
+
       if (Number.isInteger(args.firstentry) && (args.firstentry > handle.firstentry) && (args.firstentry < handle.lastentry))
          handle.process_min = args.firstentry;
 
@@ -1444,7 +1490,6 @@ async function rntupleProcess(rntuple, selector, args) {
          handle.process_max = Math.min(handle.process_max, handle.process_min + args.numentries);
 
       // first check from which cluster one should start
-
       for (let indx = 0, emin = 0; indx < rntuple.builder.clusterSummaries.length; ++indx) {
          const summary = rntuple.builder.clusterSummaries[indx],
                emax = emin + summary.numEntries;
