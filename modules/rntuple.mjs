@@ -1233,7 +1233,7 @@ class ReaderItem {
 
 }
 
-async function rntupleProcess(rntuple, selector, args) {
+async function rntupleProcess(rntuple, selector, args = {}) {
    const handle = {
       rntuple, // keep rntuple reference
       file: rntuple.$file, // keep file reference
