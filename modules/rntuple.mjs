@@ -1110,6 +1110,7 @@ class ReaderItem {
 
    init_o() {
       this.o = 0;
+      this.o2 = 0; // for bit count
       this.view = this.views.shift();
       this.view_len = this.view.byteLength;
    }
@@ -1129,7 +1130,12 @@ class ReaderItem {
    }
 
    shift(entries) {
-      this.shift_o(this.sz * entries);
+      if (this.sz)
+         this.shift_o(this.sz * entries);
+      else {
+         while (entries-- > 0)
+            this.func({});
+      }
    }
 
    assignReadFunc() {
@@ -1137,12 +1143,13 @@ class ReaderItem {
          case ENTupleColumnType.kBit: {
             this.simple = false;
             this.func = function(obj) {
-               console.log('bit reading not properly implemented');
-               obj[this.name] = false;
-               this.o++;
-            };
-            this.shift = function() {
-               console.log('bit shift not implemented');
+               if (this.o2 === 0)
+                  this.byte = this.view.getUint8(this.o);
+               obj[this.name] = ((this.byte >>> this.o2++) & 1) === 1;
+               if (this.o2 === 8) {
+                  this.o2 = 0;
+                  this.shift_o(1);
+               }
             };
             break;
          }
