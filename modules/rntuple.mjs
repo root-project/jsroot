@@ -1317,20 +1317,15 @@ class ReaderItem {
       let view;
 
       // Handle split index types
-      if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64) {
-         console.log(this.name, 'split first');
+      if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64)
          view = new DataView(DecodeDeltaIndex(data.blob, data.coltype).blob.buffer);
       // Handle Split Signed Int types
-      } else if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
-         console.log(this.name, 'split second');
+      else if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64)
          view = new DataView(decodeZigzag(data.blob, data.coltype).blob.buffer);
-      } else if (data.blob instanceof DataView) {
-         console.log(this.name, 'get data as DataView');
+      else if (data.blob instanceof DataView)
          view = data.blob;
-      } else {
-         console.log(this.name, 'get data as buffer');
+      else
          view = new DataView(data.blob);
-      }
 
       this.views.push(view);
    }
