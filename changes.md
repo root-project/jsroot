@@ -5,7 +5,7 @@
 2. Fix - better detect default ranges in `TGraph` histogram
 3. Fix - convert BigInt before `RNtuple` drawing
 4. Fix - pages and clusters processing in `RNtuple` #390
-5. Fix - extra row for legend header
+5. Fix - extra row for legend header, proper horizontal allign https://github.com/root-project/root/issues/21173
 
 
 ## Changes in 7.10.1
