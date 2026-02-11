@@ -969,17 +969,19 @@ class TPavePainter extends ObjectPainter {
                    .call(painter.lineatt.func);
             }
 
-            let pos_x = tpos_x;
+            let pos_x = tpos_x, arg_width = Math.round(column_pos[icol + 1] - pos_x);
             if (isStr(lopt) && (lopt.toLowerCase() !== 'h'))
                any_opt = true;
-            else if (!any_opt)
-               pos_x = x0;
+            else if (!any_opt) {
+               pos_x = padding_x;
+               arg_width = w - 2 * padding_x;
+            }
 
             if (entry.fLabel) {
                const textatt = this.createAttText({ attr: entry, std: false, attr_alt: legend }),
                      arg = {
                         draw_g: this.getG(), align: textatt.align,
-                        x: pos_x, width: Math.round(column_pos[icol + 1] - pos_x),
+                        x: pos_x, width: arg_width,
                         y: y0, height: Math.round(row_height),
                         scale: (custom_textg && !entry.fTextSize) || !legend.fTextSize,
                         text: entry.fLabel, color: textatt.color
