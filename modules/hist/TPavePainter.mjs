@@ -773,7 +773,7 @@ class TPavePainter extends ObjectPainter {
             nlines = legend.fPrimitives.arr.length,
             ncols = Math.max(1, legend.fNColumns);
       let nrows = Math.round(nlines / ncols),
-          any_text = false,
+          any_text = false, has_header = false,
           custom_textg = false; // each text entry has own attributes
 
       if (nrows * ncols < nlines)
@@ -783,6 +783,8 @@ class TPavePainter extends ObjectPainter {
 
       for (let ii = 0; ii < nlines; ++ii) {
          const entry = legend.fPrimitives.arr[ii];
+         if ((ii === 0) && (entry.fOption === 'h'))
+            has_header = true;
          if (isEmpty(entry)) {
             if (ncols === 1)
                nrows--;
@@ -793,6 +795,9 @@ class TPavePainter extends ObjectPainter {
                custom_textg = true;
          }
       }
+
+      if (has_header && (ncols > 1) && ((nrows - 1) * ncols < nlines - 1))
+         nrows++;
 
       if (nrows < 1)
          nrows = 1;
@@ -856,8 +861,10 @@ class TPavePainter extends ObjectPainter {
 
             if (ncols === 1)
                ++i;
-            else
+            else if (!has_header || ii === 0)
                i = ii;
+            else
+               i = ii - 1 + ncols;
 
             const lopt = entry.fOption.toLowerCase(),
                   icol = i % ncols, irow = (i - icol) / ncols,
