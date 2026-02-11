@@ -13,9 +13,14 @@
 1. Introduce `settings.ServerTimeout` global timeout for THttpServer operations
 1. Let set custom color palette with `setColorPalette` function
 1. Fix - paint frame border mode/size from TCanvas
+
+
+## Changes in 7.10.2
 1. Fix - correctly process `TLeafB` arrays in tree draw #384
-1. Fix - convert BigInt before `RNtuple` drawing
-1. Fix - pages and clusters processing in `RNtuple` #390
+2. Fix - better detect default ranges in `TGraph` histogram
+3. Fix - convert BigInt before `RNtuple` drawing
+4. Fix - pages and clusters processing in `RNtuple` #390
+5. Fix - extra row for legend header, proper horizontal align https://github.com/root-project/root/issues/21173
 
 
 ## Changes in 7.10.1
