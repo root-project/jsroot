@@ -966,11 +966,13 @@ class ReaderItem {
       this.page = -1; // current page for the reading
       this.name = name;
       this.sz = 0;
+      this.simple = true;
 
       // special handling of split types
       if ((this.coltype >= ENTupleColumnType.kSplitInt16) && (this.coltype <= ENTupleColumnType.kSplitIndex64)) {
          this.splittype = this.coltype;
          this.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
+         this.simple = false;
       }
    }
 
@@ -1010,8 +1012,13 @@ class ReaderItem {
       }
    }
 
-   /** @summary Simple column which fixed element size */
-   is_simple() { return this.sz > 0; }
+   /** @summary Simple column with fixed element size - no vectors, no strings */
+   is_simple() { return this.sz > 0 && this.simple; }
+
+   set_simple(flag) {
+      this.simple = flag;
+      this.item1?.set_simple(flag);
+   }
 
    assignReadFunc() {
       switch (this.coltype) {
@@ -1123,6 +1130,9 @@ class ReaderItem {
       this.off0 = 0;
       this.$tgt = {};
 
+      this.simple = false;
+      // for plain string one can read offsets
+
       item1.func0 = item1.func;
       item1.shift0 = item1.shift;
 
@@ -1151,40 +1161,43 @@ class ReaderItem {
       };
    }
 
-   /** @summary implement reading of std::vector where item1 provides elements numbers */
-   assignVectorReader(item1) {
-      this.item1 = item1;
-      this.off0 = 0;
-      this.$tgt = {};
+   /** @summary implement reading of std::vector where itemv provides element reading */
+   assignVectorReader(itemv) {
+      this.itemv = itemv;
+      this.offv0 = 0;
 
-      item1.func0 = item1.func;
-      item1.shift0 = item1.shift;
+      itemv.funcv = itemv.func;
+      itemv.shiftv = itemv.shift;
       // assign noop
-      item1.func = item1.shift = () => {};
+      itemv.func = itemv.shift = () => {};
+
+      itemv.set_simple(false);
 
       // remember own read function - they need to be used
-      this.func0 = this.func;
-      this.shift0 = this.shift;
+      this.funcn = this.func;
+      this.shiftn = this.shift;
 
       this.func = function(tgtobj) {
-         this.item1.func0(this.$tgt);
-         const off = Number(this.$tgt[this.name]);
-         let len = off - this.off0;
          const arr = [], tmp = {};
+         this.funcn(tmp);
+         const offv = Number(tmp[this.name]);
+         let len = offv - this.offv0;
          while (len-- > 0) {
-            this.func0(tmp);
+            this.itemv.funcv(tmp);
             arr.push(tmp[this.name]);
          }
          tgtobj[this.name] = arr;
-         this.off0 = off;
+         this.offv0 = offv;
       };
 
       this.shift = function(entries) {
          if (entries > 0) {
-            this.item1.shift0(entries - 1);
-            this.item1.func0(this.$tgt);
-            this.off0 = Number(this.$tgt[this.name]);
-            this.shift0(this.off0);
+            const tmp = {};
+            this.shiftn(entries - 1);
+            this.funcn(tmp);
+            this.offv0 = Number(tmp[this.name]);
+            console.log('shift value by entries', this.offv0);
+            this.itemv.shiftv(this.offv0);
          }
       };
    }
@@ -1365,17 +1378,16 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       handle.arr.push(item);
 
       if ((columns.length === 2) && (field.typeName === 'std::string')) {
-         const item2 = new ReaderItem(columns[1], tgtname);
-         item2.assignStringReader(item);
-         handle.arr.push(item2);
-         item = item2; // second item performs complete reading of the string
+         const items = new ReaderItem(columns[1], tgtname);
+         items.assignStringReader(item);
+         handle.arr.push(items);
+         item = items; // second item performs complete reading of the string
       }
 
       const childs = rntuple.builder.findChildFields(field);
       if ((childs.length === 1) && (field.typeName.indexOf('std::vector') === 0)) {
-         const item2 = addFieldReading(childs[0], tgtname);
-         item2.assignVectorReader(item);
-         item = item2; // second item makes actual reading of vector
+         const itemv = addFieldReading(childs[0], tgtname);
+         item.assignVectorReader(itemv);
       }
 
       return item;
