@@ -899,6 +899,10 @@ class TDrawSelector extends TSelector {
             case 'dump':
                args.dump = true;
                break;
+            case 'dumpall':
+               args.dump = true;
+               args.numentries = this.getNumEntries(tree);
+               break;
             case 'staged':
                args.staged = true;
                break;
@@ -945,7 +949,10 @@ class TDrawSelector extends TSelector {
          }
          if (harg === 'dump')
             args.dump = true;
-         else if (harg === 'elist')
+         else if (harg === 'dumpall') {
+            args.dump = true;
+            args.numentries = this.getNumEntries(tree);
+         } else if (harg === 'elist')
             args.dump_entries = true;
          else if (harg.indexOf('Graph') === 0)
             args.graph = true;
