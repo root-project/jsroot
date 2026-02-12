@@ -1128,7 +1128,7 @@ class TDrawSelector extends TSelector {
          this.leaf = args.leaf;
 
          // branch object remains, therefore we need to copy fields to see them all
-         this.copy_fields = ((args.branch.fLeaves?.arr.length > 1) || args.branch.fBranches?.arr.length) && !args.leaf;
+         this.copy_fields = args.copy_fields ?? (((args.branch.fLeaves?.arr.length > 1) || args.branch.fBranches?.arr.length) && !args.leaf);
 
          this.addBranch(branch, 'br0', args.direct_branch); // add branch
 
