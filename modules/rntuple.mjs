@@ -1122,7 +1122,7 @@ class ReaderItem {
    }
 
    /** @summary identify if this item used as offset for std::string or similar */
-   is_offset_item() { return this.item1; }
+   is_offset_item() { return (this.func0 && this.shift0) || (this.shiftn && this.funcn); }
 
    /** @summary implements reading of std::string where item1 provides offsets */
    assignStringReader(item1) {
@@ -1171,6 +1171,7 @@ class ReaderItem {
       // assign noop
       itemv.func = itemv.shift = () => {};
 
+      // item itself can remain simple
       itemv.set_simple(false);
 
       // remember own read function - they need to be used
@@ -1196,7 +1197,6 @@ class ReaderItem {
             this.shiftn(entries - 1);
             this.funcn(tmp);
             this.offv0 = Number(tmp[this.name]);
-            console.log('shift value by entries', this.offv0);
             this.itemv.shiftv(this.offv0);
          }
       };
@@ -1211,13 +1211,13 @@ class ReaderItem {
       for (let p = 0; p < pages.length; ++p) {
          const page = pages[p],
                e1 = e0 + Number(page.numElements),
-               margin = this.is_offset_item() ? 1 : 0; // offset for previous entry has to be read as well
-
+               margin = this.is_offset_item() ? 1 : 0, // offset for previous entry has to be read as well
+               is_inside = (e, beg, end) => (e >= beg) && (e < end + margin);
          let is_entries_inside = false;
          if (elist?.length)
-            elist.forEach(e => { is_entries_inside ||= (e >= e0) && (e - margin < e1); });
+            elist.forEach(e => { is_entries_inside ||= is_inside(e, e0, e1); });
          else
-            is_entries_inside = ((e0 >= emin - margin) && (e0 < emax)) || ((e1 > emin - margin) && (e1 <= emax));
+            is_entries_inside = is_inside(e0, emin, emax) || is_inside(e1, emin, emax) || is_inside(emin, e0, e1) || is_inside(emax, e0, e1);
 
          if (!this.is_simple() || is_entries_inside) {
             itemsToRead.push(this);
