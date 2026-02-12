@@ -901,16 +901,6 @@ async function readHeaderFooter(tuple) {
          tuple.builder.deserializeHeader(header_blob);
          tuple.builder.deserializeFooter(footer_blob);
 
-         // Build fieldToColumns mapping
-         tuple.fieldToColumns = {};
-         for (const colDesc of tuple.builder.columnDescriptors) {
-            const fieldDesc = tuple.builder.fieldDescriptors[colDesc.fieldId],
-                  fieldName = fieldDesc.fieldName;
-            if (!tuple.fieldToColumns[fieldName])
-               tuple.fieldToColumns[fieldName] = [];
-            tuple.fieldToColumns[fieldName].push(colDesc);
-         }
-
          // Deserialize Page List
          const group = tuple.builder.clusterGroups?.[0];
          if (!group || !group.pageListLocator)
@@ -1323,7 +1313,6 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          if (!name)
             throw new Error(`Not able to extract name for field ${i}`);
 
-         // TODO: fieldToColumns can be out out
          const columns = rntuple.builder.findColumns(name);
          if (!columns?.length)
             throw new Error(`No columns found for field '${name}' in RNTuple`);
