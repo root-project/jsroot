@@ -852,8 +852,8 @@ class RNTupleDescriptorBuilder {
    }
 
    /** @summary Return array of columns for specified field */
-   findColumns(name) {
-      const res = [], field = this.findField(name);
+   findColumns(field) {
+      const res = [];
       if (!field)
          return res;
       for (const colDesc of this.columnDescriptors) {
@@ -1304,29 +1304,40 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       });
    }
 
+   function addFieldReading(field, tgtname) {
+      const columns = rntuple.builder.findColumns(field);
+      if (!columns?.length)
+         throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
+
+      const item = new ReaderItem(columns[0], tgtname);
+      item.assignReadFunc();
+      handle.arr.push(item);
+
+      if ((columns.length === 2) && (field.typeName === 'std::string')) {
+         const item2 = new ReaderItem(columns[1], tgtname);
+         item2.assignStringReader(item);
+         handle.arr.push(item2);
+         return item2; // second item performs complete reading of the string
+      }
+
+      return item;
+   }
+
    return readHeaderFooter(rntuple).then(res => {
       if (!res)
          throw new Error('Not able to read header for the RNtuple');
 
       for (let i = 0; i < selector.numBranches(); ++i) {
-         const name = getSelectorFieldName(selector, i);
+         const name = getSelectorFieldName(selector, i),
+               tgtname = selector.nameOfBranch(i);
          if (!name)
             throw new Error(`Not able to extract name for field ${i}`);
 
-         const columns = rntuple.builder.findColumns(name);
-         if (!columns?.length)
-            throw new Error(`No columns found for field '${name}' in RNTuple`);
+         const field = rntuple.builder.findField(name);
+         if (!field)
+            throw new Error(`Field ${name} not found`);
 
-         const tgtname = selector.nameOfBranch(i),
-               item = new ReaderItem(columns[0], tgtname);
-         item.assignReadFunc();
-         handle.arr.push(item);
-
-         if (columns.length === 2) {
-            const item2 = new ReaderItem(columns[1], tgtname);
-            item2.assignStringReader(item);
-            handle.arr.push(item2);
-         }
+         addFieldReading(field, tgtname);
       }
 
       // calculate number of entries
