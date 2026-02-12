@@ -2,7 +2,7 @@
 
 
 ## Changes in dev
-1. Support std::vector in `RNtuple`
+1. Support `std::vector<>` and `std::vector<std::vector<>>` in `RNtuple` for numeric, string and bool as values
 1. Resort order of ranges in http request, fixing several long-standing problems #374
 1. Implement for `TPie` 3d, text, title drawing including interactivity
 1. Implement `TCanvas` support in `build3d` function #373
