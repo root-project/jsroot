@@ -413,7 +413,6 @@ class RNTupleDescriptorBuilder {
       this.extraTypeInfo = (this.extraTypeInfo || []).concat(newExtra);
    }
 
-
    _readFeatureFlags(reader) {
       this.featureFlags = [];
       while (true) {
@@ -541,6 +540,7 @@ class RNTupleDescriptorBuilder {
       reader.seek(Number(startOffset - columnListSize));
       return columnDescriptors;
    }
+
    _readAliasColumn(reader) {
       const startOffset = BigInt(reader.offset),
             aliasColumnListSize = reader.readS64(),
@@ -563,6 +563,7 @@ class RNTupleDescriptorBuilder {
       reader.seek(Number(startOffset - aliasColumnListSize));
       return aliasColumns;
    }
+
    _readExtraTypeInformation(reader) {
       const startOffset = BigInt(reader.offset),
             extraTypeInfoListSize = reader.readS64(),
@@ -588,6 +589,7 @@ class RNTupleDescriptorBuilder {
       reader.seek(Number(startOffset - extraTypeInfoListSize));
       return extraTypeInfo;
    }
+
    _readClusterGroups(reader) {
       const startOffset = BigInt(reader.offset),
             clusterGroupListSize = reader.readS64(),
@@ -637,6 +639,7 @@ class RNTupleDescriptorBuilder {
          offset
       };
    }
+
    deserializePageList(page_list_blob) {
       if (!page_list_blob)
          throw new Error('deserializePageList: received an invalid or empty page list blob');
@@ -840,6 +843,26 @@ class RNTupleDescriptorBuilder {
       return values;
    }
 
+   findField(name) {
+      for (let n = 0; n < this.fieldDescriptors.length; ++n) {
+         const field = this.fieldDescriptors[n];
+         if (field.fieldName === name)
+            return field;
+      }
+   }
+
+   /** @summary Return array of columns for specified field */
+   findColumns(name) {
+      const res = [], field = this.findField(name);
+      if (!field)
+         return res;
+      for (const colDesc of this.columnDescriptors) {
+         if (this.fieldDescriptors[colDesc.fieldId] === field)
+            res.push(colDesc);
+      }
+      return res;
+   }
+
 } // class RNTupleDescriptorBuilder
 
 
@@ -923,38 +946,6 @@ async function readHeaderFooter(tuple) {
    });
 }
 
-function readEntry(rntuple, fieldName, clusterIndex, entryIndex) {
-   const builder = rntuple.builder,
-         field = builder.fieldDescriptors.find(f => f.fieldName === fieldName),
-         columns = rntuple.fieldToColumns[fieldName];
-
-   if (!field)
-      throw new Error(`No descriptor for field ${fieldName}`);
-   if (!columns)
-      throw new Error(`No columns field ${fieldName}`);
-
-
-   const pages = builder.pageLocations[clusterIndex]?.[columns[0].index]?.pages;
-   if (!pages)
-      throw new Error(`No pages found ${fieldName}`);
-
-   let pageid = 0;
-   while ((pageid < pages.length - 1) && (entryIndex >= Number(pages[pageid].numElements))) {
-      entryIndex -= Number(pages[pageid].numElements);
-      pageid++;
-   }
-
-   if (field.typeName === 'std::string') {
-      // string extracted from two columns
-      const offsets = rntuple._clusterData[columns[0].index][pageid],
-            payload = rntuple._clusterData[columns[1].index][pageid],
-            start = entryIndex === 0 ? 0 : Number(offsets[entryIndex - 1]),
-            end = Number(offsets[entryIndex]);
-      return payload.slice(start, end).join(''); // Convert to string
-   }
-   const values = rntuple._clusterData[columns[0].index];
-   return values[pageid][entryIndex];
-}
 
 /** @summary Return field name for specified branch index
  * @desc API let use field name in selector or field object itself */
@@ -1333,8 +1324,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             throw new Error(`Not able to extract name for field ${i}`);
 
          // TODO: fieldToColumns can be out out
-         const columns = rntuple.fieldToColumns[name];
-         if (!columns)
+         const columns = rntuple.builder.findColumns(name);
+         if (!columns?.length)
             throw new Error(`No columns found for field '${name}' in RNTuple`);
 
          const tgtname = selector.nameOfBranch(i),
@@ -1409,11 +1400,7 @@ class TDrawSelectorTuple extends TDrawSelector {
 
    /** @summary Search for field in tuple
      * @desc TODO: Can be more complex when name includes extra parts referencing member or collection size or more  */
-   findBranch(tuple, name) {
-      return tuple.builder?.fieldDescriptors.find(field => {
-         return field.fieldName === name;
-      });
-   }
+   findBranch(tuple, name) { return tuple.builder?.findField(name); }
 
    /** @summary Returns true if field can be used as array */
    isArrayBranch(/* tuple, br */) { return false; }
@@ -1481,4 +1468,4 @@ async function tupleHierarchy(tuple_node, tuple) {
    });
 }
 
-export { tupleHierarchy, readHeaderFooter, RBufferReader, rntupleProcess, readEntry, rntupleDraw };
+export { tupleHierarchy, readHeaderFooter, RBufferReader, rntupleProcess, rntupleDraw };
