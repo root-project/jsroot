@@ -851,6 +851,17 @@ class RNTupleDescriptorBuilder {
       }
    }
 
+   /** @summary Return all childs of specified field */
+   findChildFields(field) {
+      const indx = this.fieldDescriptors.indexOf(field), res = [];
+      for (let n = 0; n < this.fieldDescriptors.length; ++n) {
+         const fld = this.fieldDescriptors[n];
+         if ((fld !== field) && (fld.parentFieldId === indx))
+            res.push(fld);
+      }
+      return res;
+   }
+
    /** @summary Return array of columns for specified field */
    findColumns(field) {
       const res = [];
@@ -862,6 +873,7 @@ class RNTupleDescriptorBuilder {
       }
       return res;
    }
+
 
 } // class RNTupleDescriptorBuilder
 
@@ -1105,6 +1117,7 @@ class ReaderItem {
    /** @summary identify if this item used as offset for std::string or similar */
    is_offset_item() { return this.item1; }
 
+   /** @summary implements reading of std::string where item1 provides offsets */
    assignStringReader(item1) {
       this.item1 = item1;
       this.off0 = 0;
@@ -1130,10 +1143,48 @@ class ReaderItem {
 
       this.shift = function(entries) {
          if (entries > 0) {
-            this.item1.shift0(entries);
+            this.item1.shift0(entries - 1);
             this.item1.func0(this.$tgt);
             this.off0 = Number(this.$tgt[this.name]);
             this.shift_o(this.off0);
+         }
+      };
+   }
+
+   /** @summary implement reading of std::vector where item1 provides elements numbers */
+   assignVectorReader(item1) {
+      this.item1 = item1;
+      this.off0 = 0;
+      this.$tgt = {};
+
+      item1.func0 = item1.func;
+      item1.shift0 = item1.shift;
+      // assign noop
+      item1.func = item1.shift = () => {};
+
+      // remember own read function - they need to be used
+      this.func0 = this.func;
+      this.shift0 = this.shift;
+
+      this.func = function(tgtobj) {
+         this.item1.func0(this.$tgt);
+         const off = Number(this.$tgt[this.name]);
+         let len = off - this.off0;
+         const arr = [], tmp = {};
+         while (len-- > 0) {
+            this.func0(tmp);
+            arr.push(tmp[this.name]);
+         }
+         tgtobj[this.name] = arr;
+         this.off0 = off;
+      };
+
+      this.shift = function(entries) {
+         if (entries > 0) {
+            this.item1.shift0(entries - 1);
+            this.item1.func0(this.$tgt);
+            this.off0 = Number(this.$tgt[this.name]);
+            this.shift0(this.off0);
          }
       };
    }
@@ -1309,7 +1360,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       if (!columns?.length)
          throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
 
-      const item = new ReaderItem(columns[0], tgtname);
+      let item = new ReaderItem(columns[0], tgtname);
       item.assignReadFunc();
       handle.arr.push(item);
 
@@ -1317,7 +1368,14 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          const item2 = new ReaderItem(columns[1], tgtname);
          item2.assignStringReader(item);
          handle.arr.push(item2);
-         return item2; // second item performs complete reading of the string
+         item = item2; // second item performs complete reading of the string
+      }
+
+      const childs = rntuple.builder.findChildFields(field);
+      if ((childs.length === 1) && (field.typeName.indexOf('std::vector') === 0)) {
+         const item2 = addFieldReading(childs[0], tgtname);
+         item2.assignVectorReader(item);
+         item = item2; // second item makes actual reading of vector
       }
 
       return item;
