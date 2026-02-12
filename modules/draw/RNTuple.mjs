@@ -17,6 +17,7 @@ async function drawRNTuple(dom, obj, opt) {
       if (isStr(opt) && opt.indexOf('dump') === 0) {
          args.expr += '>>' + opt;
          args.branch = obj.$field;
+         args.copy_fields = false; // no need to copy fields, reading is simple
       } else if (opt)
          args.expr += opt;
    } else {
