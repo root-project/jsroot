@@ -10,13 +10,14 @@ async function drawRNTuple(dom, obj, opt) {
    const args = {};
    let tuple;
 
-   if (obj?.$tuple) {
+   if (obj?.$tuple && obj.$field) {
       // case of fictional ROOT::RNTupleField
       tuple = obj.$tuple;
       args.expr = obj._name;
-      if (isStr(opt) && opt.indexOf('dump') === 0)
+      if (isStr(opt) && opt.indexOf('dump') === 0) {
          args.expr += '>>' + opt;
-      else if (opt)
+         args.branch = obj.$field;
+      } else if (opt)
          args.expr += opt;
    } else {
       tuple = obj;
