@@ -1460,7 +1460,9 @@ async function tupleHierarchy(tuple_node, tuple) {
       if (!res)
          return res;
 
-      tuple.builder?.fieldDescriptors.forEach(field => {
+      tuple.builder?.fieldDescriptors.forEach((field, indx) => {
+         if (field.parentFieldId !== indx)
+            return;
          const item = {
             _name: field.fieldName,
             _typename: 'ROOT::RNTupleField', // pseudo class name, used in draw.mjs
