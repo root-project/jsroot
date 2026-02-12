@@ -1,13 +1,13 @@
 import { version, openFile, TSelector } from 'jsroot';
 
-import { readHeaderFooter, readEntry, rntupleProcess } from 'jsroot/rntuple';
+import { readHeaderFooter, rntupleProcess } from 'jsroot/rntuple';
 
 console.log(`JSROOT version ${version}`);
 
 
 let filename = './rntuple_test.root';
 if (process?.argv && process.argv[2])
-  filename = process.argv[2];
+   filename = process.argv[2];
 
 const file = await openFile(filename),
       rntuple = await file.readObject('Data');
@@ -17,47 +17,47 @@ await readHeaderFooter(rntuple);
 console.log('Performing Validations and debugging info');
 
 if (rntuple.builder?.name !== 'Data')
-  console.error('FAILURE: name differs from expected');
+   console.error('FAILURE: name differs from expected');
 else
-  console.log('OK: name is', rntuple.builder?.name);
+   console.log('OK: name is', rntuple.builder?.name);
 
 
 if (rntuple.builder?.description !== '')
-  console.error('FAILURE: description should be the empty string');
+   console.error('FAILURE: description should be the empty string');
 else
-  console.log('OK: description is empty string');
+   console.log('OK: description is empty string');
 
 if (rntuple.builder?.xxhash3 === undefined || rntuple.builder.xxhash3 === null)
-  console.warn('WARNING: xxhash3 is missing');
+   console.warn('WARNING: xxhash3 is missing');
 else
-  console.log('OK: xxhash3 is', '0x' + rntuple.builder.xxhash3.toString(16).padStart(16, '0'));
+   console.log('OK: xxhash3 is', '0x' + rntuple.builder.xxhash3.toString(16).padStart(16, '0'));
 
 // Fields Check
 
 if (!rntuple.builder?.fieldDescriptors?.length)
-  console.error('FAILURE: No fields deserialized');
+   console.error('FAILURE: No fields deserialized');
 else {
-  console.log(`OK: ${rntuple.builder.fieldDescriptors.length} field(s) deserialized`);
-  for (let i = 0; i < rntuple.builder.fieldDescriptors.length; ++i) {
-    const field = rntuple.builder.fieldDescriptors[i];
-    if (!field.fieldName || !field.typeName)
-      console.error(`FAILURE: Field ${i} is missing name or type`);
-    else
-      console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
-    if (i === 0) {
-      if (field.fieldName !== 'IntField' || field.typeName !== 'std::int32_t')
-        console.error(`FAILURE: First field should be 'IntField (std::int32_t)' but got '${field.fieldName} (${field.typeName})'`);
-    } else if (i === rntuple.builder.fieldDescriptors.length - 1){
-      if (field.fieldName !== 'StringField' || field.typeName !== 'std::string')
-        console.error(`FAILURE: Last field should be 'StringField (std::string)' but got '${field.fieldName} (${field.typeName})'`);
+   console.log(`OK: ${rntuple.builder.fieldDescriptors.length} field(s) deserialized`);
+   for (let i = 0; i < rntuple.builder.fieldDescriptors.length; ++i) {
+      const field = rntuple.builder.fieldDescriptors[i];
+      if (!field.fieldName || !field.typeName)
+        console.error(`FAILURE: Field ${i} is missing name or type`);
+      else
+        console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
+      if (i === 0) {
+        if (field.fieldName !== 'IntField' || field.typeName !== 'std::int32_t')
+          console.error(`FAILURE: First field should be 'IntField (std::int32_t)' but got '${field.fieldName} (${field.typeName})'`);
+      } else if (i === rntuple.builder.fieldDescriptors.length - 1) {
+        if (field.fieldName !== 'StringField' || field.typeName !== 'std::string')
+          console.error(`FAILURE: Last field should be 'StringField (std::string)' but got '${field.fieldName} (${field.typeName})'`);
+      }
     }
-  }
 }
 
 // Column Check
 
 if (!rntuple.builder?.columnDescriptors?.length)
-  console.error('FAILURE: No columns deserialized');
+   console.error('FAILURE: No columns deserialized');
 else {
   console.log(`OK: ${rntuple.builder.columnDescriptors.length} column(s) deserialized`);
   for (let i = 0; i < rntuple.builder.columnDescriptors.length; ++i) {
@@ -69,7 +69,7 @@ else {
     if (i === 0) {
       if (column.fieldId !== 0)
         console.error('FAILURE: First column should be for fieldId 0 (IntField)');
-    } else if (i === rntuple.builder.columnDescriptors.length - 1){
+    } else if (i === rntuple.builder.columnDescriptors.length - 1) {
       if (column.fieldId !== 3)
         console.error('FAILURE: Last column should be for fieldId 3 (StringField)');
     }
@@ -83,44 +83,43 @@ for (const f of fields)
    selector.addBranch(f);
 
 selector.Begin = () => {
-  console.log('\nBegin processing to load cluster data...');
+   console.log('\nBegin processing to load cluster data...');
 };
-selector.Process = function() {};
-selector.Terminate = () => {
-  console.log('Finished dummy processing');
-};
-
-// Run rntupleProcess to ensure cluster is loaded
-await rntupleProcess(rntuple, selector);
 
 // Now validate entry data
 const EPSILON = 1e-10;
 
-for (let entryIndex = 0; entryIndex < 10; ++entryIndex) {
-  console.log(`\nChecking entry ${entryIndex}:`);
+selector.Process = function(entryIndex) {
+   console.log(`\nChecking entry ${entryIndex}:`);
 
-  const expected = {
-    IntField: entryIndex,
-    FloatField: entryIndex * entryIndex,
-    DoubleField: entryIndex * 0.5,
-    StringField: `entry_${entryIndex}`
-  };
+   const expected = {
+      IntField: entryIndex,
+      FloatField: entryIndex * entryIndex,
+      DoubleField: entryIndex * 0.5,
+      StringField: `entry_${entryIndex}`
+   };
 
-  for (const field of fields) {
-    try {
-      const value = readEntry(rntuple, field, entryIndex),
-            expectedValue = expected[field],
+   for (const field of fields) {
+      try {
+         const value = this.tgtobj[field],
+               expectedValue = expected[field],
+               pass = typeof expectedValue === 'number'
+                    ? Math.abs(value - expectedValue) < EPSILON
+                    : value === expectedValue;
 
-      pass = typeof value === 'number'
-        ? Math.abs(value - expectedValue) < EPSILON
-        : value === expectedValue;
+         if (!pass)
+            console.error(`FAILURE: ${field} at entry ${entryIndex} expected ${expectedValue}, got ${value}`);
+         else
+            console.log(`OK: ${field} at entry ${entryIndex} = ${value}`);
+      } catch (err) {
+         console.error(`ERROR: Failed to read ${field} at entry ${entryIndex}: ${err.message}`);
+      }
+   }
+};
 
-      if (!pass)
-        console.error(`FAILURE: ${field} at entry ${entryIndex} expected ${expectedValue}, got ${value}`);
-      else
-        console.log(`OK: ${field} at entry ${entryIndex} = ${value}`);
-    } catch (err) {
-      console.error(`ERROR: Failed to read ${field} at entry ${entryIndex}: ${err.message}`);
-    }
-  }
-}
+selector.Terminate = () => {
+   console.log('Finished processing');
+};
+
+// Run rntupleProcess to ensure cluster is loaded
+await rntupleProcess(rntuple, selector);
