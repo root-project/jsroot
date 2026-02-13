@@ -1208,31 +1208,29 @@ class ReaderItem {
    }
 
    /** @summary implement reading of std::pair where item1 reads first (key) element */
-   assignPairReader(item1, item2) {
-      this.item1 = item1;
-      this.item2 = item2;
+   assignPairReader(item_p1, item_p2) {
+      this.item_p1 = item_p1;
+      this.item_p2 = item_p2;
 
-      item1.func1 = item1.func;
-      item1.shift1 = item1.shift;
-      item2.func2 = item2.func;
-      item2.shift2 = item2.shift;
+      item_p1.func_p1 = item_p1.func;
+      item_p1.shift_p1 = item_p1.shift;
+      item_p2.func_p2 = item_p2.func;
+      item_p2.shift_p2 = item_p2.shift;
       // assign noop
-      item1.func = item1.shift = item2.func = item2.shift = () => {};
+      item_p1.func = item_p1.shift = item_p2.func = item_p2.shift = () => {};
 
       // remember own read function - they need to be used
       this.func = function(tgtobj) {
-         const tmp = {}, res = {};
-         this.item1.func1(tmp);
-         res.first = tmp[this.name];
-         this.item2.func2(tmp);
-         res.second = tmp[this.name];
+         const res = {};
+         this.item_p1.func_p1(res);
+         this.item_p2.func_p2(res);
          tgtobj[this.name] = res;
       };
 
       this.shift = function(entries) {
          if (entries > 0) {
-            this.item1.shift1(entries);
-            this.item2.shift2(entries);
+            this.item_p1.shift_p1(entries);
+            this.item_p2.shift_p2(entries);
          }
       };
    }
@@ -1413,8 +1411,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             childs = rntuple.builder.findChildFields(field);
       if (!columns?.length) {
          if ((childs.length === 2) && (field.typeName.indexOf('std::pair') === 0)) {
-            const item1 = addFieldReading(childs[0], tgtname),
-                  item2 = addFieldReading(childs[1], tgtname),
+            const item1 = addFieldReading(childs[0], 'first'),
+                  item2 = addFieldReading(childs[1], 'second'),
                   item = new ReaderItem(null, tgtname);
             handle.arr.push(item);
             item.assignPairReader(item1, item2);
