@@ -1166,8 +1166,8 @@ class ReaderItem {
       };
    }
 
-   /** @summary implement reading of std::vector where itemv provides element reading */
-   assignVectorReader(itemv) {
+   /** @summary implement reading of std collection where itemv provides element reading */
+   assignCollectionReader(itemv) {
       this.itemv = itemv;
       this.offv0 = 0;
 
@@ -1433,12 +1433,9 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          return items; // second item performs complete reading of the string
       }
 
-      if ((childs.length === 1) && (field.typeName.indexOf('std::vector') === 0)) {
+      if ((childs.length === 1) && (field.typeName.indexOf('std::vector') === 0 || field.typeName.indexOf('std::map') === 0)) {
          const itemv = addFieldReading(childs[0], tgtname);
-         item.assignVectorReader(itemv);
-      } else if ((childs.length === 1) && (field.typeName.indexOf('std::map') === 0)) {
-         const itemv = addFieldReading(childs[0], tgtname);
-         item.assignVectorReader(itemv);
+         item.assignCollectionReader(itemv);
       }
 
       return item;

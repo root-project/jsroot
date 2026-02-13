@@ -177,3 +177,5 @@ await rntupleProcess(rntuple, selector);
 
 if (any_error)
    console.error('FAILURE when verify file content');
+else
+   console.log('\nTest OK');
