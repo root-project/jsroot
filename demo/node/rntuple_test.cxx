@@ -9,12 +9,14 @@
 #include <array>
 #include <utility>
 #include <string>
+#include <variant>
 #include <map>
 
 #ifdef __ROOTCLING__
 #pragma link C++ class std::map<std::string,float>+;
 #pragma link C++ class std::map<int,double>+;
 #pragma link C++ class std::map<std::string,bool>+;
+#pragma link C++ class std::variant<std::string,int,bool>+;
 #endif
 
 
@@ -37,6 +39,7 @@ void rntuple_test()
    auto DoubleField = model->MakeField<double>("DoubleField");
    auto StringField = model->MakeField<std::string>("StringField");
    auto BoolField = model->MakeField<bool>("BoolField");
+   auto VariantField = model->MakeField<std::variant<std::string,int,bool>>("VariantField");
    auto ArrayInt = model->MakeField<std::array<int,5>>("ArrayInt");
    auto VectString   = model->MakeField<std::vector<std::string>>("VectString");
    auto VectInt   = model->MakeField<std::vector<int>>("VectInt");
@@ -61,7 +64,11 @@ void rntuple_test()
       *StringField = "entry_" + std::to_string(i);
       *BoolField = (i % 3 == 1);
       *ArrayInt = { i + 1, i + 2, i + 3, i + 4, i + 5 };
-
+      switch (i % 3) {
+         case 0: *VariantField = std::string("varint_") + std::to_string(i); break;
+         case 1: *VariantField = i; break;
+         case 2: *VariantField = (bool) (i % 2 == 0); break;
+      }
 
       VectString->clear();
       VectInt->clear();

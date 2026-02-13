@@ -79,7 +79,7 @@ else {
 // Setup selector to process all fields (so cluster gets loaded)
 const selector = new TSelector(),
       fields = ['IntField', 'FloatField', 'DoubleField', 'StringField', 'BoolField',
-                'ArrayInt', 'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool',
+                'ArrayInt', 'VariantField', 'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool',
                 'MapStringFloat', 'MapIntDouble', 'MapStringBool'];
 for (const f of fields)
    selector.addBranch(f);
@@ -125,6 +125,7 @@ selector.Process = function(entryIndex) {
       StringField: `entry_${entryIndex}`,
       BoolField: entryIndex % 3 === 1,
       ArrayInt: [entryIndex + 1, entryIndex + 2, entryIndex + 3, entryIndex + 4, entryIndex + 5],
+      VariantField: null,
       VectString: [],
       VectInt: [],
       VectBool: [],
@@ -134,6 +135,12 @@ selector.Process = function(entryIndex) {
       MapIntDouble: [],
       MapStringBool: []
    }, npx = (entryIndex + 5) % 7;
+
+   switch (entryIndex % 3) {
+      case 0: expectedValues.VariantField = `varint_${entryIndex}`; break;
+      case 1: expectedValues.VariantField = entryIndex; break;
+      case 2: expectedValues.VariantField = (entryIndex % 2 === 0); break;
+   }
 
    for (let j = 0; j < npx; ++j) {
       expectedValues.VectString.push(`str_${j}`);
