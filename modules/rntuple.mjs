@@ -1279,6 +1279,23 @@ class ReaderItem {
       };
    }
 
+   /** @summary assign all childs fields for std::variant reader */
+   assignTupleReader(items) {
+      this.items = items;
+      items.forEach(item => {
+         item.funcV = item.func;
+         item.func = item.shift = () => {};
+         item.set_simple(false);
+      });
+      this.set_simple(false);
+
+      this.func = function(tgtobj) {
+         const tuple = {};
+         this.items.forEach(item => item.funcV(tuple));
+         tgtobj[this.name] = tuple;
+      };
+   }
+
    /** @summary implement reading of std::pair where item1 reads first (key) element */
    assignPairReader(item_p1, item_p2) {
       this.item_p1 = item_p1;
@@ -1501,6 +1518,15 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             return item;
          }
 
+         if ((childs.length > 0) && (field.typeName.indexOf('std::tuple') === 0)) {
+            const items = [];
+            for (let i = 0; i < childs.length; ++i)
+               items.push(addFieldReading(childs[i], `_${i}`));
+            const item = new ReaderItem(null, tgtname);
+            handle.arr.push(item);
+            item.assignTupleReader(items);
+            return item;
+         }
 
          throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
       }
