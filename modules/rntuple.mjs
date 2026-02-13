@@ -1542,7 +1542,13 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          return items; // second item performs complete reading of the string
       }
 
-      if ((childs.length === 1) && (field.typeName.indexOf('std::vector') === 0 || field.typeName.indexOf('std::map') === 0)) {
+      let is_stl = false;
+      ['vector', 'map', 'unordered_map', 'multimap', 'unordered_multimap', 'set', 'unordered_set', 'multiset', 'unordered_multiset'].forEach(name => {
+         if (field.typeName.indexOf('std::' + name) === 0)
+            is_stl = true;
+      });
+
+      if ((childs.length === 1) && is_stl) {
          const itemv = addFieldReading(childs[0], tgtname);
          item.assignCollectionReader(itemv);
       } else if ((childs.length > 0) && (field.typeName.indexOf('std::variant') === 0)) {
