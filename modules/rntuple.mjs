@@ -278,6 +278,17 @@ function DecodeDeltaIndex(blob, coltype) {
    return { blob: result, coltype };
 }
 
+function DecodeSwitchIndex(src) {
+   let o = 0, prev = BigInt(0);
+   while (o < src.byteLength) {
+      const v = prev + src.getBigInt64(o, LITTLE_ENDIAN);
+      src.setBigInt64(o, prev, LITTLE_ENDIAN);
+      prev = v;
+      o += 12;
+   }
+   return src;
+}
+
 /**
  * @summary Decode a reconstructed signed integer buffer using ZigZag encoding
   */
@@ -1009,7 +1020,7 @@ class ReaderItem {
    }
 
    shift(entries) {
-      if (this.sz)
+      if (this.sz && this.simple)
          this.shift_o(this.sz * entries);
       else {
          while (entries-- > 0)
@@ -1069,6 +1080,16 @@ class ReaderItem {
                this.shift_o(8);
             };
             this.sz = 8;
+            break;
+         case ENTupleColumnType.kSwitch:
+            this.func = function(obj) {
+               // index not used in std::variant, may be in some other usecases
+               // obj[this.name] = Number(this.view.getBigInt64(this.o, LITTLE_ENDIAN));
+               this.shift_o(8); // skip value, not used yet
+               obj[this.name] = this.view.getInt32(this.o, LITTLE_ENDIAN);
+               this.shift_o(4);
+            };
+            this.sz = 12;
             break;
          case ENTupleColumnType.kInt32:
          case ENTupleColumnType.kIndex32:
@@ -1236,6 +1257,28 @@ class ReaderItem {
       };
    }
 
+   /** @summary assign all childs fields for std::variant reader */
+   assignVariantReader(items) {
+      this.items = items;
+      items.forEach(item => {
+         item.funcV = item.func;
+         item.func = item.shift = () => {};
+         item.set_simple(false);
+      });
+      this.set_simple(false);
+
+      this.funcV = this.func;
+      this.func = function(tgtobj) {
+         const tmp = {};
+         this.funcV(tmp);
+         const id = tmp[this.name];
+         if (id === 0)
+            tgtobj[this.name] = null; // set null
+         else if (Number.isInteger(id) && (id > 0) && (id <= this.items.length))
+            this.items[id - 1].funcV(tgtobj);
+      };
+   }
+
    /** @summary implement reading of std::pair where item1 reads first (key) element */
    assignPairReader(item_p1, item_p2) {
       this.item_p1 = item_p1;
@@ -1332,6 +1375,8 @@ class ReaderItem {
       // Handle split index types
       if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64)
          view = new DataView(DecodeDeltaIndex(data.blob, data.coltype).blob.buffer);
+      else if (originalColtype === ENTupleColumnType.kSwitch)
+         view = DecodeSwitchIndex(data.blob);
       // Handle Split Signed Int types
       else if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64)
          view = new DataView(decodeZigzag(data.blob, data.coltype).blob.buffer);
@@ -1474,6 +1519,11 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       if ((childs.length === 1) && (field.typeName.indexOf('std::vector') === 0 || field.typeName.indexOf('std::map') === 0)) {
          const itemv = addFieldReading(childs[0], tgtname);
          item.assignCollectionReader(itemv);
+      } else if ((childs.length > 0) && (field.typeName.indexOf('std::variant') === 0)) {
+         const items = [];
+         for (let i = 0; i < childs.length; ++i)
+            items.push(addFieldReading(childs[i], tgtname));
+         item.assignVariantReader(items);
       }
 
       return item;
