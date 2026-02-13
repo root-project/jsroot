@@ -10,6 +10,7 @@
 #include <utility>
 #include <string>
 #include <variant>
+#include <tuple>
 #include <map>
 
 #ifdef __ROOTCLING__
@@ -17,6 +18,7 @@
 #pragma link C++ class std::map<int,double>+;
 #pragma link C++ class std::map<std::string,bool>+;
 #pragma link C++ class std::variant<std::string,int,bool>+;
+#pragma link C++ class std::tuple<std::string,int,bool>+;
 #endif
 
 
@@ -40,6 +42,7 @@ void rntuple_test()
    auto StringField = model->MakeField<std::string>("StringField");
    auto BoolField = model->MakeField<bool>("BoolField");
    auto VariantField = model->MakeField<std::variant<std::string,int,bool>>("VariantField");
+   auto TupleField = model->MakeField<std::tuple<std::string,int,bool>>("TupleField");
    auto ArrayInt = model->MakeField<std::array<int,5>>("ArrayInt");
    auto VectString   = model->MakeField<std::vector<std::string>>("VectString");
    auto VectInt   = model->MakeField<std::vector<int>>("VectInt");
@@ -69,6 +72,8 @@ void rntuple_test()
          case 1: *VariantField = i; break;
          case 2: *VariantField = (bool) (i % 2 == 0); break;
       }
+
+      *TupleField = { std::string("tuple_") + std::to_string(i), i * 3, (i % 3 == 1) };
 
       VectString->clear();
       VectInt->clear();
