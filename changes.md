@@ -2,7 +2,13 @@
 
 
 ## Changes in dev
-1. Support std collections like `std::vector` and `std::map` in `RNtuple`
+1. Implement new data types in `RNtuple`
+   - `std::vector`
+   - `std::map`, `std::unordered_map`, `std::multimap`, `std::unordered_multimap` with `std::pair`
+   - `std::set`, `std::unordered_set`, `std::multiset`, `std::unordered_multiset`
+   - `std::array`
+   - `std::variant`
+   - `std::tuple`
 1. Resort order of ranges in http request, fixing several long-standing problems #374
 1. Implement for `TPie` 3d, text, title drawing including interactivity
 1. Implement `TCanvas` support in `build3d` function #373
