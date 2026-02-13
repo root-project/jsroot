@@ -48,8 +48,8 @@ else {
          if (field.fieldName !== 'IntField' || field.typeName !== 'std::int32_t')
             console.error(`FAILURE: First field should be 'IntField (std::int32_t)' but got '${field.fieldName} (${field.typeName})'`);
       } else if (i === rntuple.builder.fieldDescriptors.length - 1) {
-         if (field.fieldName !== 'StringField' || field.typeName !== 'std::string')
-            console.error(`FAILURE: Last field should be 'StringField (std::string)' but got '${field.fieldName} (${field.typeName})'`);
+         if (field.fieldName !== '_1' || field.typeName !== 'bool')
+            console.error(`FAILURE: Last field should be '_1 (bool)' but got '${field.fieldName} (${field.typeName})'`);
       }
    }
 }
@@ -68,10 +68,10 @@ else {
          console.log(`OK: Column ${i} fieldId: ${column.fieldId} `);
       if (i === 0) {
          if (column.fieldId !== 0)
-            console.error('FAILURE: First column should be for fieldId 0 (IntField)');
+            console.error('FAILURE: First column should be for fieldId 0');
       } else if (i === rntuple.builder.columnDescriptors.length - 1) {
-         if (column.fieldId !== 3)
-            console.error('FAILURE: Last column should be for fieldId 3 (StringField)');
+         if (column.fieldId !== 38)
+            console.error('FAILURE: Last column should be for fieldId 38');
       }
    }
 }
@@ -80,7 +80,7 @@ else {
 const selector = new TSelector(),
       fields = ['IntField', 'FloatField', 'DoubleField', 'StringField', 'BoolField',
                 'ArrayInt', 'VariantField', 'TupleField',
-                'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool',
+                'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool', 'MultisetField',
                 'MapStringFloat', 'MapIntDouble', 'MapStringBool'];
 for (const f of fields)
    selector.addBranch(f);
@@ -133,6 +133,7 @@ selector.Process = function(entryIndex) {
       VectBool: [],
       Vect2Float: [],
       Vect2Bool: [],
+      MultisetField: [],
       MapStringFloat: [],
       MapIntDouble: [],
       MapStringBool: []
@@ -148,6 +149,9 @@ selector.Process = function(entryIndex) {
       expectedValues.VectString.push(`str_${j}`);
       expectedValues.VectInt.push(-j);
       expectedValues.VectBool.push(j % 2 === 1);
+
+      expectedValues.MultisetField.push(`multiset_${j % 3}`);
+
       expectedValues.MapStringFloat.push({ first: `key_${j}`, second: j * 7 });
       expectedValues.MapIntDouble.push({ first: j * 11, second: j * 0.2 });
       expectedValues.MapStringBool.push({ first: `bool_${j}`, second: j % 3 === 0 });
@@ -160,6 +164,8 @@ selector.Process = function(entryIndex) {
       expectedValues.Vect2Float.push(vf);
       expectedValues.Vect2Bool.push(vb);
    }
+
+   expectedValues.MultisetField.sort();
 
    for (const field of fields) {
       try {

@@ -12,11 +12,13 @@
 #include <variant>
 #include <tuple>
 #include <map>
+#include <set>
 
 #ifdef __ROOTCLING__
 #pragma link C++ class std::map<std::string,float>+;
 #pragma link C++ class std::map<int,double>+;
 #pragma link C++ class std::map<std::string,bool>+;
+#pragma link C++ class std::multiset<std::string>+;
 #pragma link C++ class std::variant<std::string,int,bool>+;
 #pragma link C++ class std::tuple<std::string,int,bool>+;
 #endif
@@ -47,6 +49,7 @@ void rntuple_test()
    auto VectString   = model->MakeField<std::vector<std::string>>("VectString");
    auto VectInt   = model->MakeField<std::vector<int>>("VectInt");
    auto VectBool   = model->MakeField<std::vector<bool>>("VectBool");
+   auto MultisetField = model->MakeField<std::multiset<std::string>>("MultisetField");
    auto Vect2Float   = model->MakeField<std::vector<std::vector<float>>>("Vect2Float");
    auto Vect2Bool   = model->MakeField<std::vector<std::vector<bool>>>("Vect2Bool");
    auto MapStringFloat  = model->MakeField<std::map<std::string,float>>("MapStringFloat");
@@ -79,6 +82,8 @@ void rntuple_test()
       VectInt->clear();
       VectBool->clear();
 
+      MultisetField->clear();
+
       MapStringFloat->clear();
       MapIntDouble->clear();
       MapStringBool->clear();
@@ -95,6 +100,8 @@ void rntuple_test()
          MapStringFloat->emplace("key_" + std::to_string(j), j*7);
          MapIntDouble->emplace(j*11, j*0.2);
          MapStringBool->emplace("bool_" + std::to_string(j), j % 3 == 0);
+
+         MultisetField->insert("multiset_" + std::to_string(j % 3));
 
          int npy = 1 + i % 3;
          std::vector<float> vf;
