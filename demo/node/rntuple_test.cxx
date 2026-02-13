@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <array>
 #include <utility>
 #include <string>
 #include <map>
@@ -36,6 +37,7 @@ void rntuple_test()
    auto DoubleField = model->MakeField<double>("DoubleField");
    auto StringField = model->MakeField<std::string>("StringField");
    auto BoolField = model->MakeField<bool>("BoolField");
+   auto ArrayInt = model->MakeField<std::array<int,5>>("ArrayInt");
    auto VectString   = model->MakeField<std::vector<std::string>>("VectString");
    auto VectInt   = model->MakeField<std::vector<int>>("VectInt");
    auto VectBool   = model->MakeField<std::vector<bool>>("VectBool");
@@ -43,7 +45,9 @@ void rntuple_test()
    auto Vect2Bool   = model->MakeField<std::vector<std::vector<bool>>>("Vect2Bool");
    auto MapStringFloat  = model->MakeField<std::map<std::string,float>>("MapStringFloat");
    auto MapIntDouble   = model->MakeField<std::map<int,double>>("MapIntDouble");
-   auto MapStringBool  = model->MakeField<std::map<std::string,bool>>("MapStringBool"); // this does not work
+   auto MapStringBool  = model->MakeField<std::map<std::string,bool>>("MapStringBool");
+
+
 
    // We hand-over the data model to a newly created ntuple of name "F", stored in kNTupleFileName
    // In return, we get a unique pointer to an ntuple that we can fill
@@ -56,6 +60,7 @@ void rntuple_test()
       *DoubleField = 0.5 * i;
       *StringField = "entry_" + std::to_string(i);
       *BoolField = (i % 3 == 1);
+      *ArrayInt = { i + 1, i + 2, i + 3, i + 4, i + 5 };
 
 
       VectString->clear();

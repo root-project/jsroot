@@ -79,7 +79,7 @@ else {
 // Setup selector to process all fields (so cluster gets loaded)
 const selector = new TSelector(),
       fields = ['IntField', 'FloatField', 'DoubleField', 'StringField', 'BoolField',
-                'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool',
+                'ArrayInt', 'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool',
                 'MapStringFloat', 'MapIntDouble', 'MapStringBool'];
 for (const f of fields)
    selector.addBranch(f);
@@ -124,6 +124,7 @@ selector.Process = function(entryIndex) {
       DoubleField: entryIndex * 0.5,
       StringField: `entry_${entryIndex}`,
       BoolField: entryIndex % 3 === 1,
+      ArrayInt: [entryIndex + 1, entryIndex + 2, entryIndex + 3, entryIndex + 4, entryIndex + 5],
       VectString: [],
       VectInt: [],
       VectBool: [],
@@ -176,6 +177,6 @@ selector.Terminate = () => {
 await rntupleProcess(rntuple, selector);
 
 if (any_error)
-   console.error('FAILURE when verify file content');
+   console.error('\nFAILURE when verifying file content');
 else
    console.log('\nTest OK');
