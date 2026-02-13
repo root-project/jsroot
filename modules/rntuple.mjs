@@ -1207,6 +1207,35 @@ class ReaderItem {
       };
    }
 
+   /** @summary implement reading of std::array<T,N> where item1 reads value element */
+   assignArrayReader(itemv, arrsize) {
+      this.itemv = itemv;
+      this.arrsize = arrsize;
+
+      itemv.funcv = itemv.func;
+      itemv.shiftv = itemv.shift;
+      // assign noop
+      itemv.func = itemv.shift = () => {};
+
+      // item itself can remain simple
+      itemv.set_simple(false);
+
+      this.func = function(tgtobj) {
+         const arr = [], tmp = {};
+         let len = this.arrsize;
+         while (len-- > 0) {
+            this.itemv.funcv(tmp);
+            arr.push(tmp[this.name]);
+         }
+         tgtobj[this.name] = arr;
+      };
+
+      this.shift = function(entries) {
+         if (entries > 0)
+            this.itemv.shiftv(entries * this.arrsize);
+      };
+   }
+
    /** @summary implement reading of std::pair where item1 reads first (key) element */
    assignPairReader(item_p1, item_p2) {
       this.item_p1 = item_p1;
@@ -1418,6 +1447,15 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             item.assignPairReader(item1, item2);
             return item;
          }
+
+         if ((childs.length === 1) && (field.typeName.indexOf('std::array') === 0)) {
+            const item1 = addFieldReading(childs[0], tgtname),
+                  item = new ReaderItem(null, tgtname);
+            handle.arr.push(item);
+            item.assignArrayReader(item1, Number(field.arraySize));
+            return item;
+         }
+
 
          throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
       }
