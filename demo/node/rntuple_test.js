@@ -41,17 +41,17 @@ else {
    for (let i = 0; i < rntuple.builder.fieldDescriptors.length; ++i) {
       const field = rntuple.builder.fieldDescriptors[i];
       if (!field.fieldName || !field.typeName)
-        console.error(`FAILURE: Field ${i} is missing name or type`);
+         console.error(`FAILURE: Field ${i} is missing name or type`);
       else
-        console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
+         console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
       if (i === 0) {
-        if (field.fieldName !== 'IntField' || field.typeName !== 'std::int32_t')
-          console.error(`FAILURE: First field should be 'IntField (std::int32_t)' but got '${field.fieldName} (${field.typeName})'`);
+         if (field.fieldName !== 'IntField' || field.typeName !== 'std::int32_t')
+            console.error(`FAILURE: First field should be 'IntField (std::int32_t)' but got '${field.fieldName} (${field.typeName})'`);
       } else if (i === rntuple.builder.fieldDescriptors.length - 1) {
-        if (field.fieldName !== 'StringField' || field.typeName !== 'std::string')
-          console.error(`FAILURE: Last field should be 'StringField (std::string)' but got '${field.fieldName} (${field.typeName})'`);
+         if (field.fieldName !== 'StringField' || field.typeName !== 'std::string')
+            console.error(`FAILURE: Last field should be 'StringField (std::string)' but got '${field.fieldName} (${field.typeName})'`);
       }
-    }
+   }
 }
 
 // Column Check
@@ -59,26 +59,28 @@ else {
 if (!rntuple.builder?.columnDescriptors?.length)
    console.error('FAILURE: No columns deserialized');
 else {
-  console.log(`OK: ${rntuple.builder.columnDescriptors.length} column(s) deserialized`);
-  for (let i = 0; i < rntuple.builder.columnDescriptors.length; ++i) {
-    const column = rntuple.builder.columnDescriptors[i];
-    if (column.fieldId === undefined || column.fieldId === null)
-      console.error(`FAILURE: Column ${i} is missing fieldId`);
-    else
-      console.log(`OK: Column ${i} fieldId: ${column.fieldId} `);
-    if (i === 0) {
-      if (column.fieldId !== 0)
-        console.error('FAILURE: First column should be for fieldId 0 (IntField)');
-    } else if (i === rntuple.builder.columnDescriptors.length - 1) {
-      if (column.fieldId !== 3)
-        console.error('FAILURE: Last column should be for fieldId 3 (StringField)');
-    }
-  }
+   console.log(`OK: ${rntuple.builder.columnDescriptors.length} column(s) deserialized`);
+   for (let i = 0; i < rntuple.builder.columnDescriptors.length; ++i) {
+      const column = rntuple.builder.columnDescriptors[i];
+      if (column.fieldId === undefined || column.fieldId === null)
+         console.error(`FAILURE: Column ${i} is missing fieldId`);
+      else
+         console.log(`OK: Column ${i} fieldId: ${column.fieldId} `);
+      if (i === 0) {
+         if (column.fieldId !== 0)
+            console.error('FAILURE: First column should be for fieldId 0 (IntField)');
+      } else if (i === rntuple.builder.columnDescriptors.length - 1) {
+         if (column.fieldId !== 3)
+            console.error('FAILURE: Last column should be for fieldId 3 (StringField)');
+      }
+   }
 }
 
 // Setup selector to process all fields (so cluster gets loaded)
 const selector = new TSelector(),
-      fields = ['IntField', 'FloatField', 'DoubleField', 'StringField'];
+      fields = ['IntField', 'FloatField', 'DoubleField', 'StringField', 'BoolField',
+                'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool',
+                'MapStringFloat', 'MapIntDouble', 'MapStringBool'];
 for (const f of fields)
    selector.addBranch(f);
 
@@ -87,32 +89,81 @@ selector.Begin = () => {
 };
 
 // Now validate entry data
-const EPSILON = 1e-10;
+const EPSILON = 1e-7;
+
+let any_error = false;
+
+function compare(expected, value) {
+   if (typeof expected === 'number')
+      return Math.abs(value - expected) < EPSILON;
+   if (typeof expected === 'object') {
+      if (expected.length !== undefined) {
+         if (expected.length !== value.length)
+            return false;
+         for (let j = 0; j < expected.length; ++j) {
+            if (!compare(expected[j], value[j]))
+               return false;
+         }
+      } else {
+         for (const key in expected) {
+            if (!compare(expected[key], value[key]))
+               return false;
+         }
+      }
+      return true;
+   }
+   return expected === value;
+}
 
 selector.Process = function(entryIndex) {
    console.log(`\nChecking entry ${entryIndex}:`);
 
-   const expected = {
+   const expectedValues = {
       IntField: entryIndex,
       FloatField: entryIndex * entryIndex,
       DoubleField: entryIndex * 0.5,
-      StringField: `entry_${entryIndex}`
-   };
+      StringField: `entry_${entryIndex}`,
+      BoolField: entryIndex % 3 === 1,
+      VectString: [],
+      VectInt: [],
+      VectBool: [],
+      Vect2Float: [],
+      Vect2Bool: [],
+      MapStringFloat: [],
+      MapIntDouble: [],
+      MapStringBool: []
+   }, npx = (entryIndex + 5) % 7;
+
+   for (let j = 0; j < npx; ++j) {
+      expectedValues.VectString.push(`str_${j}`);
+      expectedValues.VectInt.push(-j);
+      expectedValues.VectBool.push(j % 2 === 1);
+      expectedValues.MapStringFloat.push({ first: `key_${j}`, second: j * 7 });
+      expectedValues.MapIntDouble.push({ first: j * 11, second: j * 0.2 });
+      expectedValues.MapStringBool.push({ first: `bool_${j}`, second: j % 3 === 0 });
+
+      const npy = 1 + entryIndex % 3, vf = [], vb = [];
+      for (let k = 0; k < npy; ++k) {
+         vf.push(k * 1.1);
+         vb.push(k % 2 === 0);
+      }
+      expectedValues.Vect2Float.push(vf);
+      expectedValues.Vect2Bool.push(vb);
+   }
 
    for (const field of fields) {
       try {
          const value = this.tgtobj[field],
-               expectedValue = expected[field],
-               pass = typeof expectedValue === 'number'
-                    ? Math.abs(value - expectedValue) < EPSILON
-                    : value === expectedValue;
+               expected = expectedValues[field];
 
-         if (!pass)
-            console.error(`FAILURE: ${field} at entry ${entryIndex} expected ${expectedValue}, got ${value}`);
-         else
-            console.log(`OK: ${field} at entry ${entryIndex} = ${value}`);
+         if (!compare(expected, value)) {
+            console.error(`FAILURE: ${field} at entry ${entryIndex} expected ${JSON.stringify(expected)}, got ${JSON.stringify(value)}`);
+            any_error = true;
+         } else
+            console.log(`OK: ${field} at entry ${entryIndex} = ${JSON.stringify(value)}`);
       } catch (err) {
          console.error(`ERROR: Failed to read ${field} at entry ${entryIndex}: ${err.message}`);
+         any_error = true;
       }
    }
 };
@@ -123,3 +174,6 @@ selector.Terminate = () => {
 
 // Run rntupleProcess to ensure cluster is loaded
 await rntupleProcess(rntuple, selector);
+
+if (any_error)
+   console.error('FAILURE when verify file content');
