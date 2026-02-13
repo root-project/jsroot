@@ -960,17 +960,20 @@ class ReaderItem {
 
    constructor(column, name) {
       this.column = column;
-      this.id = column.index;
-      this.coltype = column.coltype;
-      this.splittype = 0;
-      this.page = -1; // current page for the reading
       this.name = name;
+      this.id = -1;
+      this.coltype = 0;
       this.sz = 0;
       this.simple = true;
+      this.page = -1; // current page for the reading
+
+      if (this.column) {
+         this.id = column.index;
+         this.coltype = column.coltype;
+      }
 
       // special handling of split types
       if ((this.coltype >= ENTupleColumnType.kSplitInt16) && (this.coltype <= ENTupleColumnType.kSplitIndex64)) {
-         this.splittype = this.coltype;
          this.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
          this.simple = false;
       }
@@ -985,8 +988,10 @@ class ReaderItem {
    init_o() {
       this.o = 0;
       this.o2 = 0; // for bit count
-      this.view = this.views.shift();
-      this.view_len = this.view.byteLength;
+      if (this.column && this.views?.length) {
+         this.view = this.views.shift();
+         this.view_len = this.view.byteLength;
+      }
    }
 
    shift_o(sz) {
@@ -1202,7 +1207,42 @@ class ReaderItem {
       };
    }
 
+   /** @summary implement reading of std::pair where item1 reads first (key) element */
+   assignPairReader(item1, item2) {
+      this.item1 = item1;
+      this.item2 = item2;
+
+      item1.func1 = item1.func;
+      item1.shift1 = item1.shift;
+      item2.func2 = item2.func;
+      item2.shift2 = item2.shift;
+      // assign noop
+      item1.func = item1.shift = item2.func = item2.shift = () => {};
+
+      // remember own read function - they need to be used
+      this.func = function(tgtobj) {
+         const tmp = {}, res = {};
+         this.item1.func1(tmp);
+         res.first = tmp[this.name];
+         this.item2.func2(tmp);
+         res.second = tmp[this.name];
+         tgtobj[this.name] = res;
+      };
+
+      this.shift = function(entries) {
+         if (entries > 0) {
+            this.item1.shift1(entries);
+            this.item2.shift2(entries);
+         }
+      };
+   }
+
+
    collectPages(cluster_locations, dataToRead, itemsToRead, pagesToRead, emin, emax, elist) {
+      // no pages without real column id
+      if (!this.column || (this.id < 0))
+         return;
+
       const pages = cluster_locations[this.id].pages;
 
       this.views = new Array(pages.length);
@@ -1369,11 +1409,22 @@ async function rntupleProcess(rntuple, selector, args = {}) {
    }
 
    function addFieldReading(field, tgtname) {
-      const columns = rntuple.builder.findColumns(field);
-      if (!columns?.length)
-         throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
+      const columns = rntuple.builder.findColumns(field),
+            childs = rntuple.builder.findChildFields(field);
+      if (!columns?.length) {
+         if ((childs.length === 2) && (field.typeName.indexOf('std::pair') === 0)) {
+            const item1 = addFieldReading(childs[0], tgtname),
+                  item2 = addFieldReading(childs[1], tgtname),
+                  item = new ReaderItem(null, tgtname);
+            handle.arr.push(item);
+            item.assignPairReader(item1, item2);
+            return item;
+         }
 
-      let item = new ReaderItem(columns[0], tgtname);
+         throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
+      }
+
+      const item = new ReaderItem(columns[0], tgtname);
       item.assignReadFunc();
       handle.arr.push(item);
 
@@ -1381,11 +1432,13 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          const items = new ReaderItem(columns[1], tgtname);
          items.assignStringReader(item);
          handle.arr.push(items);
-         item = items; // second item performs complete reading of the string
+         return items; // second item performs complete reading of the string
       }
 
-      const childs = rntuple.builder.findChildFields(field);
       if ((childs.length === 1) && (field.typeName.indexOf('std::vector') === 0)) {
+         const itemv = addFieldReading(childs[0], tgtname);
+         item.assignVectorReader(itemv);
+      } else if ((childs.length === 1) && (field.typeName.indexOf('std::map') === 0)) {
          const itemv = addFieldReading(childs[0], tgtname);
          item.assignVectorReader(itemv);
       }
