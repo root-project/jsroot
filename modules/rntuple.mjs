@@ -1412,7 +1412,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       rntuple, // keep rntuple reference
       file: rntuple.$file, // keep file reference
       selector, // reference on selector
-      arr: [], // list of special handles per columns, more than one column per field may exist
+      columns: [], // list of ReaderItem with real columns for reading
+      arr: [], // list of ReaderItem with real branches readout
       current_cluster: 0, // current cluster to process
       current_cluster_first_entry: 0, // first entry in current cluster
       current_cluster_last_entry: 0, // last entry in current cluster
@@ -1454,8 +1455,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       }
 
       // loop over all columns and request required pages
-      for (let i = 0; i < handle.arr.length; ++i)
-         handle.arr[i].collectPages(locations, dataToRead, itemsToRead, pagesToRead, emin, emax, elist);
+      handle.columns.forEach(item => item.collectPages(locations, dataToRead, itemsToRead, pagesToRead, emin, emax, elist));
 
       return rntuple.$file.readBuffer(dataToRead).then(blobsRaw => {
          const blobs = Array.isArray(blobsRaw) ? blobsRaw : [blobsRaw],
@@ -1464,8 +1464,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       }).then(unzipBlobs => {
          unzipBlobs.map((rawblob, idx) => itemsToRead[idx].reconstructBlob(rawblob, pagesToRead[idx]));
 
-         for (let indx = 0; indx < handle.arr.length; ++indx)
-            handle.arr[indx].init_o();
+         for (let indx = 0; indx < handle.columns.length; ++indx)
+            handle.columns[indx].init_o();
 
          let skip_entries = handle.current_entry - handle.current_cluster_first_entry;
 
@@ -1495,6 +1495,13 @@ async function rntupleProcess(rntuple, selector, args = {}) {
 
          return readNextPortion(true);
       });
+   }
+
+   function addColumnReadout(column, tgtname) {
+      const item = new ReaderItem(column, tgtname);
+      item.assignReadFunc();
+      handle.columns.push(item);
+      return item;
    }
 
    function addFieldReading(field, tgtname) {
@@ -1531,9 +1538,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
       }
 
-      const item = new ReaderItem(columns[0], tgtname);
-      item.assignReadFunc();
-      handle.arr.push(item);
+      const item = addColumnReadout(columns[0], tgtname);
 
       if ((columns.length === 2) && (field.typeName === 'std::string')) {
          const items = new ReaderItem(columns[1], tgtname);
@@ -1557,6 +1562,9 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             items.push(addFieldReading(childs[i], tgtname));
          item.assignVariantReader(items);
       }
+
+      // this is plain field with single column, used as is in readout
+      handle.arr.push(item);
 
       return item;
    }
