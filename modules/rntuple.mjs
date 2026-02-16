@@ -530,9 +530,8 @@ class RNTupleDescriptorBuilder {
       if (!isList)
          throw new Error('Cluster group frame is not a list frame');
 
-      const groupCount = reader.readU32(),
-
-            clusterGroups = [];
+      const groupCount = reader.readU32();
+      this.clusterGroups = [];
 
       for (let i = 0; i < groupCount; ++i) {
          const recordStart = BigInt(reader.offset),
@@ -542,20 +541,11 @@ class RNTupleDescriptorBuilder {
                numClusters = reader.readU32(),
                pageListLength = reader.readU64(),
                // Locator method to get the page list locator offset
-               pageListLocator = this._readLocator(reader),
-
-               group = {
-                  minEntry,
-                  entrySpan,
-                  numClusters,
-                  pageListLocator,
-                  pageListLength
-               };
-         clusterGroups.push(group);
+               pageListLocator = this._readLocator(reader);
+         this.clusterGroups.push({ minEntry, entrySpan, numClusters, pageListLocator, pageListLength });
          reader.seek(Number(recordStart + clusterRecordSize));
       }
       reader.seek(Number(startOffset - clusterGroupListSize));
-      this.clusterGroups = clusterGroups;
    }
 
    _readLocator(reader) {
@@ -586,38 +576,34 @@ class RNTupleDescriptorBuilder {
             clusterSummaryListSize = reader.readS64();
       if (clusterSummaryListSize >= 0)
          throw new Error('Expected a list frame for cluster summaries');
-      const clusterSummaryCount = reader.readU32(),
-            clusterSummaries = [];
+      const clusterSummaryCount = reader.readU32();
+      this.clusterSummaries = [];
 
       for (let i = 0; i < clusterSummaryCount; ++i) {
          const recordStart = BigInt(reader.offset),
                clusterSummaryRecordSize = reader.readS64(),
                firstEntry = reader.readU64(),
                combined = reader.readU64(),
-               flags = combined >> 56n;
+               flags = combined >> 56n,
+               numEntries = Number(combined & 0x00FFFFFFFFFFFFFFn);
          if (flags & 0x01n)
             throw new Error('Cluster summary uses unsupported sharded flag (0x01)');
-         const numEntries = Number(combined & 0x00FFFFFFFFFFFFFFn);
-         clusterSummaries.push({
-            firstEntry,
-            numEntries,
-            flags
-         });
+         this.clusterSummaries.push({ firstEntry, numEntries, flags });
          reader.seek(Number(recordStart + clusterSummaryRecordSize));
       }
       reader.seek(Number(listStartOffset - clusterSummaryListSize));
-      this.clusterSummaries = clusterSummaries;
       this._readNestedFrames(reader);
 
       reader.readU64(); // checksumPagelist
    }
 
    _readNestedFrames(reader) {
-      const clusterPageLocations = [],
-            numListClusters = reader.readS64();
+      const numListClusters = reader.readS64(),
+            numRecordCluster = reader.readU32();
       if (numListClusters >= 0)
          throw new Error('Expected list frame for clusters');
-      const numRecordCluster = reader.readU32();
+
+      this.pageLocations = [];
 
       for (let i = 0; i < numRecordCluster; ++i) {
          const outerListSize = reader.readS64();
@@ -659,10 +645,8 @@ class RNTupleDescriptorBuilder {
             });
          }
 
-         clusterPageLocations.push(columns);
+         this.pageLocations.push(columns);
       }
-
-      this.pageLocations = clusterPageLocations;
    }
 
    /** @summary Search field by name
@@ -1038,7 +1022,7 @@ class ReaderItem {
          case kSplitInt16: decodeZigzag16(view); break;
          case kSplitInt32: decodeZigzag32(view); break;
          case kSplitInt64: decodeZigzag64(view); break;
-      };
+      }
 
       this.views[page_indx] = view;
    }
