@@ -970,7 +970,7 @@ function getSelectorFieldName(selector, i) {
 class ReaderItem {
 
    constructor(column, name) {
-      this.column = column;
+      this.column = null;
       this.name = name;
       this.id = -1;
       this.coltype = 0;
@@ -978,16 +978,18 @@ class ReaderItem {
       this.simple = true;
       this.page = -1; // current page for the reading
 
-      if (this.column) {
+      if (column?.coltype !== undefined) {
+         this.column = column;
          this.id = column.index;
          this.coltype = column.coltype;
-      }
 
-      // special handling of split types
-      if ((this.coltype >= ENTupleColumnType.kSplitInt16) && (this.coltype <= ENTupleColumnType.kSplitIndex64)) {
-         this.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
-         this.simple = false;
-      }
+         // special handling of split types
+         if ((this.coltype >= ENTupleColumnType.kSplitInt16) && (this.coltype <= ENTupleColumnType.kSplitIndex64)) {
+            this.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
+            this.simple = false;
+         }
+      } else if (column?.length)
+         this.items = column;
    }
 
    cleanup() {
@@ -1029,7 +1031,7 @@ class ReaderItem {
    }
 
    /** @summary Simple column with fixed element size - no vectors, no strings */
-   is_simple() { return this.sz > 0 && this.simple; }
+   is_simple() { return this.sz && this.simple; }
 
    set_not_simple() {
       this.simple = false;
@@ -1154,66 +1156,6 @@ class ReaderItem {
          this.shift_o(1);
       }
       return s;
-   }
-
-   /** @summary implements reading of std::string where item1 provides offsets */
-   assignStringReader(items) {
-      this.items = items;
-      items[0]._is_offset_item = true;
-      items[1].set_not_simple();
-
-      this.off0 = 0;
-      this.$tgt = {};
-
-      this.simple = false;
-      // for plain string one can read offsets
-
-      this.func = function(tgtobj) {
-         this.items[0].func(this.$tgt);
-         const off = Number(this.$tgt.len);
-         tgtobj[this.name] = this.items[1].readStr(off - this.off0);
-         this.off0 = off;
-      };
-
-      this.shift = function(entries) {
-         if (entries > 0) {
-            this.itemlen.shift(entries - 1);
-            this.itemlen.func(this.$tgt);
-            this.off0 = Number(this.$tgt.len);
-            this.itemstr.shift_o(this.off0);
-         }
-      };
-   }
-
-   /** @summary implement reading of std collection where itemv provides element reading */
-   assignCollectionReader(items) {
-      this.items = items;
-      this.off0 = 0;
-      items[0]._is_offset_item = true;
-      items[1].set_not_simple();
-
-      this.func = function(tgtobj) {
-         const arr = [], tmp = {};
-         this.items[0].func(tmp);
-         const off = Number(tmp.len);
-         let len = off - this.off0;
-         while (len-- > 0) {
-            this.items[1].func(tmp);
-            arr.push(tmp.val);
-         }
-         tgtobj[this.name] = arr;
-         this.off0 = off;
-      };
-
-      this.shift = function(entries) {
-         if (entries > 0) {
-            const tmp = {};
-            this.items[0].shift(entries - 1);
-            this.items[0].func(tmp);
-            this.off0 = Number(tmp[this.name]);
-            this.items[1].shift(this.off0);
-         }
-      };
    }
 
    /** @summary implement reading of std::array<T,N> where item1 reads value element */
@@ -1368,6 +1310,66 @@ class ReaderItem {
 
 }
 
+class StringReaderItem extends ReaderItem {
+
+   constructor(items, name) {
+      super(items, name);
+      items[0]._is_offset_item = true;
+      items[1].set_not_simple();
+
+      this.off0 = 0;
+      this.$tgt = {};
+   }
+
+   func(tgtobj) {
+      this.items[0].func(this.$tgt);
+      const off = Number(this.$tgt.len);
+      tgtobj[this.name] = this.items[1].readStr(off - this.off0);
+      this.off0 = off;
+   }
+
+   shift(entries) {
+      this.items[0].shift(entries - 1);
+      this.items[0].func(this.$tgt);
+      this.off0 = Number(this.$tgt.len);
+      this.items[1].shift_o(this.off0);
+   }
+
+}
+
+class CollectionReaderItem extends ReaderItem {
+
+   constructor(items, tgtname) {
+      super(items, tgtname);
+      this.off0 = 0;
+      items[0]._is_offset_item = true;
+      items[1].set_not_simple();
+   }
+
+   func(tgtobj) {
+      const arr = [], tmp = {};
+      this.items[0].func(tmp);
+      const off = Number(tmp.len);
+      let len = off - this.off0;
+      while (len-- > 0) {
+         this.items[1].func(tmp);
+         arr.push(tmp.val);
+      }
+      tgtobj[this.name] = arr;
+      this.off0 = off;
+   }
+
+   shift(entries) {
+      const tmp = {};
+      this.items[0].shift(entries - 1);
+      this.items[0].func(tmp);
+      this.off0 = Number(tmp[this.name]);
+      this.items[1].shift(this.off0);
+   };
+
+}
+
+
 async function rntupleProcess(rntuple, selector, args = {}) {
    const handle = {
       rntuple, // keep rntuple reference
@@ -1498,10 +1500,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
 
       if ((columns.length === 2) && (field.typeName === 'std::string')) {
          const itemlen = addColumnReadout(columns[0], 'len'),
-               itemstr = addColumnReadout(columns[1], 'str'),
-               items = new ReaderItem(null, tgtname);
-         items.assignStringReader([itemlen, itemstr]);
-         return items;
+               itemstr = addColumnReadout(columns[1], 'str');
+         return new StringReaderItem([itemlen, itemstr], tgtname);
       }
 
       let is_stl = false;
@@ -1512,10 +1512,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
 
       if ((childs.length === 1) && is_stl) {
          const itemlen = addColumnReadout(columns[0], 'len'),
-               itemval = addFieldReading(childs[0], 'val'),
-               itemvect = new ReaderItem(null, tgtname);
-         itemvect.assignCollectionReader([itemlen, itemval]);
-         return itemvect;
+               itemval = addFieldReading(childs[0], 'val');
+         return new CollectionReaderItem([itemlen, itemval], tgtname);
       }
 
       if ((childs.length > 0) && (field.typeName.indexOf('std::variant') === 0)) {
