@@ -149,64 +149,47 @@ const ENTupleColumnType = {
 };
 
 
-/**
- * @summary Rearrange bytes from split format to normal format (row-wise) for decoding
- */
+/** @summary Rearrange bytes from split format to normal format (row-wise) for decoding
+ * @private */
 function recontructUnsplitBuffer(view, coltype) {
-   if (
-      coltype === ENTupleColumnType.kSplitUInt16 ||
-        coltype === ENTupleColumnType.kSplitUInt32 ||
-        coltype === ENTupleColumnType.kSplitUInt64 ||
-        coltype === ENTupleColumnType.kSplitReal16 ||
-        coltype === ENTupleColumnType.kSplitReal32 ||
-        coltype === ENTupleColumnType.kSplitReal64 ||
-        coltype === ENTupleColumnType.kSplitIndex32 ||
-        coltype === ENTupleColumnType.kSplitIndex64 ||
-        coltype === ENTupleColumnType.kSplitInt16 ||
-        coltype === ENTupleColumnType.kSplitInt32 ||
-        coltype === ENTupleColumnType.kSplitInt64
-   ) {
-      // Determine byte size based on column type
-      let byteSize;
-      switch (coltype) {
-         case ENTupleColumnType.kSplitReal64:
-         case ENTupleColumnType.kSplitInt64:
-         case ENTupleColumnType.kSplitUInt64:
-         case ENTupleColumnType.kSplitIndex64:
-            byteSize = 8;
-            break;
-         case ENTupleColumnType.kSplitReal32:
-         case ENTupleColumnType.kSplitInt32:
-         case ENTupleColumnType.kSplitIndex32:
-         case ENTupleColumnType.kSplitUInt32:
-            byteSize = 4;
-            break;
-         case ENTupleColumnType.kSplitInt16:
-         case ENTupleColumnType.kSplitUInt16:
-         case ENTupleColumnType.kSplitReal16:
-            byteSize = 2;
-            break;
-      }
-
-      const count = view.byteLength / byteSize,
-            outBuffer = new ArrayBuffer(view.byteLength),
-            outView = new DataView(outBuffer);
-
-      for (let i = 0; i < count; ++i) {
-         for (let b = 0; b < byteSize; ++b) {
-            const splitIndex = b * count + i,
-                  byte = view.getUint8(splitIndex),
-                  writeIndex = i * byteSize + b;
-            outView.setUint8(writeIndex, byte);
-         }
-      }
-
-      // Return new buffer as DataView
-      return outView;
+   // Determine byte size based on column type
+   let byteSize;
+   switch (coltype) {
+      case ENTupleColumnType.kSplitReal64:
+      case ENTupleColumnType.kSplitInt64:
+      case ENTupleColumnType.kSplitUInt64:
+      case ENTupleColumnType.kSplitIndex64:
+         byteSize = 8;
+         break;
+      case ENTupleColumnType.kSplitReal32:
+      case ENTupleColumnType.kSplitInt32:
+      case ENTupleColumnType.kSplitIndex32:
+      case ENTupleColumnType.kSplitUInt32:
+         byteSize = 4;
+         break;
+      case ENTupleColumnType.kSplitInt16:
+      case ENTupleColumnType.kSplitUInt16:
+      case ENTupleColumnType.kSplitReal16:
+         byteSize = 2;
+         break;
+      default:
+         return view;
    }
 
-   // If no split type, return original view
-   return view;
+   const count = view.byteLength / byteSize,
+         outBuffer = new ArrayBuffer(view.byteLength),
+         outView = new DataView(outBuffer);
+
+   for (let i = 0; i < count; ++i) {
+      for (let b = 0; b < byteSize; ++b) {
+         const splitIndex = b * count + i,
+               byte = view.getUint8(splitIndex),
+               writeIndex = i * byteSize + b;
+         outView.setUint8(writeIndex, byte);
+      }
+   }
+
+   return outView;
 }
 
 function decodeIndex32(view) {
