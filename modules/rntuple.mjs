@@ -1186,42 +1186,32 @@ class ReaderItem {
    }
 
    /** @summary implement reading of std collection where itemv provides element reading */
-   assignCollectionReader(itemv) {
-      this.itemv = itemv;
-      this.offv0 = 0;
-
-      itemv.funcv = itemv.func;
-      itemv.shiftv = itemv.shift;
-      // assign noop
-      itemv.func = itemv.shift = () => {};
-
-      // item itself can remain simple
-      itemv.set_simple(false);
-
-      // remember own read function - they need to be used
-      this.funcn = this.func;
-      this.shiftn = this.shift;
+   assignCollectionReader(itemlen, itemval) {
+      this.itemlen = itemlen;
+      this.itemval = itemval;
+      this.off0 = 0;
+      this.itemlen._is_offset_item = true;
 
       this.func = function(tgtobj) {
          const arr = [], tmp = {};
-         this.funcn(tmp);
-         const offv = Number(tmp[this.name]);
-         let len = offv - this.offv0;
+         this.itemlen.func(tmp);
+         const off = Number(tmp.len);
+         let len = off - this.off0;
          while (len-- > 0) {
-            this.itemv.funcv(tmp);
-            arr.push(tmp[this.name]);
+            this.itemval.func(tmp);
+            arr.push(tmp.val);
          }
          tgtobj[this.name] = arr;
-         this.offv0 = offv;
+         this.off0 = off;
       };
 
       this.shift = function(entries) {
          if (entries > 0) {
             const tmp = {};
-            this.shiftn(entries - 1);
-            this.funcn(tmp);
-            this.offv0 = Number(tmp[this.name]);
-            this.itemv.shiftv(this.offv0);
+            this.itemlen.shift(entries - 1);
+            this.itemlen.func(tmp);
+            this.off0 = Number(tmp[this.name]);
+            this.itemval.shift(this.offv0);
          }
       };
    }
@@ -1540,12 +1530,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
                itemstr = addColumnReadout(columns[1], 'str'),
                items = new ReaderItem(null, tgtname);
          items.assignStringReader(itemlen, itemstr);
-         handle.arr.push(items);
-         return items; // second item performs complete reading of the string
+         return items;
       }
-
-      const item = addColumnReadout(columns[0], tgtname);
-
 
       let is_stl = false;
       ['vector', 'map', 'unordered_map', 'multimap', 'unordered_multimap', 'set', 'unordered_set', 'multiset', 'unordered_multiset'].forEach(name => {
@@ -1554,19 +1540,25 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       });
 
       if ((childs.length === 1) && is_stl) {
-         const itemv = addFieldReading(childs[0], tgtname);
-         item.assignCollectionReader(itemv);
-      } else if ((childs.length > 0) && (field.typeName.indexOf('std::variant') === 0)) {
-         const items = [];
-         for (let i = 0; i < childs.length; ++i)
-            items.push(addFieldReading(childs[i], tgtname));
-         item.assignVariantReader(items);
+         const itemlen = addColumnReadout(columns[0], 'len'),
+               itemval = addFieldReading(childs[0], 'val'),
+               itemvect = new ReaderItem(null, tgtname);
+         itemvect.assignCollectionReader(itemlen, itemval);
+         return itemvect;
       }
 
-      // this is plain field with single column, used as is in readout
-      handle.arr.push(item);
+      if ((childs.length > 0) && (field.typeName.indexOf('std::variant') === 0)) {
+         const items = [],
+               itemswitch = addColumnReadout(columns[0], 'switch'),
+               itemvariant = new ReaderItem(null, tgtname);
 
-      return item;
+         for (let i = 0; i < childs.length; ++i)
+            items.push(addFieldReading(childs[i], `_${i}`));
+         itemvariant.assignVariantReader(itemswitch, items);
+         return itemvariant;
+      }
+
+      return addColumnReadout(columns[0], tgtname);
    }
 
    return readHeaderFooter(rntuple).then(res => {
@@ -1583,7 +1575,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          if (!field)
             throw new Error(`Field ${name} not found`);
 
-         addFieldReading(field, tgtname);
+         const item = addFieldReading(field, tgtname);
+         handle.arr.push(item);
       }
 
       // calculate number of entries
