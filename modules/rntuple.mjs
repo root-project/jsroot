@@ -255,38 +255,24 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
 }
 
 
-/**
- * @summary Decode a reconstructed index buffer (32- or 64-bit deltas to absolute indices)
- */
-function DecodeDeltaIndex(blob, coltype) {
-   let deltas, result;
-
-   if (coltype === ENTupleColumnType.kIndex32) {
-      deltas = new Int32Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 4);
-      result = new Int32Array(deltas.length);
-   } else if (coltype === ENTupleColumnType.kIndex64) {
-      deltas = new BigInt64Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 8);
-      result = new BigInt64Array(deltas.length);
-   } else
-      throw new Error(`DecodeDeltaIndex: unsupported column type ${coltype}`);
-
-   if (deltas.length > 0)
-      result[0] = deltas[0];
-   for (let i = 1; i < deltas.length; ++i)
-      result[i] = result[i - 1] + deltas[i];
-
-   return { blob: result, coltype };
+function decodeIndex32(src) {
+   const view = src instanceof ArrayBuffer ? new DataView(src) : src;
+   for (let o = 0, prev = 0; o < view.byteLength; o += 4) {
+      const v = prev + view.getInt32(o, LITTLE_ENDIAN);
+      view.setInt32(o, v, LITTLE_ENDIAN);
+      prev = v;
+   }
+   return view;
 }
 
-function DecodeSwitchIndex(src) {
-   let o = 0, prev = BigInt(0);
-   while (o < src.byteLength) {
-      const v = prev + src.getBigInt64(o, LITTLE_ENDIAN);
-      src.setBigInt64(o, prev, LITTLE_ENDIAN);
+function decodeIndex64(src, shift) {
+   const view = src instanceof ArrayBuffer ? new DataView(src) : src;
+   for (let o = 0, prev = 0n; o < view.byteLength; o += (8 + shift)) {
+      const v = prev + view.getBigInt64(o, LITTLE_ENDIAN);
+      view.setBigInt64(o, v, LITTLE_ENDIAN);
       prev = v;
-      o += 12;
    }
-   return src;
+   return view;
 }
 
 /**
@@ -394,7 +380,6 @@ class RNTupleDescriptorBuilder {
       // Cluster Group record frame
       this._readClusterGroups(reader);
    }
-
 
    _readEnvelopeMetadata(reader) {
       const typeAndLength = reader.readU64(),
@@ -619,11 +604,8 @@ class RNTupleDescriptorBuilder {
                entrySpan = reader.readU64(),
                numClusters = reader.readU32(),
                pageListLength = reader.readU64(),
-
-
-            // Locator method to get the page list locator offset
+               // Locator method to get the page list locator offset
                pageListLocator = this._readLocator(reader),
-
 
                group = {
                   minEntry,
@@ -668,7 +650,6 @@ class RNTupleDescriptorBuilder {
       if (clusterSummaryListSize >= 0)
          throw new Error('Expected a list frame for cluster summaries');
       const clusterSummaryCount = reader.readU32(),
-
             clusterSummaries = [];
 
       for (let i = 0; i < clusterSummaryCount; ++i) {
@@ -691,7 +672,7 @@ class RNTupleDescriptorBuilder {
       this.clusterSummaries = clusterSummaries;
       this._readNestedFrames(reader);
 
-      /* const checksumPagelist = */ reader.readU64();
+      reader.readU64(); // checksumPagelist
    }
 
    _readNestedFrames(reader) {
@@ -749,109 +730,6 @@ class RNTupleDescriptorBuilder {
       }
 
       this.pageLocations = clusterPageLocations;
-   }
-
-   // Example Of Deserializing Page Content
-   deserializePage(blob, columnDescriptor, pageInfo) {
-      const originalColtype = columnDescriptor.coltype,
-            {
-               coltype
-            } = recontructUnsplitBuffer(blob, columnDescriptor);
-      let {
-         blob: processedBlob
-      } = recontructUnsplitBuffer(blob, columnDescriptor);
-
-
-      // Handle split index types
-      if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64) {
-         const {
-            blob: decodedArray
-         } = DecodeDeltaIndex(processedBlob, coltype);
-         processedBlob = decodedArray;
-      }
-
-      // Handle Split Signed Int types
-      if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64) {
-         const {
-            blob: decodedArray
-         } = decodeZigzag(processedBlob, coltype);
-         processedBlob = decodedArray;
-      }
-
-      const reader = new RBufferReader(processedBlob),
-            values = [],
-
-            // Use numElements from pageInfo parameter
-            numValues = Number(pageInfo.numElements),
-            // Helper for all simple types
-            extractValues = (readFunc) => {
-               for (let i = 0; i < numValues; ++i)
-                  values.push(readFunc());
-            };
-      switch (coltype) {
-         case ENTupleColumnType.kBit: {
-            let bitCount = 0;
-            const totalBitsInBuffer = processedBlob.byteLength * 8;
-            if (totalBitsInBuffer < numValues)
-               throw new Error(`kBit: Not enough bits in buffer (${totalBitsInBuffer}) for numValues (${numValues})`);
-
-            for (let byteIndex = 0; byteIndex < processedBlob.byteLength; ++byteIndex) {
-               const byte = reader.readU8();
-
-               // Extract 8 bits from this byte
-               for (let bitPos = 0; bitPos < 8 && bitCount < numValues; ++bitPos, ++bitCount) {
-                  const bitValue = (byte >>> bitPos) & 1,
-                        boolValue = bitValue === 1;
-                  values.push(boolValue);
-               }
-            }
-            break;
-         }
-
-         case ENTupleColumnType.kReal64:
-            extractValues(reader.readF64.bind(reader));
-            break;
-         case ENTupleColumnType.kReal32:
-            extractValues(reader.readF32.bind(reader));
-            break;
-         case ENTupleColumnType.kInt64:
-            extractValues(reader.readS64.bind(reader));
-            break;
-         case ENTupleColumnType.kUInt64:
-            extractValues(reader.readU64.bind(reader));
-            break;
-         case ENTupleColumnType.kInt32:
-            extractValues(reader.readS32.bind(reader));
-            break;
-         case ENTupleColumnType.kUInt32:
-            extractValues(reader.readU32.bind(reader));
-            break;
-         case ENTupleColumnType.kInt16:
-            extractValues(reader.readS16.bind(reader));
-            break;
-         case ENTupleColumnType.kUInt16:
-            extractValues(reader.readU16.bind(reader));
-            break;
-         case ENTupleColumnType.kInt8:
-            extractValues(reader.readS8.bind(reader));
-            break;
-         case ENTupleColumnType.kUInt8:
-         case ENTupleColumnType.kByte:
-            extractValues(reader.readU8.bind(reader));
-            break;
-         case ENTupleColumnType.kChar:
-            extractValues(() => String.fromCharCode(reader.readS8()));
-            break;
-         case ENTupleColumnType.kIndex32:
-            extractValues(reader.readS32.bind(reader));
-            break;
-         case ENTupleColumnType.kIndex64:
-            extractValues(reader.readS64.bind(reader));
-            break;
-         default:
-            throw new Error(`Unsupported column type: ${columnDescriptor.coltype}`);
-      }
-      return values;
    }
 
    findField(name) {
@@ -1223,10 +1101,12 @@ class ReaderItem {
       let view;
 
       // Handle split index types
-      if (originalColtype === ENTupleColumnType.kSplitIndex32 || originalColtype === ENTupleColumnType.kSplitIndex64)
-         view = new DataView(DecodeDeltaIndex(data.blob, data.coltype).blob.buffer);
+      if (originalColtype === ENTupleColumnType.kSplitIndex32)
+         view = decodeIndex32(data.blob);
+      else if (originalColtype === ENTupleColumnType.kSplitIndex64)
+         view = decodeIndex64(data.blob, 0);
       else if (originalColtype === ENTupleColumnType.kSwitch)
-         view = DecodeSwitchIndex(data.blob);
+         view = decodeIndex64(data.blob, 4);
       // Handle Split Signed Int types
       else if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64)
          view = new DataView(decodeZigzag(data.blob, data.coltype).blob.buffer);
