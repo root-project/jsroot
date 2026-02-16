@@ -152,9 +152,7 @@ const ENTupleColumnType = {
 /**
  * @summary Rearrange bytes from split format to normal format (row-wise) for decoding
  */
-function recontructUnsplitBuffer(blob, columnDescriptor) {
-   const { coltype } = columnDescriptor;
-
+function recontructUnsplitBuffer(view, coltype) {
    if (
       coltype === ENTupleColumnType.kSplitUInt16 ||
         coltype === ENTupleColumnType.kSplitUInt32 ||
@@ -188,70 +186,27 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
          case ENTupleColumnType.kSplitReal16:
             byteSize = 2;
             break;
-         default:
-            throw new Error(`Unsupported split coltype: ${coltype} (0x${coltype.toString(16).padStart(2, '0')})`);
       }
 
-      const splitView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength),
-            count = blob.byteLength / byteSize,
-            outBuffer = new ArrayBuffer(blob.byteLength),
-            outBytes = new Uint8Array(outBuffer);
+      const count = view.byteLength / byteSize,
+            outBuffer = new ArrayBuffer(view.byteLength),
+            outView = new DataView(outBuffer);
 
       for (let i = 0; i < count; ++i) {
          for (let b = 0; b < byteSize; ++b) {
             const splitIndex = b * count + i,
-                  byte = splitView.getUint8(splitIndex),
+                  byte = view.getUint8(splitIndex),
                   writeIndex = i * byteSize + b;
-            outBytes[writeIndex] = byte;
+            outView.setUint8(writeIndex, byte);
          }
       }
 
-      // Return updated blob and remapped coltype
-      const newBlob = outBuffer;
-      let newColtype;
-      switch (coltype) {
-         case ENTupleColumnType.kSplitUInt16:
-            newColtype = ENTupleColumnType.kUInt16;
-            break;
-         case ENTupleColumnType.kSplitUInt32:
-            newColtype = ENTupleColumnType.kUInt32;
-            break;
-         case ENTupleColumnType.kSplitUInt64:
-            newColtype = ENTupleColumnType.kUInt64;
-            break;
-         case ENTupleColumnType.kSplitIndex32:
-            newColtype = ENTupleColumnType.kIndex32;
-            break;
-         case ENTupleColumnType.kSplitIndex64:
-            newColtype = ENTupleColumnType.kIndex64;
-            break;
-         case ENTupleColumnType.kSplitReal16:
-            newColtype = ENTupleColumnType.kReal16;
-            break;
-         case ENTupleColumnType.kSplitReal32:
-            newColtype = ENTupleColumnType.kReal32;
-            break;
-         case ENTupleColumnType.kSplitReal64:
-            newColtype = ENTupleColumnType.kReal64;
-            break;
-         case ENTupleColumnType.kSplitInt16:
-            newColtype = ENTupleColumnType.kInt16;
-            break;
-         case ENTupleColumnType.kSplitInt32:
-            newColtype = ENTupleColumnType.kInt32;
-            break;
-         case ENTupleColumnType.kSplitInt64:
-            newColtype = ENTupleColumnType.kInt64;
-            break;
-         default:
-            throw new Error(`Unsupported split coltype for reassembly: ${coltype}`);
-      }
-
-      return { blob: newBlob, coltype: newColtype };
+      // Return new buffer as DataView
+      return outView;
    }
 
-   // If no split type, return original blob and coltype
-   return { blob, coltype };
+   // If no split type, return original view
+   return view;
 }
 
 function decodeIndex32(view) {
@@ -1093,8 +1048,7 @@ class ReaderItem {
          throw new Error(`Invalid blob type for column ${this.id}: ${Object.prototype.toString.call(rawblob)}`);
 
       const originalColtype = this.column.coltype,
-            data = recontructUnsplitBuffer(rawblob, this.column),
-            view = data.blob instanceof DataView ? data.blob : new DataView(data.blob);
+            view = recontructUnsplitBuffer(rawblob, originalColtype);
 
       // Handle split index types
       switch (originalColtype) {
