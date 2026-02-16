@@ -1031,7 +1031,10 @@ class ReaderItem {
    /** @summary Simple column with fixed element size - no vectors, no strings */
    is_simple() { return this.sz > 0 && this.simple; }
 
-   set_simple(flag) { this.simple = flag; }
+   set_not_simple() {
+      this.simple = false;
+      this.items?.forEach(item => item.set_not_simple());
+   }
 
    assignReadFunc() {
       switch (this.coltype) {
@@ -1154,10 +1157,10 @@ class ReaderItem {
    }
 
    /** @summary implements reading of std::string where item1 provides offsets */
-   assignStringReader(itemlen, itemstr) {
-      this.itemlen = itemlen;
-      this.itemstr = itemstr;
-      this.itemlen._is_offset_item = true;
+   assignStringReader(items) {
+      this.items = items;
+      items[0]._is_offset_item = true;
+      items[1].set_not_simple();
 
       this.off0 = 0;
       this.$tgt = {};
@@ -1166,9 +1169,9 @@ class ReaderItem {
       // for plain string one can read offsets
 
       this.func = function(tgtobj) {
-         this.itemlen.func(this.$tgt);
+         this.items[0].func(this.$tgt);
          const off = Number(this.$tgt.len);
-         tgtobj[this.name] = this.itemstr.readStr(off - this.off0);
+         tgtobj[this.name] = this.items[1].readStr(off - this.off0);
          this.off0 = off;
       };
 
@@ -1183,19 +1186,19 @@ class ReaderItem {
    }
 
    /** @summary implement reading of std collection where itemv provides element reading */
-   assignCollectionReader(itemlen, itemval) {
-      this.itemlen = itemlen;
-      this.itemval = itemval;
+   assignCollectionReader(items) {
+      this.items = items;
       this.off0 = 0;
-      this.itemlen._is_offset_item = true;
+      items[0]._is_offset_item = true;
+      items[1].set_not_simple();
 
       this.func = function(tgtobj) {
          const arr = [], tmp = {};
-         this.itemlen.func(tmp);
+         this.items[0].func(tmp);
          const off = Number(tmp.len);
          let len = off - this.off0;
          while (len-- > 0) {
-            this.itemval.func(tmp);
+            this.items[1].func(tmp);
             arr.push(tmp.val);
          }
          tgtobj[this.name] = arr;
@@ -1205,100 +1208,80 @@ class ReaderItem {
       this.shift = function(entries) {
          if (entries > 0) {
             const tmp = {};
-            this.itemlen.shift(entries - 1);
-            this.itemlen.func(tmp);
+            this.items[0].shift(entries - 1);
+            this.items[0].func(tmp);
             this.off0 = Number(tmp[this.name]);
-            this.itemval.shift(this.offv0);
+            this.items[1].shift(this.off0);
          }
       };
    }
 
    /** @summary implement reading of std::array<T,N> where item1 reads value element */
-   assignArrayReader(itemv, arrsize) {
-      this.itemv = itemv;
+   assignArrayReader(items, arrsize) {
+      this.items = items;
       this.arrsize = arrsize;
 
-      itemv.funcv = itemv.func;
-      itemv.shiftv = itemv.shift;
-      // assign noop
-      itemv.func = itemv.shift = () => {};
-
-      // item itself can remain simple
-      itemv.set_simple(false);
+      items[0].set_not_simple();
 
       this.func = function(tgtobj) {
          const arr = [], tmp = {};
          let len = this.arrsize;
          while (len-- > 0) {
-            this.itemv.funcv(tmp);
-            arr.push(tmp[this.name]);
+            this.items[0].func(tmp);
+            arr.push(tmp.value);
          }
          tgtobj[this.name] = arr;
       };
 
       this.shift = function(entries) {
          if (entries > 0)
-            this.itemv.shiftv(entries * this.arrsize);
+            this.items[0].shift(entries * this.arrsize);
       };
    }
 
    /** @summary assign all childs fields for std::variant reader */
-   assignVariantReader(itemswitch, items) {
-      this.itemswitch = itemswitch;
+   assignVariantReader(items) {
       this.items = items;
+      this.set_not_simple();
 
       this.func = function(tgtobj) {
          const tmp = {};
-         this.itemswitch.func(tmp);
+         this.items[0].func(tmp);
          const id = tmp.switch;
          if (id === 0)
             tgtobj[this.name] = null; // set null
-         else if (Number.isInteger(id) && (id > 0) && (id <= this.items.length))
-            this.items[id - 1].func(tgtobj);
+         else if (Number.isInteger(id) && (id > 0) && (id < this.items.length))
+            this.items[id].func(tgtobj);
       };
    }
 
    /** @summary assign all childs fields for std::variant reader */
    assignTupleReader(items) {
       this.items = items;
-      items.forEach(item => {
-         item.funcV = item.func;
-         item.func = item.shift = () => {};
-         item.set_simple(false);
-      });
-      this.set_simple(false);
 
       this.func = function(tgtobj) {
          const tuple = {};
-         this.items.forEach(item => item.funcV(tuple));
+         this.items.forEach(item => item.func(tuple));
          tgtobj[this.name] = tuple;
       };
    }
 
    /** @summary implement reading of std::pair where item1 reads first (key) element */
-   assignPairReader(item_p1, item_p2) {
-      this.item_p1 = item_p1;
-      this.item_p2 = item_p2;
-
-      item_p1.func_p1 = item_p1.func;
-      item_p1.shift_p1 = item_p1.shift;
-      item_p2.func_p2 = item_p2.func;
-      item_p2.shift_p2 = item_p2.shift;
-      // assign noop
-      item_p1.func = item_p1.shift = item_p2.func = item_p2.shift = () => {};
+   assignPairReader(items) {
+      this.items = items;
 
       // remember own read function - they need to be used
       this.func = function(tgtobj) {
          const res = {};
-         this.item_p1.func_p1(res);
-         this.item_p2.func_p2(res);
+         this.items[0].func(res);
+         this.items[1].func(res);
          tgtobj[this.name] = res;
       };
 
       this.shift = function(entries) {
          if (entries > 0) {
-            this.item_p1.shift_p1(entries);
-            this.item_p2.shift_p2(entries);
+            this.items[0].shift(entries);
+            this.items[1].shift(entries);
          }
       };
    }
@@ -1490,16 +1473,14 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             const item1 = addFieldReading(childs[0], 'first'),
                   item2 = addFieldReading(childs[1], 'second'),
                   item = new ReaderItem(null, tgtname);
-            handle.arr.push(item);
-            item.assignPairReader(item1, item2);
+            item.assignPairReader([item1, item2]);
             return item;
          }
 
          if ((childs.length === 1) && (field.typeName.indexOf('std::array') === 0)) {
-            const item1 = addFieldReading(childs[0], tgtname),
+            const item1 = addFieldReading(childs[0], 'value'),
                   item = new ReaderItem(null, tgtname);
-            handle.arr.push(item);
-            item.assignArrayReader(item1, Number(field.arraySize));
+            item.assignArrayReader([item1], Number(field.arraySize));
             return item;
          }
 
@@ -1508,7 +1489,6 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             for (let i = 0; i < childs.length; ++i)
                items.push(addFieldReading(childs[i], `_${i}`));
             const item = new ReaderItem(null, tgtname);
-            handle.arr.push(item);
             item.assignTupleReader(items);
             return item;
          }
@@ -1520,7 +1500,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          const itemlen = addColumnReadout(columns[0], 'len'),
                itemstr = addColumnReadout(columns[1], 'str'),
                items = new ReaderItem(null, tgtname);
-         items.assignStringReader(itemlen, itemstr);
+         items.assignStringReader([itemlen, itemstr]);
          return items;
       }
 
@@ -1534,18 +1514,16 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          const itemlen = addColumnReadout(columns[0], 'len'),
                itemval = addFieldReading(childs[0], 'val'),
                itemvect = new ReaderItem(null, tgtname);
-         itemvect.assignCollectionReader(itemlen, itemval);
+         itemvect.assignCollectionReader([itemlen, itemval]);
          return itemvect;
       }
 
       if ((childs.length > 0) && (field.typeName.indexOf('std::variant') === 0)) {
-         const items = [],
-               itemswitch = addColumnReadout(columns[0], 'switch'),
+         const items = [addColumnReadout(columns[0], 'switch')],
                itemvariant = new ReaderItem(null, tgtname);
-
          for (let i = 0; i < childs.length; ++i)
             items.push(addFieldReading(childs[i], tgtname));
-         itemvariant.assignVariantReader(itemswitch, items);
+         itemvariant.assignVariantReader(items);
          return itemvariant;
       }
 
