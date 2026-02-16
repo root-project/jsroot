@@ -2,7 +2,40 @@ import { isStr, isObject } from './core.mjs';
 import { R__unzip } from './io.mjs';
 import { TDrawSelector, treeDraw } from './tree.mjs';
 
-const LITTLE_ENDIAN = true;
+// ENTupleColumnType - supported column types
+
+const kBit = 0x00,
+      kByte = 0x01,
+      kChar = 0x02,
+      kInt8 = 0x03,
+      kUInt8 = 0x04,
+      kInt16 = 0x05,
+      kUInt16 = 0x06,
+      kInt32 = 0x07,
+      kUInt32 = 0x08,
+      kInt64 = 0x09,
+      kUInt64 = 0x0A,
+      // kReal16 = 0x0B, not used yet
+      kReal32 = 0x0C,
+      kReal64 = 0x0D,
+      kIndex32 = 0x0E,
+      kIndex64 = 0x0F,
+      kSwitch = 0x10,
+      kSplitInt16 = 0x11,
+      kSplitUInt16 = 0x12,
+      kSplitInt32 = 0x13,
+      kSplitUInt32 = 0x14,
+      kSplitInt64 = 0x15,
+      kSplitUInt64 = 0x16,
+      kSplitReal16 = 0x17,
+      kSplitReal32 = 0x18,
+      kSplitReal64 = 0x19,
+      kSplitIndex32 = 0x1A,
+      kSplitIndex64 = 0x1B,
+      // kReal32Trunc = 0x1C, not used yet
+      // kReal32Quant = 0x1D, not used yet
+      LITTLE_ENDIAN = true;
+
 class RBufferReader {
 
    constructor(buffer) {
@@ -115,61 +148,27 @@ class RBufferReader {
 }
 
 
-const ENTupleColumnType = {
-   kBit: 0x00,
-   kByte: 0x01,
-   kChar: 0x02,
-   kInt8: 0x03,
-   kUInt8: 0x04,
-   kInt16: 0x05,
-   kUInt16: 0x06,
-   kInt32: 0x07,
-   kUInt32: 0x08,
-   kInt64: 0x09,
-   kUInt64: 0x0A,
-   kReal16: 0x0B,
-   kReal32: 0x0C,
-   kReal64: 0x0D,
-   kIndex32: 0x0E,
-   kIndex64: 0x0F,
-   kSwitch: 0x10,
-   kSplitInt16: 0x11,
-   kSplitUInt16: 0x12,
-   kSplitInt32: 0x13,
-   kSplitUInt32: 0x14,
-   kSplitInt64: 0x15,
-   kSplitUInt64: 0x16,
-   kSplitReal16: 0x17,
-   kSplitReal32: 0x18,
-   kSplitReal64: 0x19,
-   kSplitIndex32: 0x1A,
-   kSplitIndex64: 0x1B,
-   kReal32Trunc: 0x1C,
-   kReal32Quant: 0x1D
-};
-
-
 /** @summary Rearrange bytes from split format to normal format (row-wise) for decoding
  * @private */
 function recontructUnsplitBuffer(view, coltype) {
    // Determine byte size based on column type
    let byteSize;
    switch (coltype) {
-      case ENTupleColumnType.kSplitReal64:
-      case ENTupleColumnType.kSplitInt64:
-      case ENTupleColumnType.kSplitUInt64:
-      case ENTupleColumnType.kSplitIndex64:
+      case kSplitReal64:
+      case kSplitInt64:
+      case kSplitUInt64:
+      case kSplitIndex64:
          byteSize = 8;
          break;
-      case ENTupleColumnType.kSplitReal32:
-      case ENTupleColumnType.kSplitInt32:
-      case ENTupleColumnType.kSplitIndex32:
-      case ENTupleColumnType.kSplitUInt32:
+      case kSplitReal32:
+      case kSplitInt32:
+      case kSplitIndex32:
+      case kSplitUInt32:
          byteSize = 4;
          break;
-      case ENTupleColumnType.kSplitInt16:
-      case ENTupleColumnType.kSplitUInt16:
-      case ENTupleColumnType.kSplitReal16:
+      case kSplitInt16:
+      case kSplitUInt16:
+      case kSplitReal16:
          byteSize = 2;
          break;
       default:
@@ -797,8 +796,8 @@ class ReaderItem {
          this.coltype = column.coltype;
 
          // special handling of split types
-         if ((this.coltype >= ENTupleColumnType.kSplitInt16) && (this.coltype <= ENTupleColumnType.kSplitIndex64)) {
-            this.coltype -= (ENTupleColumnType.kSplitInt16 - ENTupleColumnType.kInt16);
+         if ((this.coltype >= kSplitInt16) && (this.coltype <= kSplitIndex64)) {
+            this.coltype -= (kSplitInt16 - kInt16);
             this.simple = false;
          }
       } else if (column?.length)
@@ -853,7 +852,7 @@ class ReaderItem {
 
    assignReadFunc() {
       switch (this.coltype) {
-         case ENTupleColumnType.kBit: {
+         case kBit: {
             this.func = function(obj) {
                if (this.o2 === 0)
                   this.byte = this.view.getUint8(this.o);
@@ -865,22 +864,22 @@ class ReaderItem {
             };
             break;
          }
-         case ENTupleColumnType.kReal64:
+         case kReal64:
             this.func = function(obj) {
                obj[this.name] = this.view.getFloat64(this.o, LITTLE_ENDIAN);
                this.shift_o(8);
             };
             this.sz = 8;
             break;
-         case ENTupleColumnType.kReal32:
+         case kReal32:
             this.func = function(obj) {
                obj[this.name] = this.view.getFloat32(this.o, LITTLE_ENDIAN);
                this.shift_o(4);
             };
             this.sz = 4;
             break;
-         case ENTupleColumnType.kInt64:
-         case ENTupleColumnType.kIndex64:
+         case kInt64:
+         case kIndex64:
             this.func = function(obj) {
                // FIXME: let process BigInt in the TTree::Draw
                obj[this.name] = Number(this.view.getBigInt64(this.o, LITTLE_ENDIAN));
@@ -888,7 +887,7 @@ class ReaderItem {
             };
             this.sz = 8;
             break;
-         case ENTupleColumnType.kUInt64:
+         case kUInt64:
             this.func = function(obj) {
                // FIXME: let process BigInt in the TTree::Draw
                obj[this.name] = Number(this.view.getBigUint64(this.o, LITTLE_ENDIAN));
@@ -896,7 +895,7 @@ class ReaderItem {
             };
             this.sz = 8;
             break;
-         case ENTupleColumnType.kSwitch:
+         case kSwitch:
             this.func = function(obj) {
                // index not used in std::variant, may be in some other usecases
                // obj[this.name] = Number(this.view.getBigInt64(this.o, LITTLE_ENDIAN));
@@ -906,51 +905,51 @@ class ReaderItem {
             };
             this.sz = 12;
             break;
-         case ENTupleColumnType.kInt32:
-         case ENTupleColumnType.kIndex32:
+         case kInt32:
+         case kIndex32:
             this.func = function(obj) {
                obj[this.name] = this.view.getInt32(this.o, LITTLE_ENDIAN);
                this.shift_o(4);
             };
             this.sz = 4;
             break;
-         case ENTupleColumnType.kUInt32:
+         case kUInt32:
             this.func = function(obj) {
                obj[this.name] = this.view.getUint32(this.o, LITTLE_ENDIAN);
                this.shift_o(4);
             };
             this.sz = 4;
             break;
-         case ENTupleColumnType.kInt16:
+         case kInt16:
             this.func = function(obj) {
                obj[this.name] = this.view.getInt16(this.o, LITTLE_ENDIAN);
                this.shift_o(2);
             };
             this.sz = 2;
             break;
-         case ENTupleColumnType.kUInt16:
+         case kUInt16:
             this.func = function(obj) {
                obj[this.name] = this.view.getUint16(this.o, LITTLE_ENDIAN);
                this.shift_o(2);
             };
             this.sz = 2;
             break;
-         case ENTupleColumnType.kInt8:
+         case kInt8:
             this.func = function(obj) {
                obj[this.name] = this.view.getInt8(this.o);
                this.shift_o(1);
             };
             this.sz = 1;
             break;
-         case ENTupleColumnType.kUInt8:
-         case ENTupleColumnType.kByte:
+         case kUInt8:
+         case kByte:
             this.func = function(obj) {
                obj[this.name] = this.view.getUint8(this.o);
                this.shift_o(1);
             };
             this.sz = 1;
             break;
-         case ENTupleColumnType.kChar:
+         case kChar:
             this.func = function(obj) {
                obj[this.name] = String.fromCharCode(this.view.getInt8(this.o));
                this.shift_o(1);
@@ -1011,7 +1010,7 @@ class ReaderItem {
 
       let expectedSize = numElements * elementSize;
       // Special handling for boolean fields
-      if (this.coltype === ENTupleColumnType.kBit)
+      if (this.coltype === kBit)
          expectedSize = Math.ceil(numElements / 8);
 
       // Check if data is compressed
@@ -1035,12 +1034,12 @@ class ReaderItem {
 
       // Handle split index types
       switch (originalColtype) {
-         case ENTupleColumnType.kSplitIndex32: decodeIndex32(view); break;
-         case ENTupleColumnType.kSplitIndex64: decodeIndex64(view, 0); break;
-         case ENTupleColumnType.kSwitch: decodeIndex64(view, 4); break;
-         case ENTupleColumnType.kSplitInt16: decodeZigzag16(view); break;
-         case ENTupleColumnType.kSplitInt32: decodeZigzag32(view); break;
-         case ENTupleColumnType.kSplitInt64: decodeZigzag64(view); break;
+         case kSplitIndex32: decodeIndex32(view); break;
+         case kSplitIndex64: decodeIndex64(view, 0); break;
+         case kSwitch: decodeIndex64(view, 4); break;
+         case kSplitInt16: decodeZigzag16(view); break;
+         case kSplitInt32: decodeZigzag32(view); break;
+         case kSplitInt64: decodeZigzag64(view); break;
       };
 
       this.views[page_indx] = view;
