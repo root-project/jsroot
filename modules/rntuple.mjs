@@ -254,53 +254,50 @@ function recontructUnsplitBuffer(blob, columnDescriptor) {
    return { blob, coltype };
 }
 
-
-function decodeIndex32(src) {
-   const view = src instanceof ArrayBuffer ? new DataView(src) : src;
+function decodeIndex32(view) {
    for (let o = 0, prev = 0; o < view.byteLength; o += 4) {
       const v = prev + view.getInt32(o, LITTLE_ENDIAN);
       view.setInt32(o, v, LITTLE_ENDIAN);
       prev = v;
    }
-   return view;
 }
 
-function decodeIndex64(src, shift) {
-   const view = src instanceof ArrayBuffer ? new DataView(src) : src;
+function decodeIndex64(view, shift) {
    for (let o = 0, prev = 0n; o < view.byteLength; o += (8 + shift)) {
       const v = prev + view.getBigInt64(o, LITTLE_ENDIAN);
       view.setBigInt64(o, v, LITTLE_ENDIAN);
       prev = v;
    }
-   return view;
 }
 
-/**
- * @summary Decode a reconstructed signed integer buffer using ZigZag encoding
-  */
-function decodeZigzag(blob, coltype) {
-   let zigzag, result;
 
-   if (coltype === ENTupleColumnType.kInt16) {
-      zigzag = new Uint16Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 2);
-      result = new Int16Array(zigzag.length);
-   } else if (coltype === ENTupleColumnType.kInt32) {
-      zigzag = new Uint32Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 4);
-      result = new Int32Array(zigzag.length);
-   } else if (coltype === ENTupleColumnType.kInt64) {
-      zigzag = new BigUint64Array(blob.buffer || blob, blob.byteOffset || 0, blob.byteLength / 8);
-      result = new BigInt64Array(zigzag.length);
-   } else
-      throw new Error(`decodeZigzag: unsupported column type ${coltype}`);
-
-   for (let i = 0; i < zigzag.length; ++i) {
-      // ZigZag decode: (x >>> 1) ^ (-(x & 1))
-      const x = zigzag[i];
-      result[i] = (x >>> 1) ^ (-(x & 1));
+/** @summary Decode a reconstructed 16bit signed integer buffer using ZigZag encoding
+ * @private */
+function decodeZigzag16(view) {
+   for (let o = 0; o < view.byteLength; o += 2) {
+      const x = view.getUint16(o, LITTLE_ENDIAN);
+      view.setInt16(o, (x >>> 1) ^ (-(x & 1)), LITTLE_ENDIAN);
    }
-
-   return { blob: result, coltype };
 }
+
+/** @summary Decode a reconstructed 32bit signed integer buffer using ZigZag encoding
+ * @private */
+function decodeZigzag32(view) {
+   for (let o = 0; o < view.byteLength; o += 4) {
+      const x = view.getUint32(o, LITTLE_ENDIAN);
+      view.setInt32(o, (x >>> 1) ^ (-(x & 1)), LITTLE_ENDIAN);
+   }
+}
+
+/** @summary Decode a reconstructed 64bit signed integer buffer using ZigZag encoding
+ * @private */
+function decodeZigzag64(view) {
+   for (let o = 0; o < view.byteLength; o += 8) {
+      const x = view.getUint64(o, LITTLE_ENDIAN);
+      view.setInt64(o, (x >>> 1) ^ (-(x & 1)), LITTLE_ENDIAN);
+   }
+}
+
 
 // Envelope Types
 // TODO: Define usage logic for envelope types in future
@@ -1096,24 +1093,18 @@ class ReaderItem {
          throw new Error(`Invalid blob type for column ${this.id}: ${Object.prototype.toString.call(rawblob)}`);
 
       const originalColtype = this.column.coltype,
-            data = recontructUnsplitBuffer(rawblob, this.column);
-
-      let view;
+            data = recontructUnsplitBuffer(rawblob, this.column),
+            view = data.blob instanceof DataView ? data.blob : new DataView(data.blob);
 
       // Handle split index types
-      if (originalColtype === ENTupleColumnType.kSplitIndex32)
-         view = decodeIndex32(data.blob);
-      else if (originalColtype === ENTupleColumnType.kSplitIndex64)
-         view = decodeIndex64(data.blob, 0);
-      else if (originalColtype === ENTupleColumnType.kSwitch)
-         view = decodeIndex64(data.blob, 4);
-      // Handle Split Signed Int types
-      else if (originalColtype === ENTupleColumnType.kSplitInt16 || originalColtype === ENTupleColumnType.kSplitInt32 || originalColtype === ENTupleColumnType.kSplitInt64)
-         view = new DataView(decodeZigzag(data.blob, data.coltype).blob.buffer);
-      else if (data.blob instanceof DataView)
-         view = data.blob;
-      else
-         view = new DataView(data.blob);
+      switch (originalColtype) {
+         case ENTupleColumnType.kSplitIndex32: decodeIndex32(view); break;
+         case ENTupleColumnType.kSplitIndex64: decodeIndex64(view, 0); break;
+         case ENTupleColumnType.kSwitch: decodeIndex64(view, 4); break;
+         case ENTupleColumnType.kSplitInt16: decodeZigzag16(view); break;
+         case ENTupleColumnType.kSplitInt32: decodeZigzag32(view); break;
+         case ENTupleColumnType.kSplitInt64: decodeZigzag64(view); break;
+      };
 
       this.views[page_indx] = view;
    }
