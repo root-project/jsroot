@@ -1265,8 +1265,9 @@ class StringReaderItem extends ReaderItem {
    shift(entries) {
       this.items[0].shift(entries - 1);
       this.items[0].func(this.$tgt);
-      this.off0 = Number(this.$tgt.len);
-      this.items[1].shift_o(this.off0);
+      const off = Number(this.$tgt.len);
+      this.items[1].shift_o(off - this.off0);
+      this.off0 = off;
    }
 
 }
@@ -1299,7 +1300,6 @@ class ArrayReaderItem extends ReaderItem {
 }
 
 
-
 /** @class reading std::vector and other kinds of collections
  * @private */
 
@@ -1329,8 +1329,9 @@ class CollectionReaderItem extends ReaderItem {
       const tmp = {};
       this.items[0].shift(entries - 1);
       this.items[0].func(tmp);
-      this.off0 = Number(tmp[this.name]);
-      this.items[1].shift(this.off0);
+      const off = Number(tmp.len);
+      this.items[1].shift(off - this.off0);
+      this.off0 = off;
    }
 
 }
@@ -1357,6 +1358,7 @@ class VariantReaderItem extends ReaderItem {
    }
 
 }
+
 
 /** @class reading std::tuple<> field
   * @private */
