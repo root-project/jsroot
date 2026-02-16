@@ -1158,76 +1158,6 @@ class ReaderItem {
       return s;
    }
 
-   /** @summary implement reading of std::array<T,N> where item1 reads value element */
-   assignArrayReader(items, arrsize) {
-      this.items = items;
-      this.arrsize = arrsize;
-
-      items[0].set_not_simple();
-
-      this.func = function(tgtobj) {
-         const arr = [], tmp = {};
-         let len = this.arrsize;
-         while (len-- > 0) {
-            this.items[0].func(tmp);
-            arr.push(tmp.value);
-         }
-         tgtobj[this.name] = arr;
-      };
-
-      this.shift = function(entries) {
-         if (entries > 0)
-            this.items[0].shift(entries * this.arrsize);
-      };
-   }
-
-   /** @summary assign all childs fields for std::variant reader */
-   assignVariantReader(items) {
-      this.items = items;
-      this.set_not_simple();
-
-      this.func = function(tgtobj) {
-         const tmp = {};
-         this.items[0].func(tmp);
-         const id = tmp.switch;
-         if (id === 0)
-            tgtobj[this.name] = null; // set null
-         else if (Number.isInteger(id) && (id > 0) && (id < this.items.length))
-            this.items[id].func(tgtobj);
-      };
-   }
-
-   /** @summary assign all childs fields for std::variant reader */
-   assignTupleReader(items) {
-      this.items = items;
-
-      this.func = function(tgtobj) {
-         const tuple = {};
-         this.items.forEach(item => item.func(tuple));
-         tgtobj[this.name] = tuple;
-      };
-   }
-
-   /** @summary implement reading of std::pair where item1 reads first (key) element */
-   assignPairReader(items) {
-      this.items = items;
-
-      // remember own read function - they need to be used
-      this.func = function(tgtobj) {
-         const res = {};
-         this.items[0].func(res);
-         this.items[1].func(res);
-         tgtobj[this.name] = res;
-      };
-
-      this.shift = function(entries) {
-         if (entries > 0) {
-            this.items[0].shift(entries);
-            this.items[1].shift(entries);
-         }
-      };
-   }
-
    collectPages(cluster_locations, dataToRead, itemsToRead, pagesToRead, emin, emax, elist) {
       // no pages without real column id
       if (!this.column || (this.id < 0))
@@ -1310,6 +1240,10 @@ class ReaderItem {
 
 }
 
+
+/** @class reading std::string field
+ * @private */
+
 class StringReaderItem extends ReaderItem {
 
    constructor(items, name) {
@@ -1336,6 +1270,38 @@ class StringReaderItem extends ReaderItem {
    }
 
 }
+
+/** @class reading of std::array<T,N>
+ * @private */
+
+class ArrayReaderItem extends ReaderItem {
+
+   constructor(items, tgtname, arrsize) {
+      super(items, tgtname);
+      this.arrsize = arrsize;
+      items[0].set_not_simple();
+   }
+
+   func(tgtobj) {
+      const arr = [], tmp = {};
+      let len = this.arrsize;
+      while (len-- > 0) {
+         this.items[0].func(tmp);
+         arr.push(tmp.value);
+      }
+      tgtobj[this.name] = arr;
+   }
+
+   shift(entries) {
+      this.items[0].shift(entries * this.arrsize);
+   }
+
+}
+
+
+
+/** @class reading std::vector and other kinds of collections
+ * @private */
 
 class CollectionReaderItem extends ReaderItem {
 
@@ -1365,7 +1331,67 @@ class CollectionReaderItem extends ReaderItem {
       this.items[0].func(tmp);
       this.off0 = Number(tmp[this.name]);
       this.items[1].shift(this.off0);
-   };
+   }
+
+}
+
+/** @class reading std::variant field
+  * @private */
+
+class VariantReaderItem extends ReaderItem {
+
+   constructor(items, tgtname) {
+      super(items, tgtname);
+      this.items = items;
+      this.set_not_simple();
+   }
+
+   func(tgtobj) {
+      const tmp = {};
+      this.items[0].func(tmp);
+      const id = tmp.switch;
+      if (id === 0)
+         tgtobj[this.name] = null; // set null
+      else if (Number.isInteger(id) && (id > 0) && (id < this.items.length))
+         this.items[id].func(tgtobj);
+   }
+
+}
+
+/** @class reading std::tuple<> field
+  * @private */
+
+class TupleReaderItem extends ReaderItem {
+
+   func(tgtobj) {
+      const tuple = {};
+      this.items.forEach(item => item.func(tuple));
+      tgtobj[this.name] = tuple;
+   }
+
+   shift(entries) {
+      this.items.forEach(item => item.shift(entries));
+   }
+
+}
+
+
+/** @class reading std::pair field
+ * @private */
+
+class PairReaderItem extends ReaderItem {
+
+   func(tgtobj) {
+      const res = {};
+      this.items[0].func(res);
+      this.items[1].func(res);
+      tgtobj[this.name] = res;
+   }
+
+   shift(entries) {
+      this.items[0].shift(entries);
+      this.items[1].shift(entries);
+   }
 
 }
 
@@ -1473,26 +1499,20 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       if (!columns?.length) {
          if ((childs.length === 2) && (field.typeName.indexOf('std::pair') === 0)) {
             const item1 = addFieldReading(childs[0], 'first'),
-                  item2 = addFieldReading(childs[1], 'second'),
-                  item = new ReaderItem(null, tgtname);
-            item.assignPairReader([item1, item2]);
-            return item;
+                  item2 = addFieldReading(childs[1], 'second');
+            return new PairReaderItem([item1, item2], tgtname);
          }
 
          if ((childs.length === 1) && (field.typeName.indexOf('std::array') === 0)) {
-            const item1 = addFieldReading(childs[0], 'value'),
-                  item = new ReaderItem(null, tgtname);
-            item.assignArrayReader([item1], Number(field.arraySize));
-            return item;
+            const item1 = addFieldReading(childs[0], 'value');
+            return new ArrayReaderItem([item1], tgtname, Number(field.arraySize));
          }
 
          if ((childs.length > 0) && (field.typeName.indexOf('std::tuple') === 0)) {
             const items = [];
             for (let i = 0; i < childs.length; ++i)
                items.push(addFieldReading(childs[i], `_${i}`));
-            const item = new ReaderItem(null, tgtname);
-            item.assignTupleReader(items);
-            return item;
+            return new TupleReaderItem(items, tgtname);
          }
 
          throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
@@ -1517,12 +1537,10 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       }
 
       if ((childs.length > 0) && (field.typeName.indexOf('std::variant') === 0)) {
-         const items = [addColumnReadout(columns[0], 'switch')],
-               itemvariant = new ReaderItem(null, tgtname);
+         const items = [addColumnReadout(columns[0], 'switch')];
          for (let i = 0; i < childs.length; ++i)
             items.push(addFieldReading(childs[i], tgtname));
-         itemvariant.assignVariantReader(items);
-         return itemvariant;
+         return new VariantReaderItem(items, tgtname);
       }
 
       return addColumnReadout(columns[0], tgtname);
