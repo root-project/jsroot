@@ -191,6 +191,8 @@ function recontructUnsplitBuffer(view, coltype) {
    return outView;
 }
 
+/** @summary Decode a 32 bit intex buffer
+ * @private */
 function decodeIndex32(view) {
    for (let o = 0, prev = 0; o < view.byteLength; o += 4) {
       const v = prev + view.getInt32(o, LITTLE_ENDIAN);
@@ -199,6 +201,8 @@ function decodeIndex32(view) {
    }
 }
 
+/** @summary Decode a 64 bit intex buffer
+ * @private */
 function decodeIndex64(view, shift) {
    for (let o = 0, prev = 0n; o < view.byteLength; o += (8 + shift)) {
       const v = prev + view.getBigInt64(o, LITTLE_ENDIAN);
@@ -445,7 +449,6 @@ class RNTupleDescriptorBuilder {
             maxValue = reader.readF64();
          }
 
-
          const column = {
             coltype,
             bitsOnStorage,
@@ -636,7 +639,6 @@ class RNTupleDescriptorBuilder {
                const numElementsWithBit = reader.readS32(),
                      hasChecksum = numElementsWithBit < 0,
                      numElements = BigInt(Math.abs(Number(numElementsWithBit))),
-
                      locator = this._readLocator(reader);
                pages.push({
                   numElements,
@@ -646,11 +648,8 @@ class RNTupleDescriptorBuilder {
             }
 
             const elementOffset = reader.readS64(),
-                  isSuppressed = elementOffset < 0;
-
-            let compression = null;
-            if (!isSuppressed)
-               compression = reader.readU32();
+                  isSuppressed = elementOffset < 0,
+                  compression = isSuppressed ? null : reader.readU32();
 
             columns.push({
                pages,
@@ -666,6 +665,8 @@ class RNTupleDescriptorBuilder {
       this.pageLocations = clusterPageLocations;
    }
 
+   /** @summary Search field by name
+    * @private */
    findField(name) {
       for (let n = 0; n < this.fieldDescriptors.length; ++n) {
          const field = this.fieldDescriptors[n];
@@ -674,7 +675,8 @@ class RNTupleDescriptorBuilder {
       }
    }
 
-   /** @summary Return all childs of specified field */
+   /** @summary Return all childs of specified field
+    * @private */
    findChildFields(field) {
       const indx = this.fieldDescriptors.indexOf(field), res = [];
       for (let n = 0; n < this.fieldDescriptors.length; ++n) {
@@ -685,7 +687,8 @@ class RNTupleDescriptorBuilder {
       return res;
    }
 
-   /** @summary Return array of columns for specified field */
+   /** @summary Return array of columns for specified field
+    * @private */
    findColumns(field) {
       const res = [];
       if (!field)
@@ -696,7 +699,6 @@ class RNTupleDescriptorBuilder {
       }
       return res;
    }
-
 
 } // class RNTupleDescriptorBuilder
 
@@ -772,12 +774,8 @@ async function readHeaderFooter(tuple) {
 }
 
 
-/** @summary Return field name for specified branch index
- * @desc API let use field name in selector or field object itself */
-function getSelectorFieldName(selector, i) {
-   const br = selector.getBranch(i);
-   return isStr(br) ? br : br?.fieldName;
-}
+/** @class Base class to read columns/fields from RNtuple
+ * @private */
 
 class ReaderItem {
 
@@ -1057,22 +1055,22 @@ class StringReaderItem extends ReaderItem {
       super(items, name);
       items[0]._is_offset_item = true;
       items[1].set_not_simple();
-
       this.off0 = 0;
-      this.$tgt = {};
    }
 
    func(tgtobj) {
-      this.items[0].func(this.$tgt);
-      const off = Number(this.$tgt.len);
+      const tmp = {};
+      this.items[0].func(tmp);
+      const off = Number(tmp.len);
       tgtobj[this.name] = this.items[1].readStr(off - this.off0);
       this.off0 = off;
    }
 
    shift(entries) {
       this.items[0].shift(entries - 1);
-      this.items[0].func(this.$tgt);
-      const off = Number(this.$tgt.len);
+      const tmp = {};
+      this.items[0].func(tmp);
+      const off = Number(tmp.len);
       this.items[1].shift_o(off - this.off0);
       this.off0 = off;
    }
@@ -1360,7 +1358,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          throw new Error('Not able to read header for the RNtuple');
 
       for (let i = 0; i < selector.numBranches(); ++i) {
-         const name = getSelectorFieldName(selector, i),
+         const br = selector.getBranch(i),
+               name = isStr(br) ? br : br?.fieldName,
                tgtname = selector.nameOfBranch(i);
          if (!name)
             throw new Error(`Not able to extract name for field ${i}`);
