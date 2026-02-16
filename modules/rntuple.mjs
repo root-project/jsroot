@@ -1031,10 +1031,7 @@ class ReaderItem {
    /** @summary Simple column with fixed element size - no vectors, no strings */
    is_simple() { return this.sz > 0 && this.simple; }
 
-   set_simple(flag) {
-      this.simple = flag;
-      this.item1?.set_simple(flag);
-   }
+   set_simple(flag) { this.simple = flag; }
 
    assignReadFunc() {
       switch (this.coltype) {
@@ -1246,24 +1243,18 @@ class ReaderItem {
    }
 
    /** @summary assign all childs fields for std::variant reader */
-   assignVariantReader(items) {
+   assignVariantReader(itemswitch, items) {
+      this.itemswitch = itemswitch;
       this.items = items;
-      items.forEach(item => {
-         item.funcV = item.func;
-         item.func = item.shift = () => {};
-         item.set_simple(false);
-      });
-      this.set_simple(false);
 
-      this.funcV = this.func;
       this.func = function(tgtobj) {
          const tmp = {};
-         this.funcV(tmp);
-         const id = tmp[this.name];
+         this.itemswitch.func(tmp);
+         const id = tmp.switch;
          if (id === 0)
             tgtobj[this.name] = null; // set null
          else if (Number.isInteger(id) && (id > 0) && (id <= this.items.length))
-            this.items[id - 1].funcV(tgtobj);
+            this.items[id - 1].func(tgtobj);
       };
    }
 
@@ -1553,7 +1544,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
                itemvariant = new ReaderItem(null, tgtname);
 
          for (let i = 0; i < childs.length; ++i)
-            items.push(addFieldReading(childs[i], `_${i}`));
+            items.push(addFieldReading(childs[i], tgtname));
          itemvariant.assignVariantReader(itemswitch, items);
          return itemvariant;
       }
