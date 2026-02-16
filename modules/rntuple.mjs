@@ -1147,42 +1147,40 @@ class ReaderItem {
       }
    }
 
-   /** @summary identify if this item used as offset for std::string or similar */
-   is_offset_item() { return (this.func0 && this.shift0) || (this.shiftn && this.funcn); }
+   readStr(len) {
+      let s = '';
+      while (len-- > 0) {
+         s += String.fromCharCode(this.view.getInt8(this.o));
+         this.shift_o(1);
+      }
+      return s;
+   }
 
    /** @summary implements reading of std::string where item1 provides offsets */
-   assignStringReader(item1) {
-      this.item1 = item1;
+   assignStringReader(itemlen, itemstr) {
+      this.itemlen = itemlen;
+      this.itemstr = itemstr;
+      this.itemlen._is_offset_item = true;
+
       this.off0 = 0;
       this.$tgt = {};
 
       this.simple = false;
       // for plain string one can read offsets
 
-      item1.func0 = item1.func;
-      item1.shift0 = item1.shift;
-
-      // assign noop
-      item1.func = item1.shift = () => {};
-
       this.func = function(tgtobj) {
-         this.item1.func0(this.$tgt);
-         const off = Number(this.$tgt[this.name]);
-         let len = off - this.off0, s = '';
-         while (len-- > 0) {
-            s += String.fromCharCode(this.view.getInt8(this.o));
-            this.shift_o(1);
-         }
-         tgtobj[this.name] = s;
+         this.itemlen.func(this.$tgt);
+         const off = Number(this.$tgt.len);
+         tgtobj[this.name] = this.itemstr.readStr(off - this.off0);
          this.off0 = off;
       };
 
       this.shift = function(entries) {
          if (entries > 0) {
-            this.item1.shift0(entries - 1);
-            this.item1.func0(this.$tgt);
-            this.off0 = Number(this.$tgt[this.name]);
-            this.shift_o(this.off0);
+            this.itemlen.shift(entries - 1);
+            this.itemlen.func(this.$tgt);
+            this.off0 = Number(this.$tgt.len);
+            this.itemstr.shift_o(this.off0);
          }
       };
    }
@@ -1324,7 +1322,6 @@ class ReaderItem {
       };
    }
 
-
    collectPages(cluster_locations, dataToRead, itemsToRead, pagesToRead, emin, emax, elist) {
       // no pages without real column id
       if (!this.column || (this.id < 0))
@@ -1338,7 +1335,7 @@ class ReaderItem {
       for (let p = 0; p < pages.length; ++p) {
          const page = pages[p],
                e1 = e0 + Number(page.numElements),
-               margin = this.is_offset_item() ? 1 : 0, // offset for previous entry has to be read as well
+               margin = this._is_offset_item ? 1 : 0, // offset for previous entry has to be read as well
                is_inside = (e, beg, end) => (e >= beg) && (e < end + margin);
          let is_entries_inside = false;
          if (elist?.length)
@@ -1538,14 +1535,17 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
       }
 
-      const item = addColumnReadout(columns[0], tgtname);
-
       if ((columns.length === 2) && (field.typeName === 'std::string')) {
-         const items = new ReaderItem(columns[1], tgtname);
-         items.assignStringReader(item);
+         const itemlen = addColumnReadout(columns[0], 'len'),
+               itemstr = addColumnReadout(columns[1], 'str'),
+               items = new ReaderItem(null, tgtname);
+         items.assignStringReader(itemlen, itemstr);
          handle.arr.push(items);
          return items; // second item performs complete reading of the string
       }
+
+      const item = addColumnReadout(columns[0], tgtname);
+
 
       let is_stl = false;
       ['vector', 'map', 'unordered_map', 'multimap', 'unordered_multimap', 'set', 'unordered_set', 'multiset', 'unordered_multiset'].forEach(name => {
