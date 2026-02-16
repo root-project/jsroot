@@ -801,6 +801,8 @@ class ReaderItem {
       }
    }
 
+   reset_extras() {}
+
    shift_o(sz) {
       this.o += sz;
       while ((this.o >= this.view_len) && this.view_len) {
@@ -1042,6 +1044,10 @@ class StringReaderItem extends ReaderItem {
       this.off0 = 0;
    }
 
+   reset_extras() {
+      this.off0 = 0;
+   }
+
    func(tgtobj) {
       const tmp = {};
       this.items[0].func(tmp);
@@ -1099,6 +1105,10 @@ class CollectionReaderItem extends ReaderItem {
       this.off0 = 0;
       items[0]._is_offset_item = true;
       items[1].set_not_simple();
+   }
+
+   reset_extras() {
+      this.off0 = 0;
    }
 
    func(tgtobj) {
@@ -1204,20 +1214,27 @@ async function rntupleProcess(rntuple, selector, args = {}) {
    };
 
    function readNextPortion(inc_cluster) {
-      if (inc_cluster) {
-         handle.current_cluster++;
-         handle.current_cluster_first_entry = handle.current_cluster_last_entry;
+      let do_again = true, numClusterEntries, locations;
+
+      while (do_again) {
+         if (inc_cluster) {
+            handle.current_cluster++;
+            handle.current_cluster_first_entry = handle.current_cluster_last_entry;
+         }
+
+         locations = rntuple.builder.pageLocations[handle.current_cluster];
+         if (!locations) {
+            selector.Terminate(true);
+            return selector;
+         }
+
+         numClusterEntries = rntuple.builder.clusterSummaries[handle.current_cluster].numEntries;
+
+         handle.current_cluster_last_entry = handle.current_cluster_first_entry + numClusterEntries;
+
+         do_again = inc_cluster && handle.process_entries &&
+                    (handle.process_entries[handle.process_entries_indx] >= handle.current_cluster_last_entry);
       }
-
-      const locations = rntuple.builder.pageLocations[handle.current_cluster];
-      if (!locations) {
-         selector.Terminate(true);
-         return selector;
-      }
-
-      const numClusterEntries = rntuple.builder.clusterSummaries[handle.current_cluster].numEntries;
-
-      handle.current_cluster_last_entry = handle.current_cluster_first_entry + numClusterEntries;
 
       // calculate entries which can be extracted from the cluster
       let emin, emax;
@@ -1244,8 +1261,9 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       }).then(unzipBlobs => {
          unzipBlobs.map((rawblob, idx) => itemsToRead[idx].reconstructBlob(rawblob, pagesToRead[idx]));
 
-         for (let indx = 0; indx < handle.columns.length; ++indx)
-            handle.columns[indx].init_o();
+         // reset reading pointer after all buffers are there
+         handle.columns.forEach(item => item.init_o());
+         handle.arr.forEach(item => item.reset_extras());
 
          let skip_entries = handle.current_entry - handle.current_cluster_first_entry;
 
