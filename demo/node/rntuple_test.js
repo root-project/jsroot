@@ -191,6 +191,9 @@ selector.Terminate = () => {
 // Run rntupleProcess to ensure cluster is loaded
 await rntupleProcess(rntuple, selector);
 
+// run again, but select only two entries
+await rntupleProcess(rntuple, selector, { elist: [3, 7] });
+
 if (any_error)
    console.error('\nFAILURE when verifying file content');
 else
