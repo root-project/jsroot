@@ -680,15 +680,15 @@ class RNTupleDescriptorBuilder {
 async function readHeaderFooter(tuple) {
    // if already read - return immediately, make possible to call several times
    if (tuple?.builder)
-      return true;
+      return tuple.builder;
 
-   if (!tuple.$file)
-      return false;
+   if (!tuple?.$file)
+      return null;
 
    // request header and footer buffers from the file
    return tuple.$file.readBuffer([tuple.fSeekHeader, tuple.fNBytesHeader, tuple.fSeekFooter, tuple.fNBytesFooter]).then(blobs => {
       if (blobs?.length !== 2)
-         return false;
+         throw new Error('Failure reading header or footer blobs');
 
       // Handle both compressed and uncompressed cases
       const processBlob = (blob, uncompressedSize) => {
@@ -701,47 +701,47 @@ async function readHeaderFooter(tuple) {
       return Promise.all([
          processBlob(blobs[0], tuple.fLenHeader),
          processBlob(blobs[1], tuple.fLenFooter)
-      ]).then(unzip_blobs => {
-         const [header_blob, footer_blob] = unzip_blobs;
-         if (!header_blob || !footer_blob)
-            return false;
+      ]);
+   }).then(unzip_blobs => {
+      const [header_blob, footer_blob] = unzip_blobs;
+      if (!header_blob || !footer_blob)
+         throw new Error('Failure when uncompress header and footer blobs');
 
-         tuple.builder = new RNTupleDescriptorBuilder;
-         tuple.builder.deserializeHeader(header_blob);
-         tuple.builder.deserializeFooter(footer_blob);
+      tuple.builder = new RNTupleDescriptorBuilder;
+      tuple.builder.deserializeHeader(header_blob);
+      tuple.builder.deserializeFooter(footer_blob);
 
-         // Deserialize Page List
-         const group = tuple.builder.clusterGroups?.[0];
-         if (!group || !group.pageListLocator)
-            throw new Error('No valid cluster group or page list locator found');
+      // Deserialize Page List
+      const group = tuple.builder.clusterGroups?.[0];
+      if (!group || !group.pageListLocator)
+         throw new Error('No valid cluster group or page list locator found');
 
-         const offset = Number(group.pageListLocator.offset),
-               size = Number(group.pageListLocator.size),
-               uncompressedSize = Number(group.pageListLength);
+      const offset = Number(group.pageListLocator.offset),
+            size = Number(group.pageListLocator.size);
 
-         return tuple.$file.readBuffer([offset, size]).then(page_list_blob => {
-            if (!(page_list_blob instanceof DataView))
-               throw new Error(`Expected DataView from readBuffer, got ${Object.prototype.toString.call(page_list_blob)}`);
+      return tuple.$file.readBuffer([offset, size]);
+   }).then(page_list_blob => {
+      if (!(page_list_blob instanceof DataView))
+         throw new Error(`Expected DataView from readBuffer, got ${Object.prototype.toString.call(page_list_blob)}`);
 
-            // Check if page list data is uncompressed
-            if (page_list_blob.byteLength === uncompressedSize) {
-               // Data is uncompressed, use directly
-               tuple.builder.deserializePageList(page_list_blob);
-               return true;
-            }
-            // Attempt to decompress the page list
-            return R__unzip(page_list_blob, uncompressedSize).then(unzipped_blob => {
-               if (!(unzipped_blob instanceof DataView))
-                  throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
+      const group = tuple.builder.clusterGroups?.[0],
+            uncompressedSize = Number(group.pageListLength);
 
-               tuple.builder.deserializePageList(unzipped_blob);
-               return true;
-            });
-         });
-      });
+      // Check if page list data is uncompressed
+      if (page_list_blob.byteLength === uncompressedSize)
+         return page_list_blob;
+
+      // Attempt to decompress the page list
+      return R__unzip(page_list_blob, uncompressedSize);
+   }).then(unzipped_blob => {
+      if (!(unzipped_blob instanceof DataView))
+         throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
+
+      tuple.builder.deserializePageList(unzipped_blob);
+      return tuple.builder;
    }).catch(err => {
       console.error('Error during readHeaderFooter execution:', err);
-      throw err;
+      return null;
    });
 }
 
