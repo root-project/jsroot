@@ -20,6 +20,7 @@
 1. Introduce `settings.ServerTimeout` global timeout for THttpServer operations
 1. Let set custom color palette with `setColorPalette` function
 1. Fix - paint frame border mode/size from TCanvas
+1. Fix - add TLeafG support to TTree #397
 
 
 ## Changes in 7.10.2
