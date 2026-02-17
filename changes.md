@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 7.10.3
+1. Fix - add TLeafG support to TTree #397
+
+
 ## Changes in 7.10.2
 1. Fix - correctly process `TLeafB` arrays in tree draw #384
 2. Fix - better detect default ranges in `TGraph` histogram
