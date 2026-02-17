@@ -262,13 +262,9 @@ class RNTupleDescriptorBuilder {
          return;
 
       const reader = new RBufferReader(header_blob),
-
             payloadStart = reader.offset,
             // Read the envelope metadata
-            {
-               envelopeLength
-            } = this._readEnvelopeMetadata(reader),
-
+            { envelopeLength } = this._readEnvelopeMetadata(reader),
             // Seek to end of envelope to get checksum
             checksumPos = payloadStart + envelopeLength - 8,
             currentPos = reader.offset;
@@ -299,7 +295,6 @@ class RNTupleDescriptorBuilder {
       // Read the envelope metadata
       this._readEnvelopeMetadata(reader);
 
-
       // Feature flag(32 bits)
       this._readFeatureFlags(reader);
       // Header checksum (64-bit xxhash3)
@@ -321,7 +316,6 @@ class RNTupleDescriptorBuilder {
 
    _readEnvelopeMetadata(reader) {
       const typeAndLength = reader.readU64(),
-
             // Envelope metadata
             // The 16 bits are the envelope type ID, and the 48 bits are the envelope length
             envelopeType = Number(typeAndLength & 0xFFFFn),
@@ -382,7 +376,6 @@ class RNTupleDescriptorBuilder {
                parentFieldId = reader.readU32(),
                structRole = reader.readU16(),
                flags = reader.readU16(),
-
                fieldName = reader.readString(),
                typeName = reader.readString(),
                typeAlias = reader.readString(),
@@ -399,7 +392,6 @@ class RNTupleDescriptorBuilder {
 
          if (flags & kFlagHasTypeChecksum)
             checksum = reader.readU32();
-
 
          fieldDescriptors.push({
             fieldVersion,
@@ -506,7 +498,6 @@ class RNTupleDescriptorBuilder {
          throw new Error('Extra type info frame is not a list frame, which is required.');
 
       const entryCount = reader.readU32(),
-
             extraTypeInfo = [];
       for (let i = 0; i < entryCount; ++i) {
          const recordStart = BigInt(reader.offset),
@@ -554,10 +545,7 @@ class RNTupleDescriptorBuilder {
          throw new Error('Non-standard locators (T=1) not supported yet');
       const size = sizeAndType,
             offset = reader.readU64(); // 8 bytes: offset
-      return {
-         size,
-         offset
-      };
+      return { size, offset };
    }
 
    deserializePageList(page_list_blob) {
