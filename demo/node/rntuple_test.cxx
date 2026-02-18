@@ -40,6 +40,7 @@ void rntuple_test()
    // shared pointers of the given type
    auto IntField = model->MakeField<int>("IntField");
    auto FloatField = model->MakeField<float>("FloatField");
+   auto Float16Field = model->MakeField<float>("Float16Field");
    auto DoubleField = model->MakeField<double>("DoubleField");
    auto StringField = model->MakeField<std::string>("StringField");
    auto BoolField = model->MakeField<bool>("BoolField");
@@ -56,7 +57,10 @@ void rntuple_test()
    auto MapIntDouble   = model->MakeField<std::map<int,double>>("MapIntDouble");
    auto MapStringBool  = model->MakeField<std::map<std::string,bool>>("MapStringBool");
 
-
+   for (auto &f : model->GetMutableFieldZero()) {
+      if (f.GetTypeName() == "Float16Field")
+         f.SetColumnRepresentatives({{ROOT::ENTupleColumnType::kReal16}});
+   }
 
    // We hand-over the data model to a newly created ntuple of name "F", stored in kNTupleFileName
    // In return, we get a unique pointer to an ntuple that we can fill
@@ -66,6 +70,7 @@ void rntuple_test()
 
       *IntField = i;
       *FloatField = i*i;
+      *Float16Field = 0.1987333 * i;
       *DoubleField = 0.5 * i;
       *StringField = "entry_" + std::to_string(i);
       *BoolField = (i % 3 == 1);
