@@ -1120,20 +1120,17 @@ function createMemberStreamer(element, file, no_string) {
             member.factor = 1 / element.fFactor;
             member.min = element.fXmin;
             member.read = function(buf) { return buf.ntou4() * this.factor + this.min; };
-         } else
-            if ((element.fXmin === 0) && member.double32)
-               member.read = function(buf) { return buf.ntof(); };
-            else {
-               member.nbits = Math.round(element.fXmin);
-               if (member.nbits === 0)
-                  member.nbits = 12;
-               member.dv = new DataView(new ArrayBuffer(8), 0); // used to cast from uint32 to float32
-               member.read = function(buf) {
-                  const theExp = buf.ntou1(), theMan = buf.ntou2();
-                  this.dv.setUint32(0, (theExp << 23) | ((theMan & ((1 << (this.nbits + 1)) - 1)) << (23 - this.nbits)));
-                  return ((1 << (this.nbits + 1) & theMan) ? -1 : 1) * this.dv.getFloat32(0);
-               };
-            }
+         } else if ((element.fXmin === 0) && member.double32)
+            member.read = function(buf) { return buf.ntof(); };
+         else {
+            member.nbits = Math.round(element.fXmin) || 12;
+            member.dv = new DataView(new ArrayBuffer(8), 0); // used to cast from uint32 to float32
+            member.read = function(buf) {
+               const theExp = buf.ntou1(), theMan = buf.ntou2();
+               this.dv.setUint32(0, (theExp << 23) | ((theMan & ((1 << (this.nbits + 1)) - 1)) << (23 - this.nbits)));
+               return ((1 << (this.nbits + 1) & theMan) ? -1 : 1) * this.dv.getFloat32(0);
+            };
+         }
 
          member.readarr = function(buf, len) {
             const arr = this.double32 ? new Float64Array(len) : new Float32Array(len);
@@ -1144,23 +1141,21 @@ function createMemberStreamer(element, file, no_string) {
 
          if (member.type < kOffsetL)
             member.func = function(buf, obj) { obj[this.name] = this.read(buf); };
-         else
-            if (member.type > kOffsetP) {
-               member.cntname = element.fCountName;
-               member.func = function(buf, obj) {
-                  obj[this.name] = (buf.ntou1() === 1) ? this.readarr(buf, obj[this.cntname]) : null;
-               };
-            } else
-               if (element.fArrayDim < 2) {
-                  member.arrlength = element.fArrayLength;
-                  member.func = function(buf, obj) { obj[this.name] = this.readarr(buf, this.arrlength); };
-               } else {
-                  member.arrlength = element.fMaxIndex[element.fArrayDim - 1];
-                  member.minus1 = true;
-                  member.func = function(buf, obj) {
-                     obj[this.name] = buf.readNdimArray(this, (buf2, handle) => handle.readarr(buf2, handle.arrlength));
-                  };
-               }
+         else if (member.type > kOffsetP) {
+            member.cntname = element.fCountName;
+            member.func = function(buf, obj) {
+               obj[this.name] = (buf.ntou1() === 1) ? this.readarr(buf, obj[this.cntname]) : null;
+            };
+         } else if (element.fArrayDim < 2) {
+            member.arrlength = element.fArrayLength;
+            member.func = function(buf, obj) { obj[this.name] = this.readarr(buf, this.arrlength); };
+         } else {
+            member.arrlength = element.fMaxIndex[element.fArrayDim - 1];
+            member.minus1 = true;
+            member.func = function(buf, obj) {
+               obj[this.name] = buf.readNdimArray(this, (buf2, handle) => handle.readarr(buf2, handle.arrlength));
+            };
+         }
          break;
 
       case kAnyP:
