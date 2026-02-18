@@ -852,10 +852,21 @@ class ReaderItem {
             break;
          case kReal16:
             this.func = function(obj) {
-               obj[this.name] = this.view.getUint16(this.o, LITTLE_ENDIAN);
+               const value = this.view.getUint16(this.o, LITTLE_ENDIAN);
                this.shift_o(2);
+               // reimplementing of HalfToFloat
+               let fbits = (value & 0x8000) << 16,
+                   abs = value & 0x7FFF;
+               if (abs) {
+                  fbits |= 0x38000000 << (abs >= 0x7C00 ? 1 : 0);
+                  for (; abs < 0x400; abs <<= 1, fbits -= 0x800000);
+                  fbits += abs << 13;
+               }
+               this.buf.setUint32(0, fbits, true);
+               obj[this.name] = this.buf.getFloat32(0, true);
             };
             this.sz = 2;
+            this.buf = new DataView(new ArrayBuffer(4), 0);
             break;
          case kReal32Trunc:
          case kReal32Quant:
