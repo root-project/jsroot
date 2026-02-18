@@ -1,7 +1,7 @@
 import { gStyle, browser, settings, clone, create, isObject, isFunc, isStr, BIT,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
          clTText, clTLatex, clTLine, clTBox, clTAxis,
-         kTitle, isNodeJs, nsSVG, urlClassPrefix } from '../core.mjs';
+         kTitle, isNodeJs, nsSVG, urlClassPrefix, kNoZoom } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
 import { floatToString, makeTranslate, compressSVG, svgToImage, addHighlightStyle } from '../base/BasePainter.mjs';
@@ -1266,6 +1266,17 @@ class TPavePainter extends ObjectPainter {
             zoom_rect.attr('x', Math.min(sel1, sel2))
                      .attr('width', Math.abs(sel2 - sel1));
          }
+      }, zoomPalette = (z1, z2) => {
+         if (!this.is_th3)
+            return this.getFramePainter().zoomSingle('z', z1, z2, true);
+         const maino = this.getMainPainter().options;
+         if (z1 === z2)
+            maino.minimum = maino.maximum = kNoZoom;
+         else {
+            maino.minimum = z1;
+            maino.maximum = z2;
+         }
+         this.interactiveRedraw('pad');
       }, endRectSel = evnt => {
          if (!doing_zoom)
             return;
@@ -1277,10 +1288,13 @@ class TPavePainter extends ObjectPainter {
          zoom_rect = null;
          doing_zoom = false;
 
+         if (sel1 === sel2)
+            return;
+
          const z1 = this.z_handle.revertPoint(sel1),
                z2 = this.z_handle.revertPoint(sel2);
 
-         this.getFramePainter().zoomSingle('z', Math.min(z1, z2), Math.max(z1, z2), true);
+         zoomPalette(Math.min(z1, z2), Math.max(z1, z2));
       }, startRectSel = evnt => {
          // ignore when touch selection is activated
          if (doing_zoom)
@@ -1315,7 +1329,7 @@ class TPavePainter extends ObjectPainter {
       if (settings.Zooming) {
          this.getG().selectAll('.axis_zoom')
                     .on('mousedown', startRectSel)
-                    .on('dblclick', () => this.getFramePainter().zoomSingle('z', 0, 0, true));
+                    .on('dblclick', () => zoomPalette(0, 0));
       }
 
       if (settings.ZoomWheel) {
@@ -1324,7 +1338,7 @@ class TPavePainter extends ObjectPainter {
                   coord = this.#palette_vertical ? (1 - pos[1] / s_height) : pos[0] / s_width,
                   item = this.z_handle.analyzeWheelEvent(evnt, coord);
             if (item?.changed)
-               this.getFramePainter().zoomSingle('z', item.min, item.max, true);
+               zoomPalette(item.min, item.max);
          });
       }
    }
