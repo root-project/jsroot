@@ -469,19 +469,6 @@ class TH3Painter extends THistPainter {
       } else if (use_scale)
          use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
-      const get_bin_weight = content => {
-         if ((exclude_content >= 0) && (content < exclude_content))
-            return 0;
-         if (!use_scale)
-            return 1;
-         if (logv) {
-            if (content <= 0)
-               return 0;
-            content = Math.log(content) - scale_offset;
-         }
-         return Math.pow(Math.abs(content * use_scale), 0.3333);
-      };
-      // eslint-disable-next-line one-var
       const i1 = this.getSelectIndex('x', 'left', 0.5),
             i2 = this.getSelectIndex('x', 'right', 0),
             j1 = this.getSelectIndex('y', 'left', 0.5),
@@ -495,7 +482,19 @@ class TH3Painter extends THistPainter {
       const cntr = use_colors ? this.getContour() : null,
             palette = use_colors ? this.getHistPalette() : null,
             bins_matrixes = [], bins_colors = [], bins_ids = [], negative_matrixes = [], bin_opacities = [],
-            transfer = (this.transferFunc && proivdeEvalPar(this.transferFunc, true)) ? this.transferFunc : null;
+            transfer = (this.transferFunc && proivdeEvalPar(this.transferFunc, true)) ? this.transferFunc : null,
+            get_bin_weight = content => {
+               if ((exclude_content >= 0) && (content < exclude_content))
+                  return 0;
+               if (!use_scale)
+                  return 1;
+               if (logv) {
+                  if (content <= 0)
+                     return 0;
+                  content = Math.log(content) - scale_offset;
+               }
+               return Math.pow(Math.abs(content * use_scale), 0.3333);
+            };
 
       for (let i = i1; i < i2; ++i) {
          const grx1 = fp.grx(histo.fXaxis.GetBinLowEdge(i + 1)),
