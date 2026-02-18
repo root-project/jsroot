@@ -1573,6 +1573,15 @@ class TPavePainter extends ObjectPainter {
             this.interactiveRedraw('pad', 'log');
          });
 
+         menu.addchk(faxis.TestBit(EAxisBits.kMoreLogLabels), 'More log', flag => {
+            faxis.SetBit(EAxisBits.kMoreLogLabels, flag);
+            this.interactiveRedraw('pad');
+         });
+         menu.addchk(faxis.TestBit(EAxisBits.kNoExponent), 'No exponent', flag => {
+            faxis.SetBit(EAxisBits.kNoExponent, flag);
+            this.interactiveRedraw('pad');
+         });
+
          hist_painter.fillPaletteMenu(menu, false);
 
          menu.addTAxisMenu(EAxisBits, hist_painter || this, faxis, 'v', this.z_handle, null);
