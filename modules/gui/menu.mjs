@@ -740,38 +740,40 @@ class JSRootMenu {
          faxis.fNdivisions = val; painter.interactiveRedraw('pad', `exec:SetNdivisions(${val})`, kind);
       }));
 
-      this.sub('Labels');
-      this.addchk(faxis.TestBit(EAxisBits.kCenterLabels), 'Center',
-                  arg => { faxis.SetBit(EAxisBits.kCenterLabels, arg); painter.interactiveRedraw('pad', `exec:CenterLabels(${arg})`, kind); });
-      this.addchk(faxis.TestBit(EAxisBits.kLabelsVert), 'Rotate',
-                  arg => { faxis.SetBit(EAxisBits.kLabelsVert, arg); painter.interactiveRedraw('pad', `exec:SetBit(TAxis::kLabelsVert,${arg})`, kind); });
-      this.addColorMenu('Color', faxis.fLabelColor,
-                        arg => { faxis.fLabelColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetLabelColor'), kind); });
-      this.addSizeMenu('Offset', -0.02, 0.1, 0.01, faxis.fLabelOffset,
-                       arg => { faxis.fLabelOffset = arg; painter.interactiveRedraw('pad', `exec:SetLabelOffset(${arg})`, kind); });
-      let a = faxis.fLabelSize >= 1;
-      this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fLabelSize,
-                       arg => { faxis.fLabelSize = arg; painter.interactiveRedraw('pad', `exec:SetLabelSize(${arg})`, kind); });
+      if (kind !== 'v') {
+         this.sub('Labels');
+         this.addchk(faxis.TestBit(EAxisBits.kCenterLabels), 'Center',
+                     arg => { faxis.SetBit(EAxisBits.kCenterLabels, arg); painter.interactiveRedraw('pad', `exec:CenterLabels(${arg})`, kind); });
+         this.addchk(faxis.TestBit(EAxisBits.kLabelsVert), 'Rotate',
+                     arg => { faxis.SetBit(EAxisBits.kLabelsVert, arg); painter.interactiveRedraw('pad', `exec:SetBit(TAxis::kLabelsVert,${arg})`, kind); });
+         this.addColorMenu('Color', faxis.fLabelColor,
+                           arg => { faxis.fLabelColor = arg; painter.interactiveRedraw('pad', getColorExec(arg, 'SetLabelColor'), kind); });
+         this.addSizeMenu('Offset', -0.02, 0.1, 0.01, faxis.fLabelOffset,
+                          arg => { faxis.fLabelOffset = arg; painter.interactiveRedraw('pad', `exec:SetLabelOffset(${arg})`, kind); });
+         const a = faxis.fLabelSize >= 1;
+         this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fLabelSize,
+                          arg => { faxis.fLabelSize = arg; painter.interactiveRedraw('pad', `exec:SetLabelSize(${arg})`, kind); });
 
-      if (frame_painter && (axis_painter?.kind === kAxisLabels) && (faxis.fNbins > 20)) {
-         this.add('Find label', () => this.input('Label id').then(id => {
-            if (!id)
-               return;
-            for (let bin = 0; bin < faxis.fNbins; ++bin) {
-               const lbl = axis_painter.formatLabels(bin);
-               if (lbl === id)
-                  return frame_painter.zoomSingle(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin + 5));
-            }
-         }), 'Zoom into region around specific label');
+         if (frame_painter && (axis_painter?.kind === kAxisLabels) && (faxis.fNbins > 20)) {
+            this.add('Find label', () => this.input('Label id').then(id => {
+               if (!id)
+                  return;
+               for (let bin = 0; bin < faxis.fNbins; ++bin) {
+                  const lbl = axis_painter.formatLabels(bin);
+                  if (lbl === id)
+                     return frame_painter.zoomSingle(kind, Math.max(0, bin - 4), Math.min(faxis.fNbins, bin + 5));
+               }
+            }), 'Zoom into region around specific label');
+         }
+         if (frame_painter && faxis.fLabels) {
+            const ignore = `${kind}_ignore_labels`;
+            this.addchk(!frame_painter[ignore], 'Custom', flag => {
+               frame_painter[ignore] = !flag;
+               painter.interactiveRedraw('pad');
+            }, `Use of custom labels in axis ${kind}`);
+         }
+         this.endsub();
       }
-      if (frame_painter && faxis.fLabels) {
-         const ignore = `${kind}_ignore_labels`;
-         this.addchk(!frame_painter[ignore], 'Custom', flag => {
-            frame_painter[ignore] = !flag;
-            painter.interactiveRedraw('pad');
-         }, `Use of custom labels in axis ${kind}`);
-      }
-      this.endsub();
 
       this.sub('Title');
       this.add('SetTitle', () => {
@@ -798,8 +800,8 @@ class JSRootMenu {
       });
       this.addSizeMenu('Offset', 0, 3, 0.2, faxis.fTitleOffset,
                        arg => { faxis.fTitleOffset = arg; painter.interactiveRedraw('pad', `exec:SetTitleOffset(${arg})`, kind); });
-      a = faxis.fTitleSize >= 1;
-      this.addSizeMenu('Size', a ? 2 : 0.02, a ? 30 : 0.11, a ? 2 : 0.01, faxis.fTitleSize,
+      const p = faxis.fTitleSize >= 1;
+      this.addSizeMenu('Size', p ? 2 : 0.02, p ? 30 : 0.11, p ? 2 : 0.01, faxis.fTitleSize,
                        arg => { faxis.fTitleSize = arg; painter.interactiveRedraw('pad', `exec:SetTitleSize(${arg})`, kind); });
       this.endsub();
 
