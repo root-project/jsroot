@@ -2478,7 +2478,7 @@ async function treeProcess(tree, selector, args) {
 
       for (let k = 0; k < handle.arr.length; ++k) {
          const elem = handle.arr[k];
-         if ((elem.type <= 0) || (elem.type >= kOffsetL) || (elem.type === kCharStar))
+         if ((elem.type <= 0) || (elem.type >= kOffsetL) || (elem.type === kCharStar) || (elem.type === kFloat16) || (elem.type === kDouble32))
             handle.process_arrays = false;
       }
 
