@@ -1,12 +1,13 @@
 import { gStyle, browser, settings, clone, create, isObject, isFunc, isStr, BIT,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond, clTLegend, clTPaletteAxis,
-         clTText, clTLatex, clTLine, clTBox, kTitle, isNodeJs, nsSVG } from '../core.mjs';
+         clTText, clTLatex, clTLine, clTBox, clTAxis,
+         kTitle, isNodeJs, nsSVG, urlClassPrefix } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb, pointer as d3_pointer } from '../d3.mjs';
 import { Prob } from '../base/math.mjs';
 import { floatToString, makeTranslate, compressSVG, svgToImage, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter, EAxisBits } from '../base/ObjectPainter.mjs';
 import { approximateLabelWidth } from '../base/latex.mjs';
-import { showPainterMenu } from '../gui/menu.mjs';
+import { showPainterMenu, createMenu } from '../gui/menu.mjs';
 import { getColorExec } from '../gui/utils.mjs';
 import { TAxisPainter } from '../gpad/TAxisPainter.mjs';
 import { addDragHandler } from '../gpad/TFramePainter.mjs';
@@ -1047,6 +1048,7 @@ class TPavePainter extends ObjectPainter {
       let zmin = 0, zmax = 100, gzmin, gzmax, axis_transform, axis_second = 0;
 
       this.#palette_vertical = (palette.fX2NDC - palette.fX1NDC) < (palette.fY2NDC - palette.fY1NDC);
+      this.is_th3 = is_th3;
 
       axis.fTickSize = 0.03; // adjust axis ticks size
 
@@ -1523,12 +1525,42 @@ class TPavePainter extends ObjectPainter {
 
    /** @summary Show pave context menu */
    paveContextMenu(evnt) {
-      if (this.z_handle) {
+      if (!this.z_handle)
+         return showPainterMenu(evnt, this);
+      if (!this.is_th3) {
          const fp = this.getFramePainter();
          if (isFunc(fp?.showContextMenu))
             fp.showContextMenu('pal', evnt);
-      } else
-         showPainterMenu(evnt, this);
+         return;
+      }
+
+      const pp = this.getPadPainter(),
+            pad = pp?.getRootPad(true),
+            faxis = this.z_handle.getObject(),
+            hist_painter = this.z_handle.hist_painter || this.getMainPainter(true);
+
+      if (!pad || !hist_painter)
+         return;
+
+      if (isFunc(evnt?.stopPropagation)) {
+         evnt.preventDefault();
+         evnt.stopPropagation(); // disable main context menu
+      }
+
+      createMenu(evnt, this).then(menu => {
+         menu.header('V axis', `${urlClassPrefix}${clTAxis}.html`);
+
+         menu.addPadLogMenu('v', pad.fLogv || 0, v => {
+            pad.fLogv = v;
+            this.interactiveRedraw('pad', 'log');
+         });
+
+         hist_painter.fillPaletteMenu(menu, false);
+
+         menu.addTAxisMenu(EAxisBits, hist_painter || this, faxis, 'v', this.z_handle, null);
+
+         menu.show();
+      });
    }
 
    /** @summary Returns true when stat box is drawn */
