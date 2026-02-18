@@ -1035,10 +1035,10 @@ class TPavePainter extends ObjectPainter {
             height = pp.getPadHeight(),
             pad = pp.getRootPad(true),
             main = palette.$main_painter || this.getMainPainter(),
-            fp = this.getFramePainter(),
-            contour = main.getContour(false),
-            levels = contour?.getLevels(),
             is_th3 = isFunc(main.getDimension) && (main.getDimension() === 3),
+            fp = this.getFramePainter(),
+            contour = main.getContour(is_th3),
+            levels = contour?.getLevels(),
             is_scatter = isFunc(main.getZaxis),
             log = pad?.fLogv ?? (is_th3 ? false : pad?.fLogz),
             draw_palette = main.getHistPalette(),
@@ -1085,12 +1085,16 @@ class TPavePainter extends ObjectPainter {
          }
       } else if ((main.gmaxbin !== undefined) && (main.gminbin !== undefined)) {
          // this is case of TH2 (needs only for size adjustment)
-         zmin = main.gminbin;
-         zmax = main.gmaxbin;
+         gzmin = zmin = main.gminbin;
+         gzmax = zmax = main.gmaxbin;
+         if (contour?.colzmin !== undefined && contour?.colzmax !== undefined) {
+            zmin = contour.colzmin;
+            zmax = contour.colzmax;
+         }
       } else if ((main.hmin !== undefined) && (main.hmax !== undefined)) {
          // this is case of TH1
-         zmin = main.hmin;
-         zmax = main.hmax;
+         gzmin = zmin = main.hmin;
+         gzmax = zmax = main.hmax;
       }
 
       g.selectAll('rect').style('fill', 'white');
