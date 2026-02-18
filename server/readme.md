@@ -18,8 +18,9 @@ Can be used to serve JSROOT and ROOT files on localhost httpserver.
     [shell] cd ~/work
     [shell] python3 jsroot/server/server.py
 ```
-4. Open ROOT file in JSROOT with the link:
+4. Open local or remote ROOT files with the link:
 ```
+     http://localhost:8000/jsroot/?file=../files/hsimple.root&item=hpxpy&opt=colz
      http://localhost:8000/jsroot/?file=https://root.cern/js/files/hsimple.root&item=hpxpy&opt=colz
 ```
 5. Also test examples.htm and api.htm:
