@@ -15,7 +15,7 @@ const kBit = 0x00,
       kUInt32 = 0x08,
       kInt64 = 0x09,
       kUInt64 = 0x0A,
-      // kReal16 = 0x0B, not used yet
+      kReal16 = 0x0B,
       kReal32 = 0x0C,
       kReal64 = 0x0D,
       kIndex32 = 0x0E,
@@ -32,8 +32,8 @@ const kBit = 0x00,
       kSplitReal64 = 0x19,
       kSplitIndex32 = 0x1A,
       kSplitIndex64 = 0x1B,
-      // kReal32Trunc = 0x1C, not used yet
-      // kReal32Quant = 0x1D, not used yet
+      kReal32Trunc = 0x1C,
+      kReal32Quant = 0x1D,
       LITTLE_ENDIAN = true;
 
 class RBufferReader {
@@ -846,6 +846,21 @@ class ReaderItem {
          case kReal32:
             this.func = function(obj) {
                obj[this.name] = this.view.getFloat32(this.o, LITTLE_ENDIAN);
+               this.shift_o(4);
+            };
+            this.sz = 4;
+            break;
+         case kReal16:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getUint16(this.o, LITTLE_ENDIAN);
+               this.shift_o(2);
+            };
+            this.sz = 2;
+            break;
+         case kReal32Trunc:
+         case kReal32Quant:
+            this.func = function(obj) {
+               obj[this.name] = this.view.getUint32(this.o, LITTLE_ENDIAN);
                this.shift_o(4);
             };
             this.sz = 4;
