@@ -281,6 +281,20 @@ class JSRootMenu {
       this.endsub();
    }
 
+   /** @summary Add log scale selection for pad
+     * @protected */
+   addPadLogMenu(kind, value, func) {
+      this.sub('SetLog ' + kind,
+               () => this.input('Enter log kind: 0 - off, 1 - log10, 2 - log2, 3 - ln, ...', value, 'int', 0, 10000).then(func));
+      this.addchk(value === 0, 'linear', () => func(0));
+      this.addchk(value === 1, 'log10', () => func(1));
+      this.addchk(value === 2, 'log2', () => func(2));
+      this.addchk(value === 3, 'ln', () => func(3));
+      this.addchk(value === 4, 'log4', () => func(4));
+      this.addchk(value === 8, 'log8', () => func(8));
+      this.endsub();
+   }
+
    /** @summary Add palette menu entries
      * @protected */
    addPaletteMenu(curr, set_func) {
