@@ -78,7 +78,9 @@ else {
 
 // Setup selector to process all fields (so cluster gets loaded)
 const selector = new TSelector(),
-      fields = ['IntField', 'FloatField', 'DoubleField', 'StringField', 'BoolField',
+      fields = ['IntField', 'FloatField', 'DoubleField',
+                'Float16Field',
+                'StringField', 'BoolField',
                 'ArrayInt', 'VariantField', 'TupleField',
                 'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool', 'MultisetField',
                 'MapStringFloat', 'MapIntDouble', 'MapStringBool'];
@@ -123,6 +125,7 @@ selector.Process = function(entryIndex) {
       IntField: entryIndex,
       FloatField: entryIndex * entryIndex,
       DoubleField: entryIndex * 0.5,
+      Float16Field: entryIndex * 0.1987333,
       StringField: `entry_${entryIndex}`,
       BoolField: entryIndex % 3 === 1,
       ArrayInt: [entryIndex + 1, entryIndex + 2, entryIndex + 3, entryIndex + 4, entryIndex + 5],
