@@ -1248,7 +1248,7 @@ class TupleReaderItem extends ReaderItem {
 
 }
 
-/** @class reading std::tuple<> field
+/** @class reading custom class field
   * @private */
 
 class CustomClassReaderItem extends ReaderItem {
