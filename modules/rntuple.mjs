@@ -1272,8 +1272,6 @@ class CustomClassReaderItem extends ReaderItem {
 }
 
 
-
-
 /** @class reading std::pair field
  * @private */
 
