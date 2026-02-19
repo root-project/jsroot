@@ -5,73 +5,79 @@ import { readHeaderFooter, rntupleProcess } from 'jsroot/rntuple';
 console.log(`JSROOT version ${version}`);
 
 
-let filename = './rntuple_test.root';
+let filename = './rntuple_test.root',
+    any_error = false;
+
 if (process?.argv && process.argv[2])
    filename = process.argv[2];
 
 const file = await openFile(filename),
-      rntuple = await file.readObject('Data');
-
-await readHeaderFooter(rntuple);
+      rntuple = await file.readObject('Data'),
+      builder = await readHeaderFooter(rntuple);
 
 console.log('Performing Validations and debugging info');
 
-if (rntuple.builder?.name !== 'Data')
+if (builder?.name !== 'Data')
    console.error('FAILURE: name differs from expected');
 else
-   console.log('OK: name is', rntuple.builder?.name);
+   console.log('OK: name is', builder?.name);
 
 
-if (rntuple.builder?.description !== '')
+if (builder.description !== '')
    console.error('FAILURE: description should be the empty string');
 else
    console.log('OK: description is empty string');
 
-if (rntuple.builder?.xxhash3 === undefined || rntuple.builder.xxhash3 === null)
+if (builder.xxhash3 === undefined || builder.xxhash3 === null)
    console.warn('WARNING: xxhash3 is missing');
 else
-   console.log('OK: xxhash3 is', '0x' + rntuple.builder.xxhash3.toString(16).padStart(16, '0'));
+   console.log('OK: xxhash3 is', '0x' + builder.xxhash3.toString(16).padStart(16, '0'));
 
 // Fields Check
 
-if (!rntuple.builder?.fieldDescriptors?.length)
+if (!builder?.fieldDescriptors?.length)
    console.error('FAILURE: No fields deserialized');
 else {
-   console.log(`OK: ${rntuple.builder.fieldDescriptors.length} field(s) deserialized`);
-   for (let i = 0; i < rntuple.builder.fieldDescriptors.length; ++i) {
-      const field = rntuple.builder.fieldDescriptors[i];
+   console.log(`OK: ${builder.fieldDescriptors.length} field(s) deserialized`);
+   for (let i = 0; i < builder.fieldDescriptors.length; ++i) {
+      const field = builder.fieldDescriptors[i];
       if (!field.fieldName || !field.typeName)
          console.error(`FAILURE: Field ${i} is missing name or type`);
       else
          console.log(`OK: Field ${i}: ${field.fieldName} (${field.typeName})`);
       if (i === 0) {
-         if (field.fieldName !== 'IntField' || field.typeName !== 'std::int32_t')
+         if (field.fieldName !== 'IntField' || field.typeName !== 'std::int32_t') {
+            any_error = true;
             console.error(`FAILURE: First field should be 'IntField (std::int32_t)' but got '${field.fieldName} (${field.typeName})'`);
-      } else if (i === rntuple.builder.fieldDescriptors.length - 1) {
-         if (field.fieldName !== '_1' || field.typeName !== 'bool')
+         }
+      } else if (i === builder.fieldDescriptors.length - 1) {
+         if (field.fieldName !== '_1' || field.typeName !== 'bool') {
+            any_error = true;
             console.error(`FAILURE: Last field should be '_1 (bool)' but got '${field.fieldName} (${field.typeName})'`);
+         }
       }
    }
 }
 
 // Column Check
 
-if (!rntuple.builder?.columnDescriptors?.length)
+if (!rntuple.builder?.columnDescriptors?.length) {
+   any_error = true;
    console.error('FAILURE: No columns deserialized');
-else {
-   console.log(`OK: ${rntuple.builder.columnDescriptors.length} column(s) deserialized`);
-   for (let i = 0; i < rntuple.builder.columnDescriptors.length; ++i) {
-      const column = rntuple.builder.columnDescriptors[i];
+} else {
+   console.log(`OK: ${builder.columnDescriptors.length} column(s) deserialized`);
+   for (let i = 0; i < builder.columnDescriptors.length; ++i) {
+      const column = builder.columnDescriptors[i];
       if (column.fieldId === undefined || column.fieldId === null)
          console.error(`FAILURE: Column ${i} is missing fieldId`);
       else
          console.log(`OK: Column ${i} fieldId: ${column.fieldId} `);
-      if (i === 0) {
-         if (column.fieldId !== 0)
-            console.error('FAILURE: First column should be for fieldId 0');
-      } else if (i === rntuple.builder.columnDescriptors.length - 1) {
-         if (column.fieldId !== 38)
-            console.error('FAILURE: Last column should be for fieldId 38');
+      if ((i === 0) && (column.fieldId !== 0)) {
+         any_error = true;
+         console.error('FAILURE: First column should be for fieldId 0');
+      } else if ((i === builder.columnDescriptors.length - 1) && (column.fieldId !== builder.fieldDescriptors.length - 1)) {
+         any_error = true;
+         console.error(`FAILURE: Last column should be for fieldId ${builder.fieldDescriptors.length - 1}`);
       }
    }
 }
@@ -81,9 +87,10 @@ const selector = new TSelector(),
       fields = ['IntField', 'FloatField', 'DoubleField',
                 'Float16Field', 'Real32Trunc', 'Real32Quant',
                 'StringField', 'BoolField',
+                'BitsetField',
                 'ArrayInt', 'VariantField', 'TupleField',
                 'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool', 'MultisetField',
-                'MapStringFloat', 'MapIntDouble', 'MapStringBool'],
+                'MapStringFloat', 'MapIntDouble', 'MapStringBool' ],
       epsilonValues = { Real32Trunc: 0.3, Real32Quant: 1e-4, Float16Field: 1e-2 };
 
 for (const f of fields)
@@ -96,8 +103,6 @@ selector.Begin = () => {
 
 // Now validate entry data
 const EPSILON = 1e-7;
-
-let any_error = false;
 
 function compare(expected, value, eps) {
    if (typeof expected === 'number')
@@ -144,7 +149,8 @@ selector.Process = function(entryIndex) {
       MultisetField: [],
       MapStringFloat: [],
       MapIntDouble: [],
-      MapStringBool: []
+      MapStringBool: [],
+      BitsetField: 1 << entryIndex * 3 % 25
    }, npx = (entryIndex + 5) % 7;
 
    switch (entryIndex % 3) {
