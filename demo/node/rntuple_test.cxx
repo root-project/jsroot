@@ -60,6 +60,7 @@ void rntuple_test()
    auto ArrayInt = model->MakeField<std::array<int,5>>("ArrayInt");
    auto BitsetField = model->MakeField<std::bitset<25>>("BitsetField");
    auto LargeBitsetField = model->MakeField<std::bitset<117>>("LargeBitsetField");
+   auto AtomicDoubleField = model->MakeField<std::atomic<double>>("AtomicDoubleField");
    auto VectString   = model->MakeField<std::vector<std::string>>("VectString");
    auto VectInt   = model->MakeField<std::vector<int>>("VectInt");
    auto VectBool   = model->MakeField<std::vector<bool>>("VectBool");
@@ -115,6 +116,8 @@ void rntuple_test()
 
       LargeBitsetField->set((i + 7) % 117, true);
       LargeBitsetField->set((i + 35) % 117, true);
+
+      *AtomicDoubleField = 111.444 * i;
 
       int npx = (i + 5) % 7;
       for (int j = 0; j < npx; ++j) {
