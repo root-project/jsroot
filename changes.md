@@ -9,6 +9,7 @@
    - `std::array`
    - `std::variant`
    - `std::tuple`
+   - kFloat16, kReal32Trunc, kReal32Quant
 1. Resort order of ranges in http request, fixing several long-standing problems #374
 1. Implement for `TPie` 3d, text, title drawing including interactivity
 1. Implement `TCanvas` support in `build3d` function #373
