@@ -303,7 +303,6 @@ class RNTupleDescriptorBuilder {
          throw new Error('RNTuple corrupted: header checksum does not match footer checksum.');
 
       const schemaExtensionSize = reader.readS64();
-
       if (schemaExtensionSize < 0)
          throw new Error('Schema extension frame is not a record frame, which is unexpected.');
 
@@ -360,14 +359,12 @@ class RNTupleDescriptorBuilder {
             fieldListSize = reader.readS64(), // signed 64-bit
             fieldListIsList = fieldListSize < 0;
 
-
       if (!fieldListIsList)
          throw new Error('Field list frame is not a list frame, which is required.');
 
       const fieldListCount = reader.readU32(), // number of field entries
-         // List frame: list of field record frames
+            fieldDescriptors = []; // List frame: list of field record frames
 
-            fieldDescriptors = [];
       for (let i = 0; i < fieldListCount; ++i) {
          const recordStart = BigInt(reader.offset),
                fieldRecordSize = reader.readS64(),
@@ -1253,7 +1250,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       lastentry: 0    // last entry in the rntuple
    };
 
-   function readNextPortion(inc_cluster) {
+   function readNextPortion(builder, inc_cluster) {
       let do_again = true, numClusterEntries, locations;
 
       while (do_again) {
@@ -1262,13 +1259,13 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             handle.current_cluster_first_entry = handle.current_cluster_last_entry;
          }
 
-         locations = rntuple.builder.pageLocations[handle.current_cluster];
+         locations = builder.pageLocations[handle.current_cluster];
          if (!locations) {
             selector.Terminate(true);
             return selector;
          }
 
-         numClusterEntries = rntuple.builder.clusterSummaries[handle.current_cluster].numEntries;
+         numClusterEntries = builder.clusterSummaries[handle.current_cluster].numEntries;
 
          handle.current_cluster_last_entry = handle.current_cluster_first_entry + numClusterEntries;
 
@@ -1331,7 +1328,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             }
          }
 
-         return readNextPortion(true);
+         return readNextPortion(builder, true);
       });
    }
 
@@ -1342,25 +1339,25 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       return item;
    }
 
-   function addFieldReading(field, tgtname) {
-      const columns = rntuple.builder.findColumns(field),
-            childs = rntuple.builder.findChildFields(field);
+   function addFieldReading(builder, field, tgtname) {
+      const columns = builder.findColumns(field),
+            childs = builder.findChildFields(field);
       if (!columns?.length) {
          if ((childs.length === 2) && (field.typeName.indexOf('std::pair') === 0)) {
-            const item1 = addFieldReading(childs[0], 'first'),
-                  item2 = addFieldReading(childs[1], 'second');
+            const item1 = addFieldReading(builder, childs[0], 'first'),
+                  item2 = addFieldReading(builder, childs[1], 'second');
             return new PairReaderItem([item1, item2], tgtname);
          }
 
          if ((childs.length === 1) && (field.typeName.indexOf('std::array') === 0)) {
-            const item1 = addFieldReading(childs[0], 'value');
+            const item1 = addFieldReading(builder, childs[0], 'value');
             return new ArrayReaderItem([item1], tgtname, Number(field.arraySize));
          }
 
          if ((childs.length > 0) && (field.typeName.indexOf('std::tuple') === 0)) {
             const items = [];
             for (let i = 0; i < childs.length; ++i)
-               items.push(addFieldReading(childs[i], `_${i}`));
+               items.push(addFieldReading(builder, childs[i], `_${i}`));
             return new TupleReaderItem(items, tgtname);
          }
 
@@ -1381,22 +1378,22 @@ async function rntupleProcess(rntuple, selector, args = {}) {
 
       if ((childs.length === 1) && is_stl) {
          const itemlen = addColumnReadout(columns[0], 'len'),
-               itemval = addFieldReading(childs[0], 'val');
+               itemval = addFieldReading(builder, childs[0], 'val');
          return new CollectionReaderItem([itemlen, itemval], tgtname);
       }
 
       if ((childs.length > 0) && (field.typeName.indexOf('std::variant') === 0)) {
          const items = [addColumnReadout(columns[0], 'switch')];
          for (let i = 0; i < childs.length; ++i)
-            items.push(addFieldReading(childs[i], tgtname));
+            items.push(addFieldReading(builder, childs[i], tgtname));
          return new VariantReaderItem(items, tgtname);
       }
 
       return addColumnReadout(columns[0], tgtname);
    }
 
-   return readHeaderFooter(rntuple).then(res => {
-      if (!res)
+   return readHeaderFooter(rntuple).then(builder => {
+      if (!builder)
          throw new Error('Not able to read header for the RNtuple');
 
       for (let i = 0; i < selector.numBranches(); ++i) {
@@ -1406,16 +1403,16 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          if (!name)
             throw new Error(`Not able to extract name for field ${i}`);
 
-         const field = rntuple.builder.findField(name);
+         const field = builder.findField(name);
          if (!field)
             throw new Error(`Field ${name} not found`);
 
-         const item = addFieldReading(field, tgtname);
+         const item = addFieldReading(builder, field, tgtname);
          handle.arr.push(item);
       }
 
       // calculate number of entries
-      rntuple.builder.clusterSummaries.forEach(summary => { handle.lastentry += summary.numEntries; });
+      builder.clusterSummaries.forEach(summary => { handle.lastentry += summary.numEntries; });
 
       if (handle.firstentry >= handle.lastentry)
          throw new Error('Not able to find entries in the RNtuple');
@@ -1439,8 +1436,8 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          handle.process_max = Math.min(handle.process_max, handle.process_min + args.numentries);
 
       // first check from which cluster one should start
-      for (let indx = 0, emin = 0; indx < rntuple.builder.clusterSummaries.length; ++indx) {
-         const summary = rntuple.builder.clusterSummaries[indx],
+      for (let indx = 0, emin = 0; indx < builder.clusterSummaries.length; ++indx) {
+         const summary = builder.clusterSummaries[indx],
                emax = emin + summary.numEntries;
          if ((handle.process_min >= emin) && (handle.process_min < emax)) {
             handle.current_cluster = indx;
@@ -1457,7 +1454,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
 
       selector.Begin(rntuple);
 
-      return readNextPortion();
+      return readNextPortion(builder);
    }).then(() => selector);
 }
 
@@ -1504,8 +1501,8 @@ async function rntupleDraw(rntuple, args) {
    args.SelectorClass = TDrawSelectorTuple;
    args.processFunction = rntupleProcess;
 
-   return readHeaderFooter(rntuple).then(res_header_footer => {
-      return res_header_footer ? treeDraw(rntuple, args) : null;
+   return readHeaderFooter(rntuple).then(builder => {
+      return builder ? treeDraw(rntuple, args) : null;
    });
 }
 
@@ -1516,12 +1513,8 @@ async function rntupleDraw(rntuple, args) {
 async function tupleHierarchy(tuple_node, tuple) {
    tuple_node._childs = [];
    // tuple_node._tuple = tuple;  // set reference, will be used later by RNTuple::Draw
-
-   return readHeaderFooter(tuple).then(res => {
-      if (!res)
-         return res;
-
-      tuple.builder?.fieldDescriptors.forEach((field, indx) => {
+   return readHeaderFooter(tuple).then(builder => {
+      builder?.fieldDescriptors.forEach((field, indx) => {
          if (field.parentFieldId !== indx)
             return;
          const item = {
@@ -1532,13 +1525,10 @@ async function tupleHierarchy(tuple_node, tuple) {
             $tuple: tuple, // reference on tuple, need for drawing
             $field: field
          };
-
          item._obj = item;
-
          tuple_node._childs.push(item);
       });
-
-      return true;
+      return Boolean(builder);
    });
 }
 
