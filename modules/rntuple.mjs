@@ -1147,11 +1147,15 @@ class BitsetReaderItem extends ReaderItem {
 
    func(tgtobj) {
       const tmp = {};
-      let len = 0, res = 0;
+      let len = 0, res = this.bigint ? 0n : 0;
       while (len < this.size) {
          this.items[0].func(tmp);
-         if (tmp.bit)
-            res |= 1 << len;
+         if (tmp.bit) {
+            if (this.bigint)
+               res |= (1n << BigInt(len));
+            else
+               res |= 1 << len;
+         }
          len++;
       }
       tgtobj[this.name] = res;
