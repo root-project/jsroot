@@ -558,7 +558,11 @@ function objectHierarchy(top, obj, args = undefined) {
                }
             }
          }
-      } else if ((typeof fld === 'number') || (typeof fld === 'boolean') || (typeof fld === 'bigint')) {
+      } else if (typeof fld === 'bigint') {
+         simple = true;
+         item._value = fld.toString() + 'n';
+         item._vclass = cssValueNum;
+      } else if ((typeof fld === 'number') || (typeof fld === 'boolean')) {
          simple = true;
          if (key === 'fBits')
             item._value = '0x' + fld.toString(16);
