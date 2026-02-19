@@ -1215,7 +1215,6 @@ class VariantReaderItem extends ReaderItem {
 
    constructor(items, tgtname) {
       super(items, tgtname);
-      this.items = items;
       this.set_not_simple();
    }
 
@@ -1248,6 +1247,31 @@ class TupleReaderItem extends ReaderItem {
    }
 
 }
+
+/** @class reading std::tuple<> field
+  * @private */
+
+class CustomClassReaderItem extends ReaderItem {
+
+   constructor(items, tgtname, classname) {
+      super(items, tgtname);
+      this.classname = classname;
+      this.set_not_simple();
+   }
+
+   func(tgtobj) {
+      const obj = { _typename: this.classname };
+      this.items.forEach(item => item.func(obj));
+      tgtobj[this.name] = obj;
+   }
+
+   shift(entries) {
+      this.items.forEach(item => item.shift(entries));
+   }
+
+}
+
+
 
 
 /** @class reading std::pair field
@@ -1399,6 +1423,13 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             for (let i = 0; i < childs.length; ++i)
                items.push(addFieldReading(builder, childs[i], `_${i}`));
             return new TupleReaderItem(items, tgtname);
+         }
+
+         if ((childs.length > 0) && field.checksum && field.typeName) {
+            const items = [];
+            for (let i = 0; i < childs.length; ++i)
+               items.push(addFieldReading(builder, childs[i], childs[i].fieldName));
+            return new CustomClassReaderItem(items, tgtname, field.typeName);
          }
 
          throw new Error(`No columns found for field '${field.fieldName}' in RNTuple`);
