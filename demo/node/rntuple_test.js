@@ -87,8 +87,7 @@ const selector = new TSelector(),
       fields = ['IntField', 'FloatField', 'DoubleField',
                 'Float16Field', 'Real32Trunc', 'Real32Quant',
                 'StringField', 'BoolField',
-                'BitsetField',
-                'ArrayInt', 'VariantField', 'TupleField',
+                'ArrayInt', 'BitsetField', 'LargeBitsetField', 'VariantField', 'TupleField',
                 'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool', 'MultisetField',
                 'MapStringFloat', 'MapIntDouble', 'MapStringBool' ],
       epsilonValues = { Real32Trunc: 0.3, Real32Quant: 1e-4, Float16Field: 1e-2 };
@@ -139,6 +138,8 @@ selector.Process = function(entryIndex) {
       StringField: `entry_${entryIndex}`,
       BoolField: entryIndex % 3 === 1,
       ArrayInt: [entryIndex + 1, entryIndex + 2, entryIndex + 3, entryIndex + 4, entryIndex + 5],
+      BitsetField: 1 << entryIndex * 3 % 25,
+      LargeBitsetField: (1n << BigInt((entryIndex + 7) % 117)) | (1n << BigInt((entryIndex + 35) % 117)),
       VariantField: null,
       TupleField: { _0: `tuple_${entryIndex}`, _1: entryIndex*3, _2: (entryIndex % 3 === 1) },
       VectString: [],
@@ -149,8 +150,7 @@ selector.Process = function(entryIndex) {
       MultisetField: [],
       MapStringFloat: [],
       MapIntDouble: [],
-      MapStringBool: [],
-      BitsetField: 1 << entryIndex * 3 % 25
+      MapStringBool: []
    }, npx = (entryIndex + 5) % 7;
 
    switch (entryIndex % 3) {
@@ -189,8 +189,10 @@ selector.Process = function(entryIndex) {
          if (!compare(expected, value, epsilonValues[field])) {
             console.error(`FAILURE: ${field} at entry ${entryIndex} expected ${JSON.stringify(expected)}, got ${JSON.stringify(value)}`);
             any_error = true;
-         } else
-            console.log(`OK: ${field} at entry ${entryIndex} = ${JSON.stringify(value)}`);
+         } else {
+            const res = typeof value === 'bigint' ? value.toString() + 'n' : JSON.stringify(value);
+            console.log(`OK: ${field} at entry ${entryIndex} = ${res}`);
+         }
       } catch (err) {
          console.error(`ERROR: Failed to read ${field} at entry ${entryIndex}: ${err.message}`);
          any_error = true;
