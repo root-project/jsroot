@@ -1,6 +1,8 @@
 #include <ROOT/RNTupleModel.hxx>
 #include <ROOT/RNTupleWriter.hxx>
 
+#include <TDictAttributeMap.h>
+
 
 #include <cstdio>
 #include <iostream>
@@ -15,12 +17,18 @@
 #include <set>
 #include <bitset>
 
+
+struct CyclicStruct {
+   int fA = 0;
+   std::vector<CyclicStruct> fV;
+};
+
 class TestClass {
    public:
       std::string fName;
       std::string fTitle;
-      double fValue{0.};
-
+      double fValue = 0.;
+      CyclicStruct fStreamed;
 };
 
 #ifdef __ROOTCLING__
@@ -32,6 +40,7 @@ class TestClass {
 #pragma link C++ class std::tuple<std::string,int,bool>+;
 #pragma link C++ class std::bitset<25>+;
 #pragma link C++ class std::bitset<117>+;
+#pragma link C++ struct CyclicStruct;
 #pragma link C++ class TestClass+;
 #endif
 
@@ -45,6 +54,11 @@ constexpr int kNEvents = 10;
 // Generate kNEvents with vectors in kNTupleFileName
 void rntuple_test()
 {
+   auto cl = TClass::GetClass("CyclicStruct");
+   cl->CreateAttributeMap();
+   cl->GetAttributeMap()->AddProperty("rntuple.streamerMode", "true");
+
+
    // We create a unique pointer to an empty data model
    auto model = ROOT::RNTupleModel::Create();
 
@@ -109,6 +123,13 @@ void rntuple_test()
       TestClassField->fName = "name_" + std::to_string(i);
       TestClassField->fTitle = "title_" + std::to_string(i);
       TestClassField->fValue = i;
+      TestClassField->fStreamed.fA = -i;
+      TestClassField->fStreamed.fV.clear();
+      for(int n = 0; n < 1 + i % 3; ++n) {
+         CyclicStruct inner;
+         inner.fA = n + 5;
+         TestClassField->fStreamed.fV.push_back(inner);
+      }
 
       VectString->clear();
       VectInt->clear();

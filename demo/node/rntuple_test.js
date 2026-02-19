@@ -142,9 +142,9 @@ selector.Process = function(entryIndex) {
       BitsetField: 1 << entryIndex * 3 % 25,
       LargeBitsetField: (1n << BigInt((entryIndex + 7) % 117)) | (1n << BigInt((entryIndex + 35) % 117)),
       AtomicDoubleField: entryIndex * 111.444,
-      TestClassField: { _typename: 'TestClass', fName: `name_${entryIndex}`, fTitle: `title_${entryIndex}`, fValue: entryIndex },
+      TestClassField: { _typename: 'TestClass', fName: `name_${entryIndex}`, fTitle: `title_${entryIndex}`, fValue: entryIndex, fStreamed: { _typename: 'CyclicStruct', fA: -entryIndex, fV: [] } },
       VariantField: null,
-      TupleField: { _0: `tuple_${entryIndex}`, _1: entryIndex*3, _2: (entryIndex % 3 === 1) },
+      TupleField: { _0: `tuple_${entryIndex}`, _1: entryIndex * 3, _2: (entryIndex % 3 === 1) },
       VectString: [],
       VectInt: [],
       VectBool: [],
@@ -155,6 +155,9 @@ selector.Process = function(entryIndex) {
       MapIntDouble: [],
       MapStringBool: []
    }, npx = (entryIndex + 5) % 7;
+
+   for (let n = 0; n < 1 + entryIndex % 3; ++n)
+      expectedValues.TestClassField.fStreamed.fV.push({ _typename: 'CyclicStruct', fA: n + 5, fV: [] });
 
    switch (entryIndex % 3) {
       case 0: expectedValues.VariantField = `varint_${entryIndex}`; break;
