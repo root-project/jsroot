@@ -1132,6 +1132,38 @@ class ArrayReaderItem extends ReaderItem {
 }
 
 
+/** @class reading of std::bitset<N>
+ * @desc large numbers with more than 48 bits converted to BigInt
+ * @private */
+
+class BitsetReaderItem extends ReaderItem {
+
+   constructor(items, tgtname, size) {
+      super(items, tgtname);
+      this.size = size;
+      items[0].set_not_simple();
+      this.bigint = size > 48;
+   }
+
+   func(tgtobj) {
+      const tmp = {};
+      let len = 0, res = 0;
+      while (len < this.size) {
+         this.items[0].func(tmp);
+         if (tmp.bit)
+            res |= 1 << len;
+         len++;
+      }
+      tgtobj[this.name] = res;
+   }
+
+   shift(entries) {
+      this.items[0].shift(entries * this.size);
+   }
+
+}
+
+
 /** @class reading std::vector and other kinds of collections
  * @private */
 
@@ -1369,6 +1401,12 @@ async function rntupleProcess(rntuple, selector, args = {}) {
                itemstr = addColumnReadout(columns[1], 'str');
          return new StringReaderItem([itemlen, itemstr], tgtname);
       }
+
+      if ((columns.length === 1) && (field.typeName.indexOf('std::bitset') === 0)) {
+         const itembit = addColumnReadout(columns[0], 'bit');
+         return new BitsetReaderItem([itembit], tgtname, Number(field.arraySize));
+      }
+
 
       let is_stl = false;
       ['vector', 'map', 'unordered_map', 'multimap', 'unordered_multimap', 'set', 'unordered_set', 'multiset', 'unordered_multiset'].forEach(name => {
