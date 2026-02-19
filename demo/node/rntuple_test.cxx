@@ -15,6 +15,14 @@
 #include <set>
 #include <bitset>
 
+class TestClass {
+   public:
+      std::string fName;
+      std::string fTitle;
+      double fValue{0.};
+
+};
+
 #ifdef __ROOTCLING__
 #pragma link C++ class std::map<std::string,float>+;
 #pragma link C++ class std::map<int,double>+;
@@ -24,6 +32,7 @@
 #pragma link C++ class std::tuple<std::string,int,bool>+;
 #pragma link C++ class std::bitset<25>+;
 #pragma link C++ class std::bitset<117>+;
+#pragma link C++ class TestClass+;
 #endif
 
 
@@ -61,6 +70,7 @@ void rntuple_test()
    auto BitsetField = model->MakeField<std::bitset<25>>("BitsetField");
    auto LargeBitsetField = model->MakeField<std::bitset<117>>("LargeBitsetField");
    auto AtomicDoubleField = model->MakeField<std::atomic<double>>("AtomicDoubleField");
+   auto TestClassField = model->MakeField<TestClass>("TestClassField");
    auto VectString   = model->MakeField<std::vector<std::string>>("VectString");
    auto VectInt   = model->MakeField<std::vector<int>>("VectInt");
    auto VectBool   = model->MakeField<std::vector<bool>>("VectBool");
@@ -95,6 +105,10 @@ void rntuple_test()
       }
 
       *TupleField = { std::string("tuple_") + std::to_string(i), i * 3, (i % 3 == 1) };
+
+      TestClassField->fName = "name_" + std::to_string(i);
+      TestClassField->fTitle = "title_" + std::to_string(i);
+      TestClassField->fValue = i;
 
       VectString->clear();
       VectInt->clear();
