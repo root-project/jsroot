@@ -41,6 +41,14 @@ void rntuple_test()
    auto IntField = model->MakeField<int>("IntField");
    auto FloatField = model->MakeField<float>("FloatField");
    auto Float16Field = model->MakeField<float>("Float16Field");
+   model->GetMutableField("Float16Field").SetColumnRepresentatives({{ROOT::ENTupleColumnType::kReal16}});
+
+   auto Real32Trunc = model->MakeField<float>("Real32Trunc");
+   dynamic_cast<ROOT::RRealField<float> &>(model->GetMutableField("Real32Trunc")).SetTruncated(20);
+
+   auto Real32Quant = model->MakeField<float>("Real32Quant");
+   dynamic_cast<ROOT::RRealField<float> &>(model->GetMutableField("Real32Quant")).SetQuantized(0., 1., 14);
+
    auto DoubleField = model->MakeField<double>("DoubleField");
    auto StringField = model->MakeField<std::string>("StringField");
    auto BoolField = model->MakeField<bool>("BoolField");
@@ -57,11 +65,6 @@ void rntuple_test()
    auto MapIntDouble   = model->MakeField<std::map<int,double>>("MapIntDouble");
    auto MapStringBool  = model->MakeField<std::map<std::string,bool>>("MapStringBool");
 
-   for (auto &f : model->GetMutableFieldZero()) {
-      if (f.GetTypeName() == "Float16Field")
-         f.SetColumnRepresentatives({{ROOT::ENTupleColumnType::kReal16}});
-   }
-
    // We hand-over the data model to a newly created ntuple of name "F", stored in kNTupleFileName
    // In return, we get a unique pointer to an ntuple that we can fill
    auto writer = ROOT::RNTupleWriter::Recreate(std::move(model), "Data", kNTupleFileName);
@@ -70,7 +73,11 @@ void rntuple_test()
 
       *IntField = i;
       *FloatField = i*i;
-      *Float16Field = 0.1987333 * i;
+
+      *Float16Field = 0.1987333 * i;  // stored as 16 bits float
+      *Real32Trunc = 123.45 * i; // here only 20 bits preserved
+      *Real32Quant = 0.03 * (i % 30); // value should be inside [0..1]
+
       *DoubleField = 0.5 * i;
       *StringField = "entry_" + std::to_string(i);
       *BoolField = (i % 3 == 1);
@@ -117,8 +124,6 @@ void rntuple_test()
          }
          Vect2Float->emplace_back(vf);
          Vect2Bool->emplace_back(vb);
-
-
       }
 
       writer->Fill();

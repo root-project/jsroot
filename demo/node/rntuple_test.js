@@ -79,11 +79,13 @@ else {
 // Setup selector to process all fields (so cluster gets loaded)
 const selector = new TSelector(),
       fields = ['IntField', 'FloatField', 'DoubleField',
-                'Float16Field',
+                'Float16Field', 'Real32Trunc',
                 'StringField', 'BoolField',
                 'ArrayInt', 'VariantField', 'TupleField',
                 'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool', 'MultisetField',
-                'MapStringFloat', 'MapIntDouble', 'MapStringBool'];
+                'MapStringFloat', 'MapIntDouble', 'MapStringBool'],
+      epsilonValues = { Real32Trunc: 0.5, Float16Field: 1e-2 };
+
 for (const f of fields)
    selector.addBranch(f);
 
@@ -91,14 +93,15 @@ selector.Begin = () => {
    console.log('\nBegin processing to load cluster data...');
 };
 
+
 // Now validate entry data
 const EPSILON = 1e-7;
 
 let any_error = false;
 
-function compare(expected, value) {
+function compare(expected, value, eps) {
    if (typeof expected === 'number')
-      return Math.abs(value - expected) < EPSILON;
+      return Math.abs(value - expected) < (eps ?? EPSILON);
    if (typeof expected === 'object') {
       if (expected.length !== undefined) {
          if (expected.length !== value.length)
@@ -126,6 +129,7 @@ selector.Process = function(entryIndex) {
       FloatField: entryIndex * entryIndex,
       DoubleField: entryIndex * 0.5,
       Float16Field: entryIndex * 0.1987333,
+      Real32Trunc: 123.45 * entryIndex,
       StringField: `entry_${entryIndex}`,
       BoolField: entryIndex % 3 === 1,
       ArrayInt: [entryIndex + 1, entryIndex + 2, entryIndex + 3, entryIndex + 4, entryIndex + 5],
@@ -175,7 +179,7 @@ selector.Process = function(entryIndex) {
          const value = this.tgtobj[field],
                expected = expectedValues[field];
 
-         if (!compare(expected, value)) {
+         if (!compare(expected, value, epsilonValues[field])) {
             console.error(`FAILURE: ${field} at entry ${entryIndex} expected ${JSON.stringify(expected)}, got ${JSON.stringify(value)}`);
             any_error = true;
          } else
