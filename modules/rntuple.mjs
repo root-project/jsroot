@@ -871,7 +871,13 @@ class ReaderItem {
          case kReal32Trunc:
          case kReal32Quant:
             this.nbits = this.column.bitsOnStorage;
-            this.buf = new DataView(new ArrayBuffer(4), 0);
+            if (this.coltype === kReal32Trunc)
+               this.buf = new DataView(new ArrayBuffer(4), 0);
+            else {
+               this.factor = (this.column.maxValue - this.column.minValue) / ((1 << this.nbits) - 1);
+               this.min = this.column.minValue;
+            }
+
             this.func = function(obj) {
                let res = 0, len = this.nbits;
                // extract nbits from the
@@ -893,8 +899,11 @@ class ReaderItem {
                      len = 0;
                   }
                }
-               this.buf.setUint32(0, res << (32 - this.nbits), true);
-               obj[this.name] = this.buf.getFloat32(0, true);
+               if (this.buf) {
+                  this.buf.setUint32(0, res << (32 - this.nbits), true);
+                  obj[this.name] = this.buf.getFloat32(0, true);
+               } else
+                  obj[this.name] = res * this.factor + this.min;
             };
             break;
          case kInt64:
@@ -1025,12 +1034,8 @@ class ReaderItem {
    async unzipBlob(blob, cluster_locations, page_indx) {
       const colEntry = cluster_locations[this.id], // Access column entry
             numElements = Number(colEntry.pages[page_indx].numElements),
-            elementSize = this.column.bitsOnStorage / 8;
-
-      let expectedSize = numElements * elementSize;
-      // Special handling for boolean fields
-      if (this.coltype === kBit)
-         expectedSize = Math.ceil(numElements / 8);
+            elementSize = this.column.bitsOnStorage / 8,
+            expectedSize = Math.ceil(numElements * elementSize);
 
       // Check if data is compressed
       if ((colEntry.compression === 0) || (blob.byteLength === expectedSize))
