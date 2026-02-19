@@ -866,18 +866,18 @@ class ReaderItem {
             this.buf = new DataView(new ArrayBuffer(4), 0);
             break;
          case kReal32Trunc:
+            this.buf = new DataView(new ArrayBuffer(4), 0);
+            // eslint-disable-next-line  no-fallthrough
          case kReal32Quant:
             this.nbits = this.column.bitsOnStorage;
-            if (this.coltype === kReal32Trunc)
-               this.buf = new DataView(new ArrayBuffer(4), 0);
-            else {
+            if (!this.buf) {
                this.factor = (this.column.maxValue - this.column.minValue) / ((1 << this.nbits) - 1);
                this.min = this.column.minValue;
             }
 
             this.func = function(obj) {
                let res = 0, len = this.nbits;
-               // extract nbits from the
+               // extract nbits from the stream
                while (len > 0) {
                   if (this.o2 === 0) {
                      this.byte = this.view.getUint8(this.o);
