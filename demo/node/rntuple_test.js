@@ -79,12 +79,12 @@ else {
 // Setup selector to process all fields (so cluster gets loaded)
 const selector = new TSelector(),
       fields = ['IntField', 'FloatField', 'DoubleField',
-                'Float16Field', 'Real32Trunc',
+                'Float16Field', 'Real32Trunc', 'Real32Quant',
                 'StringField', 'BoolField',
                 'ArrayInt', 'VariantField', 'TupleField',
                 'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool', 'MultisetField',
                 'MapStringFloat', 'MapIntDouble', 'MapStringBool'],
-      epsilonValues = { Real32Trunc: 0.5, Float16Field: 1e-2 };
+      epsilonValues = { Real32Trunc: 0.3, Real32Quant: 1e-4, Float16Field: 1e-2 };
 
 for (const f of fields)
    selector.addBranch(f);
@@ -130,6 +130,7 @@ selector.Process = function(entryIndex) {
       DoubleField: entryIndex * 0.5,
       Float16Field: entryIndex * 0.1987333,
       Real32Trunc: 123.45 * entryIndex,
+      Real32Quant: 0.03 * (entryIndex % 30),
       StringField: `entry_${entryIndex}`,
       BoolField: entryIndex % 3 === 1,
       ArrayInt: [entryIndex + 1, entryIndex + 2, entryIndex + 3, entryIndex + 4, entryIndex + 5],
