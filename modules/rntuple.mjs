@@ -870,11 +870,32 @@ class ReaderItem {
             break;
          case kReal32Trunc:
          case kReal32Quant:
+            this.nbits = this.column.bitsOnStorage;
+            this.buf = new DataView(new ArrayBuffer(4), 0);
             this.func = function(obj) {
-               obj[this.name] = this.view.getUint32(this.o, LITTLE_ENDIAN);
-               this.shift_o(4);
+               let res = 0, len = this.nbits;
+               // extract nbits from the
+               while (len > 0) {
+                  if (this.o2 === 0) {
+                     this.byte = this.view.getUint8(this.o);
+                     this.o2 = 8; // number of bits in the value
+                  }
+                  const pos = this.nbits - len; // extracted bits
+                  if (len >= this.o2) {
+                     res |= (this.byte & ((1 << this.o2) - 1)) << pos; // get all remaining bits
+                     len -= this.o2;
+                     this.o2 = 0;
+                     this.shift_o(1);
+                  } else {
+                     res |= (this.byte & ((1 << len) - 1)) << pos; // get only len bits from the value
+                     this.o2 -= len;
+                     this.byte >>= len;
+                     len = 0;
+                  }
+               }
+               this.buf.setUint32(0, res << (32 - this.nbits), true);
+               obj[this.name] = this.buf.getFloat32(0, true);
             };
-            this.sz = 4;
             break;
          case kInt64:
          case kIndex64:
