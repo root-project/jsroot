@@ -1390,6 +1390,10 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             return new ArrayReaderItem([item1], tgtname, Number(field.arraySize));
          }
 
+         if ((childs.length === 1) && (field.typeName.indexOf('std::atomic') === 0))
+            return addFieldReading(builder, childs[0], tgtname);
+
+
          if ((childs.length > 0) && (field.typeName.indexOf('std::tuple') === 0)) {
             const items = [];
             for (let i = 0; i < childs.length; ++i)
