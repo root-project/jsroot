@@ -13,6 +13,7 @@
 #include <tuple>
 #include <map>
 #include <set>
+#include <bitset>
 
 #ifdef __ROOTCLING__
 #pragma link C++ class std::map<std::string,float>+;
@@ -21,6 +22,8 @@
 #pragma link C++ class std::multiset<std::string>+;
 #pragma link C++ class std::variant<std::string,int,bool>+;
 #pragma link C++ class std::tuple<std::string,int,bool>+;
+#pragma link C++ class std::bitset<25>+;
+#pragma link C++ class std::bitset<117>+;
 #endif
 
 
@@ -55,6 +58,8 @@ void rntuple_test()
    auto VariantField = model->MakeField<std::variant<std::string,int,bool>>("VariantField");
    auto TupleField = model->MakeField<std::tuple<std::string,int,bool>>("TupleField");
    auto ArrayInt = model->MakeField<std::array<int,5>>("ArrayInt");
+   auto BitsetField = model->MakeField<std::bitset<25>>("BitsetField");
+   auto LargeBitsetField = model->MakeField<std::bitset<117>>("LargeBitsetField");
    auto VectString   = model->MakeField<std::vector<std::string>>("VectString");
    auto VectInt   = model->MakeField<std::vector<int>>("VectInt");
    auto VectBool   = model->MakeField<std::vector<bool>>("VectBool");
@@ -102,6 +107,14 @@ void rntuple_test()
 
       Vect2Float->clear();
       Vect2Bool->clear();
+
+      BitsetField->reset();
+      LargeBitsetField->reset();
+
+      BitsetField->set(i * 3 % 25, true);
+
+      LargeBitsetField->set((i + 7) % 117, true);
+      LargeBitsetField->set((i + 35) % 117, true);
 
       int npx = (i + 5) % 7;
       for (int j = 0; j < npx; ++j) {
