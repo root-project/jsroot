@@ -1,5 +1,5 @@
 import { isStr, isObject } from './core.mjs';
-import { R__unzip } from './io.mjs';
+import { R__unzip, TBuffer } from './io.mjs';
 import { TDrawSelector, treeDraw } from './tree.mjs';
 
 // ENTupleColumnType - supported column types
@@ -1104,6 +1104,53 @@ class StringReaderItem extends ReaderItem {
 
 }
 
+/** @class reading Streamed field
+ * @private */
+
+class StreamedReaderItem extends ReaderItem {
+
+   constructor(items, name, file, classname) {
+      super(items, name);
+      items[0]._is_offset_item = true;
+      items[1].set_not_simple();
+      this.file = file;
+      this.classname = classname;
+      this.off0 = 0;
+   }
+
+   reset_extras() {
+      this.off0 = 0;
+   }
+
+   func(tgtobj) {
+      const tmp = {}, res = {};
+      this.items[0].func(tmp);
+      const off = Number(tmp.len),
+            buf = new TBuffer(this.items[1].view, this.items[1].o, this.file, this.items[1].o + off - this.off0);
+
+      // TODO: if by chance object splited between two pages
+      if (this.items[1].view.byteLength < this.items[1].o + off - this.off0)
+         console.error('FAILURE - buffer is splitted, need to be read from next page');
+
+      buf.classStreamer(res, this.classname);
+
+      this.items[1].shift_o(off - this.off0);
+      this.off0 = off;
+      tgtobj[this.name] = res;
+   }
+
+   shift(entries) {
+      this.items[0].shift(entries - 1);
+      const tmp = {};
+      this.items[0].func(tmp);
+      const off = Number(tmp.len);
+      this.items[1].shift_o(off - this.off0);
+      this.off0 = off;
+   }
+
+}
+
+
 /** @class reading of std::array<T,N>
  * @private */
 
@@ -1423,6 +1470,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             return new TupleReaderItem(items, tgtname);
          }
 
+         // this is custom class which is decomposed on several fields
          if ((childs.length > 0) && field.checksum && field.typeName) {
             const items = [];
             for (let i = 0; i < childs.length; ++i)
@@ -1444,6 +1492,14 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          return new BitsetReaderItem([itembit], tgtname, Number(field.arraySize));
       }
 
+      if ((columns.length === 2) && field.checksum && field.typeName) {
+         if (!handle.file.getStreamer(field.typeName, { checksum: field.checksum }))
+            throw new Error(`No streamer for type '${field.typeName}' checksum ${field.checksum}`);
+
+         const itemlen = addColumnReadout(columns[0], 'len'),
+               itemb = addColumnReadout(columns[1], 'b');
+         return new StreamedReaderItem([itemlen, itemb], tgtname, handle.file, field.typeName);
+      }
 
       let is_stl = false;
       ['vector', 'map', 'unordered_map', 'multimap', 'unordered_multimap', 'set', 'unordered_set', 'multiset', 'unordered_multiset'].forEach(name => {
