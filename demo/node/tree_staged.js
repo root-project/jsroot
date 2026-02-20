@@ -1,5 +1,6 @@
 import { version, openFile, treeDraw, treeProcess, TSelector } from 'jsroot';
 
+
 console.log(`JSROOT version ${version}`);
 
 // Macro demonstrates three different methods to produce entries list which match
@@ -18,11 +19,11 @@ function compareArrays(arr1, arr2) {
    return true;
 }
 
-// open file
-const file = await openFile('https://root.cern/js/files/hsimple.root');
+// open file and read ntuple object
+const file = await openFile('https://root.cern/js/files/hsimple.root'),
+      ntuple = await file.readObject('ntuple');
 
-// read ntuple
-const ntuple = await file.readObject('ntuple');
+console.log(`Read ${ntuple.fName} of type ${ntuple._typename}`);
 
 // use treeDraw to extract array of entries which match condition 'pz>5'
 const entries1 = await treeDraw(ntuple, '::pz>5>>elist');
@@ -37,7 +38,7 @@ selector.addBranch('pz');
 selector.Process = function(entry) {
    if (this.tgtobj.pz > 5)
       entries3.push(entry);
-}
+};
 await treeProcess(ntuple, selector);
 console.log('entries3', entries3.length);
 
@@ -70,7 +71,7 @@ const selector2 = new TSelector, pxarr3 = [];
 selector2.addBranch('px');
 selector2.Process = function() {
    pxarr3.push(this.tgtobj.px);
-}
+};
 await treeProcess(ntuple, selector2, { elist: entries3 });
 console.log('pxarr3', pxarr3.length);
 
