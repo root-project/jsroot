@@ -49,7 +49,10 @@ const clTStreamerElement = 'TStreamerElement', clTStreamerObject = 'TStreamerObj
       kIsReferenced = BIT(4), kHasUUID = BIT(5),
 
       // gap in http which can be merged into single http request
-      kMinimalHttpGap = 128;
+      kMinimalHttpGap = 128,
+
+      // temporary name assigned for file derived from binary buffer
+      kTmpFileName = 'localfile.root';
 
 
 /** @summary Custom streamers for root classes
@@ -3649,10 +3652,12 @@ class TFile {
          // this part typically read from the header, no need to optimize
          return this.readBuffer([this.fBEGIN, Math.max(300, nbytes)]);
       }).then(blob3 => {
-         const buf3 = new TBuffer(blob3, 0, this);
+         const buf3 = new TBuffer(blob3, 0, this),
+               key = buf3.readTKey();
 
-         // keep only title from TKey data
-         this.fTitle = buf3.readTKey().fTitle;
+         this.fTitle = key.fTitle;
+         if (this.fURL === kTmpFileName)
+            this.fURL = this.fFileName = key.fName;
 
          buf3.locate(this.fNbytesName);
 
@@ -4157,7 +4162,7 @@ function openFile(arg, opts) {
       file = new TProxyFile(arg);
 
    if (!file && isObject(arg) && (arg instanceof ArrayBuffer)) {
-      file = new TFile('localfile.root');
+      file = new TFile(kTmpFileName);
       file.assignFileContent(arg);
    }
 
