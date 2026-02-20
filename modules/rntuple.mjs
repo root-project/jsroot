@@ -867,7 +867,6 @@ class ReaderItem {
             break;
          case kReal32Trunc:
             this.buf = new DataView(new ArrayBuffer(4), 0);
-            // eslint-disable-next-line  no-fallthrough
          case kReal32Quant:
             this.nbits = this.column.bitsOnStorage;
             if (!this.buf) {

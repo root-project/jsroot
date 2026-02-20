@@ -1112,7 +1112,6 @@ function createMemberStreamer(element, file, no_string) {
       case kOffsetL + kDouble32:
       case kOffsetP + kDouble32:
          member.double32 = true;
-      // eslint-disable-next-line  no-fallthrough
       case kFloat16:
       case kOffsetL + kFloat16:
       case kOffsetP + kFloat16:
