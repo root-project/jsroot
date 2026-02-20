@@ -12,14 +12,14 @@
 import { addUserStreamer } from 'jsroot';
 
 addUserStreamer(
-      'pool::Token',
-      function(buf, obj) {
-         obj._typename = 'pool::Token';
-         buf.ntou4(); // skip version checksum
-         obj.m_oid = {
-            _typename: 'pair<int,int>',
-            first:  buf.ntoi4(),
-            second: buf.ntoi4()
-         }
+   'pool::Token',
+   function(buf, obj) {
+      obj._typename = 'pool::Token';
+      buf.ntou4(); // skip version checksum
+      obj.m_oid = {
+         _typename: 'pair<int,int>',
+         first:  buf.ntoi4(),
+         second: buf.ntoi4()
       }
+   }
 );

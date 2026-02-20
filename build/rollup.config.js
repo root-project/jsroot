@@ -6,12 +6,12 @@ import ascii from 'rollup-plugin-ascii';
 import ignore from 'rollup-plugin-ignore';
 import meta from '../package.json' with { type: 'json' };
 
-const ignore_jsroot_modules = [ './base/lzma.mjs', './base/zstd.mjs' ];
+const ignore_jsroot_modules = ['./base/lzma.mjs', './base/zstd.mjs'],
 
-const external_node_modules = ['mathjax', 'jsdom', 'fs', 'canvas', 'tmp', 'zlib', 'xhr2', 'node:worker_threads', '@oneidentity/zstd-js', 'gl', 'three', 'three/addons'];
+      external_node_modules = ['mathjax', 'jsdom', 'fs', 'canvas', 'tmp', 'zlib', 'xhr2', 'node:worker_threads', '@oneidentity/zstd-js', 'gl', 'three', 'three/addons'],
 
-// TODO: maybe keep node modules as external to be able use produced builds as well?
-const ignore_modules = ignore_jsroot_modules.concat(external_node_modules);
+      // TODO: maybe keep node modules as external to be able use produced builds as well?
+      ignore_modules = ignore_jsroot_modules.concat(external_node_modules);
 
 const config = {
   input: "modules/main.mjs",
@@ -136,12 +136,12 @@ const config_2d_minified = {
 }
 
 export default [
-  config,
-  config_hist,
-  config_2d,
-  config_geom,
-  config_geom_nothreejs,
-  config_minified,
-  config_hist_minified,
-  config_2d_minified
+   config,
+   config_hist,
+   config_2d,
+   config_geom,
+   config_geom_nothreejs,
+   config_minified,
+   config_hist_minified,
+   config_2d_minified
 ];

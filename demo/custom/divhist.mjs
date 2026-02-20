@@ -13,7 +13,6 @@ addDrawFunc({
 
    // draw function which accept three arguments, same as JSROOT.draw
    func: (dom, obj, opt) => {
-
       // clone histogram
       const hdiv = Object.assign({}, obj.fNum);
 
@@ -42,7 +41,6 @@ addDrawFunc({
       canv.GetPad(2).fPrimitives.Add(obj.fDen);
       canv.GetPad(3).fPrimitives.Add(hdiv);
       return draw(dom, canv);
-
    },
 
    // expand user object, provide elements which should be seen
