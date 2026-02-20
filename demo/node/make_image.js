@@ -11,11 +11,10 @@ console.log(`JSROOT version ${version}`);
 
 let outdir = '';
 if (process?.argv && process.argv[2])
-  outdir = process.argv[2];
+   outdir = process.argv[2];
 
-function processResults(name, title, svg, svg_ref, svg_diff,
-                                     pdf, pdf_ref, pdf_diff,
-                                     png, png_ref, png_diff) {
+function processResults(name, title, svg, svg_ref, svg_diff, pdf, pdf_ref, pdf_diff, png, png_ref, png_diff)
+{
    console.log(`${title} ${name}.svg ${svg.length} ${name}.pdf ${pdf.byteLength} ${name}.png ${png.byteLength}`);
 
    if (svg.length)
@@ -42,7 +41,6 @@ function processResults(name, title, svg, svg_ref, svg_diff,
    if (Math.abs(png.byteLength - png_ref) > png_diff)
       console.error(`${name}.png length ${png.byteLength} differs too much from reference ${png_ref}`);
 }
-
 
 // loading data
 const file = await openFile('https://root.cern/js/files/hsimple.root'),
@@ -81,4 +79,3 @@ const svg4 = await makeSVG({ object: latex, option: '', width, height }),
       png4buf = await makeImage({ format: 'png', as_buffer: true, object: latex, option: '', width, height });
 
 processResults('latex', 'Canvas with latex and symbols.ttf', svg4, 5608, 100, pdf4buf, 9388, 500, png4buf, 41620, 15000);
-

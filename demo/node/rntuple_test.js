@@ -1,9 +1,8 @@
 import { version, openFile, TSelector } from 'jsroot';
-
 import { readHeaderFooter, rntupleProcess } from 'jsroot/rntuple';
 
-console.log(`JSROOT version ${version}`);
 
+console.log(`JSROOT version ${version}`);
 
 let filename = './rntuple_test.root',
     any_error = false;
@@ -90,7 +89,7 @@ const selector = new TSelector(),
                 'ArrayInt', 'BitsetField', 'LargeBitsetField',
                 'AtomicDoubleField', 'TestClassField', 'VariantField', 'TupleField',
                 'VectString', 'VectInt', 'VectBool', 'Vect2Float', 'Vect2Bool', 'MultisetField',
-                'MapStringFloat', 'MapIntDouble', 'MapStringBool' ],
+                'MapStringFloat', 'MapIntDouble', 'MapStringBool'],
       epsilonValues = { Real32Trunc: 0.3, Real32Quant: 1e-4, Float16Field: 1e-2 };
 
 for (const f of fields)
