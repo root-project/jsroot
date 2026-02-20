@@ -1345,7 +1345,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       file: rntuple.$file, // keep file reference
       selector, // reference on selector
       columns: [], // list of ReaderItem with real columns for reading
-      arr: [], // list of ReaderItem with real branches readout
+      items: [], // list of ReaderItem producing output fields
       current_cluster: 0, // current cluster to process
       current_cluster_first_entry: 0, // first entry in current cluster
       current_cluster_last_entry: 0, // last entry in current cluster
@@ -1405,15 +1405,15 @@ async function rntupleProcess(rntuple, selector, args = {}) {
 
          // reset reading pointer after all buffers are there
          handle.columns.forEach(item => item.init_o());
-         handle.arr.forEach(item => item.reset_extras());
+         handle.items.forEach(item => item.reset_extras());
 
          let skip_entries = handle.current_entry - handle.current_cluster_first_entry;
 
          while (handle.current_entry < handle.current_cluster_last_entry) {
-            for (let i = 0; i < handle.arr.length; ++i) {
+            for (let i = 0; i < handle.items.length; ++i) {
                if (skip_entries > 0)
-                  handle.arr[i].shift(skip_entries);
-               handle.arr[i].func(selector.tgtobj);
+                  handle.items[i].shift(skip_entries);
+               handle.items[i].func(selector.tgtobj);
             }
             skip_entries = 0;
 
@@ -1539,7 +1539,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
             throw new Error(`Field ${name} not found`);
 
          const item = addFieldReading(builder, field, tgtname);
-         handle.arr.push(item);
+         handle.items.push(item);
       }
 
       // calculate number of entries
