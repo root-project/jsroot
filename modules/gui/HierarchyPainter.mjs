@@ -3816,8 +3816,8 @@ class HierarchyPainter extends BasePainter {
       if (!browser_configured && (browser.screenWidth <= 640))
          browser_kind = 'float';
 
-      this.no_select = getOption('noselect');
-      this.top_info = getOption('info');
+      this.no_select ??= getOption('noselect');
+      this.top_info ??= getOption('info');
 
       if (getOption('files_monitoring') !== null)
          this.files_monitoring = true;

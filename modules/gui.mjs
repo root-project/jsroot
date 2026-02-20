@@ -270,7 +270,7 @@ async function buildGUI(gui_element, gui_kind = '') {
 
    myDiv.html(''); // clear element
 
-   const d = decodeUrl(), getSize = name => {
+   const nb = (gui_kind === 'notebook'), d = decodeUrl(), getSize = name => {
       const res = d.has(name) ? d.get(name).split('x') : [];
       if (res.length !== 2)
          return null;
@@ -285,7 +285,7 @@ async function buildGUI(gui_element, gui_kind = '') {
    else if ((gui_kind === 'nobrowser') || d.has('nobrowser') || (myDiv.attr('nobrowser') && myDiv.attr('nobrowser') !== 'false'))
       nobrowser = true;
 
-   if (myDiv.attr('ignoreurl') === 'true')
+   if (nb || (myDiv.attr('ignoreurl') === 'true'))
       settings.IgnoreUrlOptions = true;
 
    readStyleFromURL();
@@ -316,6 +316,10 @@ async function buildGUI(gui_element, gui_kind = '') {
    if (drawing || isBatchMode())
       hpainter.exclude_browser = true;
    hpainter.start_without_browser = nobrowser;
+   if (nb) {
+      hpainter.no_select = true;
+      hpainter.top_info = 'ROOT notebook';
+   }
 
    return hpainter.startGUI(myDiv).then(() => {
       if (!nobrowser)
