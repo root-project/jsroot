@@ -4,7 +4,7 @@
 
 import { version, FileProxy, openFile, makeSVG, treeDraw } from 'jsroot';
 
-import { writeFileSync, readFileSync, openSync, readSync, statSync } from 'fs';
+import { writeFileSync, readFileSync, openSync, closeSync, readSync, statSync } from 'fs';
 
 import { open, stat } from 'node:fs/promises';
 
@@ -41,7 +41,14 @@ class FileProxySync extends FileProxy {
             view = new DataView(buffer, 0, sz),
             bytesRead = readSync(this.fd, view, 0, sz, pos);
 
-      return Promise.resolve(bytesRead == sz ? view : null);
+      return Promise.resolve(bytesRead === sz ? view : null);
+   }
+
+   closeFile() {
+      if (this.fd) {
+         closeSync(this.fd);
+         this.fd = null;
+      }
    }
 
 } // class FileProxySync
@@ -85,6 +92,11 @@ class FileProxyPromise extends FileProxy {
       return this.fd.read(view, 0, sz, pos).then(res => {
          return res.bytesRead > 0 ? res.buffer : null;
       });
+   }
+
+   closeFile() {
+      this.fd?.close();
+      this.fd = null;
    }
 
 } // class FileProxyPromise
@@ -153,6 +165,8 @@ if (process.argv && process.argv[2] === 'sync') {
          svg = await makeSVG({ object: hist, width: 1200, height: 800 });
    writeFileSync('draw_proxy.svg', svg);
    console.log(`Create draw_proxy.svg size ${svg.length}`);
+   if (filearg.closeFile)
+      filearg.closeFile();
 } else {
    console.log('Using promise API');
 
@@ -163,5 +177,7 @@ if (process.argv && process.argv[2] === 'sync') {
       .then(svg => {
          writeFileSync('draw_proxy.svg', svg);
          console.log(`Create draw_proxy.svg size ${svg.length}`);
+         if (filearg.closeFile)
+            filearg.closeFile();
       });
 }
