@@ -4053,6 +4053,7 @@ class FileProxy {
    getFileName() { return ''; }
    getFileSize() { return 0; }
    async readBuffer(/* pos, sz */) { return null; }
+   closeFile() {}
 
 } // class FileProxy
 
@@ -4111,6 +4112,15 @@ class TProxyFile extends TFile {
       for (let k = 0; k < place.length; k += 2)
          arr.push(this.proxy.readBuffer(place[k], place[k + 1]));
       return Promise.all(arr);
+   }
+
+   /** @summary Fully cleanup TProxyFile data
+     * @private */
+   delete() {
+      super.delete();
+      if (isFunc(this.proxy?.closeFile))
+         this.proxy.closeFile();
+      delete this.proxy;
    }
 
 } // class TProxyFile
