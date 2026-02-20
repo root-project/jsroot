@@ -2,10 +2,9 @@ import stylisticJs from '@stylistic/eslint-plugin';
 
 import globals from 'globals';
 
-import js from "@eslint/js"
+import { defineConfig } from 'eslint/config';
 
-export default [
-  js.configs.recommended,
+export default defineConfig([
   {
     languageOptions: {
        ecmaVersion: 'latest',
@@ -139,5 +138,5 @@ export default [
         '@stylistic/js/template-curly-spacing': 'error'
     }
   }
-];
+]);
 
