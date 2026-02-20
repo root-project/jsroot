@@ -24,6 +24,7 @@
 1. Remove support for deprectaed `TH1K` class
 1. Introduce `settings.ServerTimeout` global timeout for THttpServer operations
 1. Let set custom color palette with `setColorPalette` function
+1. Upgrade three.js r180 -> r183
 1. Fix - paint frame border mode/size from TCanvas
 1. Fix - add TLeafG support to TTree #397
 1. Fix - interactivity for TH3 palette drawing #398
