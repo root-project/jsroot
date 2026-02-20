@@ -762,7 +762,6 @@ function parseAsArray(val) {
                nbr--;
                break;
             }
-         // eslint-disable-next-line  no-fallthrough
          case ',':
             if (nbr === 0) {
                let sub = val.substring(last, indx).trim();
