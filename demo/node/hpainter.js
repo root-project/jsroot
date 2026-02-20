@@ -1,8 +1,7 @@
 // demo how HierarchyPainter can be used without direct display
 // in batch display one just able to create images
 
-
-import { version, HierarchyPainter, draw, addDrawFunc } from 'jsroot';
+import { version, HierarchyPainter, addDrawFunc } from 'jsroot';
 // import { writeFileSync } from 'fs';
 
 console.log(`JSROOT version ${version}`);
@@ -40,7 +39,7 @@ await hp.display('ntuple/pz');
 const disp = hp.getDisplay();
 
 for (let id = 0; id < disp.numFrames(); ++id) {
-   const svg = await disp.makeSVG(id);
+   const svg = disp.makeSVG(id);
 
    console.log(`Frame ${id} create svg size ${svg.length}`);
 
