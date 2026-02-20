@@ -24,7 +24,7 @@ class FileProxySync extends FileProxy {
       this.fd = openSync(this.filename);
       if (!this.fd)
          return Promise.resolve(false);
-      let stats = statSync(this.filename);
+      const stats = statSync(this.filename);
       this.size = stats.size;
       return Promise.resolve(true);
    }
@@ -83,7 +83,6 @@ class FileProxyPromise extends FileProxy {
             view = new DataView(buffer, 0, sz);
 
       return this.fd.read(view, 0, sz, pos).then(res => {
-
          return res.bytesRead > 0 ? res.buffer : null;
       });
    }
@@ -118,22 +117,22 @@ class FileProxyMultiple extends FileProxyPromise {
 
 } // class FileProxyMultiple
 
-let filearg = null, fname = './hsimple.root';
+let filearg, fname = './hsimple.root';
 
-if (process.argv && process.argv[3] && typeof process.argv[3] == 'string')
+if (process.argv && process.argv[3] && typeof process.argv[3] === 'string')
    fname = process.argv[3];
 
-if (fname.indexOf('http') == 0) {
+if (fname.indexOf('http') === 0) {
    console.log('Using normal file API');
    filearg = fname;
-} else if (process.argv && process.argv[2] == 'buffer') {
+} else if (process.argv && process.argv[2] === 'buffer') {
    const nodeBuffer = readFileSync(fname);
    filearg = new Uint8Array(nodeBuffer).buffer;
    console.log('Using BufferArray', filearg.byteLength);
-} else if (process.argv && process.argv[2] == 'sync') {
+} else if (process.argv && process.argv[2] === 'sync') {
    console.log('Using FileProxySync');
    filearg = new FileProxySync(fname);
-} else if (process.argv && process.argv[2] == 'multi') {
+} else if (process.argv && process.argv[2] === 'multi') {
    console.log('Using FileProxyMultiple');
    filearg = new FileProxyMultiple(fname);
 } else {
@@ -141,7 +140,7 @@ if (fname.indexOf('http') == 0) {
    filearg = new FileProxyPromise(fname);
 }
 
-if (process.argv && process.argv[2] == 'sync') {
+if (process.argv && process.argv[2] === 'sync') {
    console.log('Using sync API');
 
    const file = await openFile(filearg);
@@ -149,9 +148,9 @@ if (process.argv && process.argv[2] == 'sync') {
       console.error('Fail to open file');
 
    // now read ntuple, perform Draw operation, create SVG file and sve to the disk
-   const ntuple = await file.readObject('ntuple');
-   const hist = await treeDraw(ntuple, 'px:py::pz>5');
-   const svg = await makeSVG({ object: hist, width: 1200, height: 800 });
+   const ntuple = await file.readObject('ntuple'),
+         hist = await treeDraw(ntuple, 'px:py::pz>5'),
+         svg = await makeSVG({ object: hist, width: 1200, height: 800 });
    writeFileSync('draw_proxy.svg', svg);
    console.log(`Create draw_proxy.svg size ${svg.length}`);
 } else {
@@ -166,4 +165,3 @@ if (process.argv && process.argv[2] == 'sync') {
          console.log(`Create draw_proxy.svg size ${svg.length}`);
       });
 }
-
