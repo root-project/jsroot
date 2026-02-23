@@ -4111,6 +4111,7 @@ class HierarchyPainter extends BasePainter {
       const title_elem = this.brlayout.setBrowserTitle(this.top_info || (this.is_online ? 'ROOT online server' : 'Read a ROOT file'));
       title_elem?.on('contextmenu', evnt => {
          evnt.preventDefault();
+         evnt.stopPropagation();
          createMenu(evnt).then(menu => {
             this.fillSettingsMenu(menu, true);
             menu.show();
