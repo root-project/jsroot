@@ -8,7 +8,7 @@ import meta from '../package.json' with { type: 'json' };
 
 const ignore_jsroot_modules = ['./base/lzma.mjs', './base/zstd.mjs'],
 
-      external_node_modules = ['mathjax', 'jsdom', 'fs', 'canvas', 'tmp', 'zlib', 'xhr2', 'node:worker_threads', '@oneidentity/zstd-js', 'gl', 'three', 'three/addons'],
+      external_node_modules = ['mathjax', 'jsdom', 'fs', 'canvas', 'tmp', 'zlib', 'xhr2', 'node:worker_threads', '@oneidentity/zstd-js', '@resvg/resvg-js', 'gl', 'three', 'three/addons'],
 
       // TODO: maybe keep node modules as external to be able use produced builds as well?
       ignore_modules = ignore_jsroot_modules.concat(external_node_modules);
