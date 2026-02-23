@@ -2999,8 +2999,14 @@ class TFile {
          this.fAcceptRanges = false;
       }
 
-      const pos = Math.max(this.fURL.lastIndexOf('/'), this.fURL.lastIndexOf('\\'));
-      this.fFileName = pos >= 0 ? this.fURL.slice(pos + 1) : this.fURL;
+      this.assignFileName(this.fURL);
+   }
+
+   assignFileName(url) {
+      if (isStr(url)) {
+         const pos = Math.max(url.lastIndexOf('/'), url.lastIndexOf('\\'));
+         this.fFileName = (pos >= 0) && (pos < url.length - 2) ? url.slice(pos + 1) : url;
+      }
    }
 
    /** @summary Set timeout for File instance
@@ -3656,8 +3662,10 @@ class TFile {
                key = buf3.readTKey();
 
          this.fTitle = key.fTitle;
-         if (this.fURL === kTmpFileName)
-            this.fURL = this.fFileName = key.fName;
+         if (this.fURL === kTmpFileName) {
+            this.fURL = this.fFullURL = key.fName;
+            this.assignFileName(key.fName);
+         }
 
          buf3.locate(this.fNbytesName);
 
@@ -3978,9 +3986,8 @@ class TNodejsFile extends TFile {
       super(null);
       this.fUseStampPar = false;
       this.fEND = 0;
-      this.fFullURL = filename;
-      this.fURL = filename;
-      this.fFileName = filename;
+      this.fFullURL = this.fURL = filename;
+      this.assignFileName(filename);
    }
 
    /** @summary Open file in node.js
@@ -4085,12 +4092,8 @@ class TProxyFile extends TFile {
          if (!res)
             return false;
          this.fEND = this.proxy.getFileSize();
-         this.fFullURL = this.fURL = this.fFileName = this.proxy.getFileName();
-         if (isStr(this.fFileName)) {
-            const p = this.fFileName.lastIndexOf('/');
-            if ((p > 0) && (p < this.fFileName.length - 4))
-               this.fFileName = this.fFileName.slice(p + 1);
-         }
+         this.fFullURL = this.fURL = this.proxy.getFileName();
+         this.assignFileName(this.fURL);
          return this.readKeys();
       });
    }
