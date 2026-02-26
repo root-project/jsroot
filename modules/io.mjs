@@ -3927,9 +3927,8 @@ class TLocalFile extends TFile {
       this.fUseStampPar = false;
       this.fLocalFile = file;
       this.fEND = file.size;
-      this.fFullURL = file.name;
-      this.fURL = file.name;
-      this.fFileName = file.name;
+      this.fFullURL = this.fURL = file.name;
+      this.assignFileName(file.name);
    }
 
    /** @summary Open local file
@@ -3997,10 +3996,10 @@ class TNodejsFile extends TFile {
          this.fs = fs;
 
          return new Promise((resolve, reject) => {
-            this.fs.open(this.fFileName, 'r', (status, fd) => {
+            this.fs.open(this.fFullURL, 'r', (status, fd) => {
                if (status) {
                   console.log(status.message);
-                  reject(Error(`Not possible to open ${this.fFileName} inside node.js`));
+                  reject(Error(`Not possible to open ${this.fFullURL} inside node.js`));
                } else {
                   const stats = this.fs.fstatSync(fd);
                   this.fEND = stats.size;
@@ -4022,7 +4021,7 @@ class TNodejsFile extends TFile {
          }
 
          if (!this.fs || !this.fd) {
-            reject(Error(`File is not opened ${this.fFileName}`));
+            reject(Error(`File is not opened ${this.fFullURL}`));
             return;
          }
 
@@ -4105,7 +4104,7 @@ class TProxyFile extends TFile {
          return Promise.reject(Error(`Cannot access other file ${filename}`));
 
       if (!this.proxy)
-         return Promise.reject(Error(`File is not opened ${this.fFileName}`));
+         return Promise.reject(Error(`File is not opened ${this.fFullURL}`));
 
       if (isFunc(this.proxy.readBuffers)) {
          return this.proxy.readBuffers(place).then(arr => {
