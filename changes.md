@@ -25,9 +25,14 @@
 1. Introduce `settings.ServerTimeout` global timeout for THttpServer operations
 1. Let set custom color palette with `setColorPalette` function
 1. Upgrade three.js r180 -> r183
-1. Fix - paint frame border mode/size from TCanvas
-1. Fix - add TLeafG support to TTree #397
+1. Fix - paint frame border mode/size from `TCanvas`
 1. Fix - interactivity for TH3 palette drawing #398
+
+
+## Changes in 7.10.3
+1. Fix - add `TLeafG` support in `TTree` #397
+2. Fix - reset contour while drawing `TH3`
+3. Fix - fix kFloat16/kDouble32 processing in `TTree`
 
 
 ## Changes in 7.10.2
