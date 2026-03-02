@@ -78,7 +78,6 @@
     "gl": "9.0.0-rc.9",
     "jsdoc": "^4.0.5",
     "rollup": "4.59.0",
-    "rollup-plugin-ascii": "0.0.3",
     "rollup-plugin-ignore": "1.0.10"
   },
   "scripts": {

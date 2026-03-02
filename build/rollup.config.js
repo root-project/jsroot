@@ -2,7 +2,6 @@ import json from '@rollup/plugin-json';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import replace from '@rollup/plugin-replace';
-import ascii from 'rollup-plugin-ascii';
 import ignore from 'rollup-plugin-ignore';
 import meta from '../package.json' with { type: 'json' };
 
@@ -27,8 +26,7 @@ const ignore_jsroot_modules = ['./base/lzma.mjs', './base/zstd.mjs'],
          plugins: [
             ignore(ignore_modules),
             nodeResolve(),
-            json(),
-            ascii()
+            json()
          ],
          onwarn(message, warn) {
             if (message.code === 'CIRCULAR_DEPENDENCY')
@@ -87,8 +85,7 @@ const ignore_jsroot_modules = ['./base/lzma.mjs', './base/zstd.mjs'],
             }),
             ignore(ignore_modules),
             nodeResolve(),
-            json(),
-            ascii()
+            json()
          ],
       },
 
