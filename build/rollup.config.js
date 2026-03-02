@@ -2,15 +2,13 @@ import json from '@rollup/plugin-json';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import replace from '@rollup/plugin-replace';
-import ignore from 'rollup-plugin-ignore';
 import meta from '../package.json' with { type: 'json' };
 
 const ignore_jsroot_modules = ['./base/lzma.mjs', './base/zstd.mjs'],
 
       external_node_modules = ['mathjax', 'jsdom', 'fs', 'canvas', 'tmp', 'zlib', 'xhr2', 'node:worker_threads', '@oneidentity/zstd-js', '@resvg/resvg-js', 'gl', 'three', 'three/addons'],
 
-      // TODO: maybe keep node modules as external to be able use produced builds as well?
-      ignore_modules = ignore_jsroot_modules.concat(external_node_modules),
+      external_modules = ignore_jsroot_modules.concat(external_node_modules),
 
       config = {
          input: 'modules/main.mjs',
@@ -23,8 +21,8 @@ const ignore_jsroot_modules = ['./base/lzma.mjs', './base/zstd.mjs'],
             extend: true,
             banner: `// ${meta.homepage} v${meta.version}`
          },
+         external: external_modules,
          plugins: [
-            ignore(ignore_modules),
             nodeResolve(),
             json()
          ],
@@ -76,6 +74,7 @@ const ignore_jsroot_modules = ['./base/lzma.mjs', './base/zstd.mjs'],
             file: 'build/geom_nothreejs.mjs',
             inlineDynamicImports: true
          },
+         external: external_modules,
          plugins: [
             replace({
                delimiters: ['', ''],
@@ -83,7 +82,6 @@ const ignore_jsroot_modules = ['./base/lzma.mjs', './base/zstd.mjs'],
                "from '../three.mjs'": "from 'three'",
                "from '../three_addons.mjs'": "from 'three/addons'",
             }),
-            ignore(ignore_modules),
             nodeResolve(),
             json()
          ],
