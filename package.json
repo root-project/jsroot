@@ -74,7 +74,7 @@
     "@stylistic/eslint-plugin": "^4.4.1",
     "docdash": "^2.0.2",
     "globals": "^17.3.0",
-    "eslint": "^10.0.0",
+    "eslint": "^10.0.2",
     "gl": "9.0.0-rc.9",
     "jsdoc": "^4.0.5",
     "rollup": "4.59.0",
