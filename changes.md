@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+
+## Changes in 7.10.x
+1. Fix - hist stats context menu
+
+
 ## Changes in 7.10.3
 1. Fix - add `TLeafG` support in `TTree` #397
 2. Fix - reset contour while drawing `TH3`

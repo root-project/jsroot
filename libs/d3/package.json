@@ -48,7 +48,7 @@
     "@rollup/plugin-terser": "^0.4.0",
     "eslint": "8",
     "mocha": "10",
-    "rollup": ">=3.29.5"
+    "rollup": ">=3.30.0"
   },
   "scripts": {
     "build": "rollup -c rollup_d3.config.js"
