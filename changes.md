@@ -20,6 +20,7 @@
 1. Implements `TTree` branches filtering via context menu #364
 1. Let define alternative draw function #378
 1. Implement padsN draw option for `THStack` and `TMultiGraph`
+1. Support custom click handler for `TGraph` https://root-forum.cern.ch/t/64744
 1. Use `resvg-js` backend for PNG support in node.js #391, thanks to https://github.com/OmarMesqq
 1. Remove support for deprectaed `TH1K` class
 1. Introduce `settings.ServerTimeout` global timeout for THttpServer operations
