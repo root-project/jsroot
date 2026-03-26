@@ -60,7 +60,7 @@
     "@oneidentity/zstd-js": "^1.0.3",
     "@resvg/resvg-js": "^2.6.2",
     "canvas": "^3.2.1",
-    "jsdom": "^29.0.0",
+    "jsdom": "^29.0.1",
     "mathjax": "3.2.2",
     "three": "0.162.0",
     "tmp": "^0.2.5",
@@ -74,10 +74,10 @@
     "@stylistic/eslint-plugin": "^4.4.1",
     "docdash": "^2.0.2",
     "globals": "^17.3.0",
-    "eslint": "^10.0.3",
+    "eslint": "^10.1.0",
     "gl": "9.0.0-rc.9",
     "jsdoc": "^4.0.5",
-    "rollup": "4.59.0"
+    "rollup": "4.60.0"
   },
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
