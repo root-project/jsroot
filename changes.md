@@ -3,6 +3,7 @@
 
 ## Changes in 7.10.x
 1. Fix - hist stats context menu
+2. Fix - image format detection in canvas `saveCanvasAsFile` method
 
 
 ## Changes in 7.10.3
