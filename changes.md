@@ -4,6 +4,7 @@
 ## Changes in 7.10.x
 1. Fix - hist stats context menu
 2. Fix - image format detection in canvas `saveCanvasAsFile` method
+3. Fix - protect against endless recursion in primitives #406
 
 
 ## Changes in 7.10.3
