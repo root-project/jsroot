@@ -447,7 +447,6 @@ For the ROOT classes which are implementing Draw method (like [TH1](https://root
 ```
 
 For all such requests following parameters could be specified:
-
    - **h** - image height
    - **w** - image width
    - **opt** - draw options
@@ -543,6 +542,11 @@ One could specify them in the URL string:
 
 ```bash
 [shell] wget http://localhost:8080/ResetCounter/cmd.json?arg1=7&arg2=12 -O result.txt
+```
+
+Access to registered commands can be restricted like:
+```cpp
+serv->Restrict("/Folder/Start", "allow=admin");
 ```
 
 
