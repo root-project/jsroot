@@ -117,10 +117,10 @@ serv->RegisterCommand("/DoSomething", "SomeFunction()");
 Element with name `DoSomething` will appear in the web browser and can be clicked.
 It will result in `gROOT->ProcessLineSync("SomeFunction()")` call.
 
-[!CAUTION]: Registering commands via RegisterCommand() grants remote users the ability to
-trigger server-side logic. If not strictly restricted, this can lead to Remote Code Execution (RCE).
-Never register commands that accept unvalidated user input,
-and ensure the server is protected by authentication or limited to trusted local interfaces.
+> [!CAUTION]: Registering commands via RegisterCommand() grants remote users the ability to
+> trigger server-side logic. If not strictly restricted, this can lead to Remote Code Execution (RCE).
+> Never register commands that accept unvalidated user input,
+> and ensure the server is protected by authentication or limited to trusted local interfaces.
 
 
 One could configure argument(s) for the command.
@@ -472,7 +472,10 @@ Or one could disable read-only mode with the call:
 serv->SetReadOnly(kFALSE);
 ```
 
-[!CAUTION]: Disabling read-only mode exposes extensive ROOT functionality via HTTP. To prevent unauthorized remote access or potential system exploitation, it is strongly recommended to run the server only within an isolated network or behind a secure firewall without external exposure.
+> [!CAUTION]: Disabling read-only mode exposes extensive ROOT functionality via HTTP.
+> To prevent unauthorized remote access or potential system exploitation,
+> it is strongly recommended to run the server only within an isolated network or
+> behind a secure firewall without external exposure.
 
 As alternative one could allow access only to the folder, object or specific object methods with:
 
@@ -554,8 +557,10 @@ One could specify them in the URL string:
 [shell] wget http://localhost:8080/ResetCounter/cmd.json?arg1=7&arg2=12 -O result.txt
 ```
 
-[!CAUTION]: Registering commands via RegisterCommand() grants remote users the ability to trigger server-side logic. If not strictly restricted, this can lead to Remote Code Execution (RCE). Never register commands that accept unvalidated user input, and ensure the server is protected by authentication or limited to trusted local interfaces.
-
+> [!CAUTION]: Registering commands via RegisterCommand() grants remote users the ability to
+> trigger server-side logic. If not strictly restricted, this can lead to Remote Code Execution (RCE).
+> Never register commands that accept unvalidated user input,
+> and ensure the server is protected by authentication or limited to trusted local interfaces.
 
 Access to registered commands can be restricted like:
 ```cpp
