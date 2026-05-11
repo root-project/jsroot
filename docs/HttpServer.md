@@ -557,10 +557,10 @@ One could specify them in the URL string:
 [shell] wget http://localhost:8080/ResetCounter/cmd.json?arg1=7&arg2=12 -O result.txt
 ```
 
-> [!CAUTION]: Registering commands via RegisterCommand() grants remote users the ability to
-> trigger server-side logic. If not strictly restricted, this can lead to Remote Code Execution (RCE).
-> Never register commands that accept unvalidated user input,
-> and ensure the server is protected by authentication or limited to trusted local interfaces.
+**CAUTION: Registering commands via RegisterCommand() grants remote users the ability to
+trigger server-side logic. If not strictly restricted, this can lead to Remote Code Execution (RCE).
+Never register commands that accept unvalidated user input,
+and ensure the server is protected by authentication or limited to trusted local interfaces.**
 
 Access to registered commands can be restricted like:
 ```cpp
