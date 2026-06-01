@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Add textendash and textemdash `TLatex` symbols #407
+1. Fix - prevent very long header in context menu
 
 
 ## Changes in 7.11.0
