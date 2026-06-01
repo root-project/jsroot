@@ -1,5 +1,8 @@
 # JSROOT changelog
 
+## Changes in 7.11.x
+1. Fix - prevent ve[21~ry long header in context menu
+
 
 ## Changes in 7.11.0
 1. Implement new data types in `RNtuple`
