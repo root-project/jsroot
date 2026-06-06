@@ -502,7 +502,7 @@ Example of `TTree::Draw()` method execution:
 
 One also used `exe.bin` method - in this case results of method execution will be returned in binary format.
 
-In case when method returns temporary object, which should be delete at the end of command execution, one should specify `_destroy_result_` parameter in the URL string:
+In case when method returns temporary object, which should be destroyed at the end of processing `exe.json` or `exe.bin` requests, one should specify `_destroy_result_` parameter in the URL string:
 
 ```bash
 [shell] wget 'http://localhost:8080/Objects/subfolder/obj/exe.json?method=Clone&_destroy_result_' -O clone.json
