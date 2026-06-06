@@ -500,7 +500,9 @@ Example of `TTree::Draw()` method execution:
 [shell] wget 'http://localhost:8080/Files/job1.root/ntuple/exe.json?method=Draw&prototype="Option_t*"&opt="px:py>>h1"&_ret_object_=h1' -O exe.json
 ```
 
-One also used `exe.bin` method - in this case results of method execution will be returned in binary format. In case when method returns temporary object, which should be delete at the end of command execution, one should specify `_destroy_result_` parameter in the URL string:
+One also used `exe.bin` method - in this case results of method execution will be returned in binary format.
+
+In case when method returns temporary object, which should be delete at the end of command execution, one should specify `_destroy_result_` parameter in the URL string:
 
 ```bash
 [shell] wget 'http://localhost:8080/Objects/subfolder/obj/exe.json?method=Clone&_destroy_result_' -O clone.json
@@ -514,6 +516,7 @@ If binary form is used, one should specify following parameters:
 ```
 
 Here is important to specify post object class, which is not stored in the binary buffer.
+
 When submitting argument as JSON produced with [TBufferJSON::ToJSON](https://root.cern/doc/master/classTBufferJSON.html#a49f3c7b200113d7009d61d75c933c398) method, class is not required:
 
 ```bash
@@ -521,6 +524,12 @@ When submitting argument as JSON produced with [TBufferJSON::ToJSON](https://roo
 ```
 
 To get debug information about command execution, one could submit `exe.txt` request with same arguments.
+
+To disable possibility receive and decode objects from POST requests, one can call:
+
+```cpp
+serv->SetAllowPostObject(kFALSE);
+```
 
 
 ### Commands execution
