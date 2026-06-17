@@ -461,7 +461,7 @@ class TGraphPainter extends ObjectPainter {
          histo.fBits |= kNoStats;
          this.#own_histogram = true;
          this.setHistogram(histo);
-      } else if ((histo.fMaximum !== kNoZoom) && (histo.fMinimum !== kNoZoom) && !this.isDummyHistogram('y')) {
+      } else if ((histo.fMaximum !== kNoZoom) && (histo.fMinimum !== kNoZoom) && !this.isDummyHistogram('y') && !histo.$set_graph_range) {
          minimum = histo.fMinimum;
          maximum = histo.fMaximum;
       }
@@ -488,6 +488,7 @@ class TGraphPainter extends ObjectPainter {
          if (!this.isScatter()) {
             histo.fMinimum = minimum;
             histo.fMaximum = maximum;
+            histo.$set_graph_range = true;
          }
       }
 
