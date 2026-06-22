@@ -609,38 +609,46 @@ function render3D(tmout) {
 function getRenderer() { return this.renderer; }
 
 /** @summary Check is 3D drawing need to be resized
+  * @desc If @par is_main === false, return last resize result called by main painter
   * @private */
-function resize3D() {
+function resize3D(is_main) {
+   if (is_main === false)
+      return this.$last_resize_3d;
+
+   let res = true;
+
    const sz = this.getSizeFor3d(this.access3dKind());
 
    this.apply3dSize(sz);
 
    if ((this.scene_width === sz.width) && (this.scene_height === sz.height))
-      return false;
+      res = false;
+   else if ((sz.width < 10) || (sz.height < 10))
+      res = false;
+   else {
+      this.scene_width = sz.width;
+      this.scene_height = sz.height;
 
-   if ((sz.width < 10) || (sz.height < 10))
-      return false;
+      this.camera.aspect = this.scene_width / this.scene_height;
+      this.camera.updateProjectionMatrix();
 
-   this.scene_width = sz.width;
-   this.scene_height = sz.height;
+      this.renderer.setSize(this.scene_width, this.scene_height);
 
-   this.camera.aspect = this.scene_width / this.scene_height;
-   this.camera.updateProjectionMatrix();
+      const xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width / sz.height * this.size_z3d) : this.size_z3d,
+            x3d = xy3d * this.x3dscale,
+            y3d = xy3d * this.y3dscale;
 
-   this.renderer.setSize(this.scene_width, this.scene_height);
-
-   const xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width / sz.height * this.size_z3d) : this.size_z3d,
-         x3d = xy3d * this.x3dscale,
-         y3d = xy3d * this.y3dscale;
-
-   if ((Math.abs(x3d - this.size_x3d) > 0.15 * this.size_z3d) || (Math.abs(y3d - this.size_y3d) > 0.15 * this.size_z3d)) {
-      this.size_x3d = x3d;
-      this.size_y3d = y3d;
-      this.control?.position0?.copy(getCameraDefaultPosition(this, true));
-      return 1; // indicate significant resize
+      if ((Math.abs(x3d - this.size_x3d) > 0.15 * this.size_z3d) || (Math.abs(y3d - this.size_y3d) > 0.15 * this.size_z3d)) {
+         this.size_x3d = x3d;
+         this.size_y3d = y3d;
+         this.control?.position0?.copy(getCameraDefaultPosition(this, true));
+         res = 1; // indicate significant resize
+      }
    }
+   if (is_main === true)
+      this.$last_resize_3d = res;
 
-   return true;
+   return res;
 }
 
 /** @summary Highlight bin in frame painter 3D drawing
