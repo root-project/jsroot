@@ -2210,7 +2210,12 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    handle.grz_min = main_grz_min;
    handle.grz_max = main_grz_max;
 
+   const drawOnlyLines = !is_v7 && !palette && painter.options.Same &&
+                         ((painter.options.Surf === 1) || (painter.options.Surf === 13));
+
    buildSurf3D(histo, handle, ilevels, (lvl, pos, normindx) => {
+      if (drawOnlyLines)
+         return;
       const geometry = createLegoGeom(painter, pos, null, handle.i2 - handle.i1, handle.j2 - handle.j1),
             normals = geometry.getAttribute('normal').array;
 
@@ -2286,7 +2291,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
                       ? new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 })
                       : new THREE.LineBasicMaterial(getMaterialArgs(color));
       } else
-         material = new THREE.LineBasicMaterial(getMaterialArgs(color, { linewidth: histo.fLineWidth }));
+         material = new THREE.LineBasicMaterial(getMaterialArgs(color, { linewidth: histo.fLineWidth, depthTest: !drawOnlyLines }));
 
 
       const line = createLineSegments(convertLegoBuf(painter, lpos, handle.i2 - handle.i1, handle.j2 - handle.j1), material);
