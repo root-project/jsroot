@@ -2294,8 +2294,9 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 
       // get levels
       const levels2 = painter.getContourLevels(), // init contour
-            palette2 = painter.getHistPalette();
-      let lastcolindx = -1, layerz = main_grz_max;
+            palette2 = painter.getHistPalette(),
+            meshes = [];
+      let lastcolindx = -1, layerz1 = main_grz_max, layerz2 = main_grz_max;
 
       buildHist2dContour(histo, handle, levels2, palette2, (colindx, xp, yp, iminus, iplus) => {
          // no need for duplicated point
@@ -2319,32 +2320,65 @@ function drawBinsSurf3D(painter, is_v7 = false) {
             return;
 
          if ((lastcolindx < 0) || (lastcolindx !== colindx)) {
+            if (lastcolindx >= 0) {
+               layerz1 += 5e-5 * main_grz_max; // change layers Z
+               layerz2 -= 5e-5 * main_grz_max;
+            }
             lastcolindx = colindx;
-            layerz += 5e-5 * main_grz_max; // change layers Z
          }
 
-         const pos = new Float32Array(faces.length * 9),
-               norm = new Float32Array(faces.length * 9);
+         const pos1 = new Float32Array(faces.length * 9),
+               norm1 = new Float32Array(faces.length * 9);
          let indx = 0;
 
          for (let n = 0; n < faces.length; ++n) {
             const face = faces[n];
             for (let v = 0; v < 3; ++v) {
                const pnt = pnts[face[v]];
-               pos[indx] = pnt.x;
-               pos[indx + 1] = pnt.y;
-               pos[indx + 2] = layerz;
-               norm[indx] = 0;
-               norm[indx + 1] = 0;
-               norm[indx + 2] = 1;
+               pos1[indx] = pnt.x;
+               pos1[indx + 1] = pnt.y;
+               pos1[indx + 2] = layerz1;
+               norm1[indx] = 0;
+               norm1[indx + 1] = 0;
+               norm1[indx + 2] = 1;
 
                indx += 3;
             }
          }
 
-         const geometry = createLegoGeom(painter, pos, norm, handle.i2 - handle.i1, handle.j2 - handle.j1),
-               material = new THREE.MeshBasicMaterial(getMaterialArgs(palette2.getColor(colindx), { side: THREE.DoubleSide, opacity: 0.5, vertexColors: false })),
-               mesh = new THREE.Mesh(geometry, material);
+         const geometry1 = createLegoGeom(painter, pos1, norm1, handle.i2 - handle.i1, handle.j2 - handle.j1),
+               material = new THREE.MeshBasicMaterial(getMaterialArgs(palette2.getColor(colindx), { side: THREE.DoubleSide, opacity: 0.5, vertexColors: false }));
+
+         meshes.push(new THREE.Mesh(geometry1, material));
+
+         // no need to create second layer
+         if (layerz1 === layerz2)
+            return;
+
+         const pos2 = new Float32Array(faces.length * 9),
+               norm2 = new Float32Array(faces.length * 9);
+         indx = 0;
+
+         for (let n = 0; n < faces.length; ++n) {
+            const face = faces[n];
+            for (let v = 0; v < 3; ++v) {
+               const pnt = pnts[face[v]];
+               pos2[indx] = pnt.x;
+               pos2[indx + 1] = pnt.y;
+               pos2[indx + 2] = layerz2;
+               norm2[indx] = 0;
+               norm2[indx + 1] = 0;
+               norm2[indx + 2] = -1;
+
+               indx += 3;
+            }
+         }
+
+         const geometry2 = createLegoGeom(painter, pos2, norm2, handle.i2 - handle.i1, handle.j2 - handle.j1);
+         meshes.unshift(new THREE.Mesh(geometry2, material));
+      });
+
+      meshes.forEach(mesh => {
          mesh.painter = painter;
          fp.add3DMesh(mesh);
       });
