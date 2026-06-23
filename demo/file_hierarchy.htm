@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Use of JSROOT hierarchy painter</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
+<head>
+   <meta charset="utf-8">
+   <title>Use of JSROOT hierarchy painter</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
 
-   <body>
-      <div style="inset: 0px; position: absolute;">
-         <div id="myTreeDiv" style="width: 250px; height: 100%; float: left;"></div>
-         <div id="myMainDiv" style="width: calc(100% - 250px); height: calc(100%); float:right;"></div>
-      </div>
-   </body>
+<body>
+   <div style="inset: 0px; position: absolute;">
+      <div id="myTreeDiv" style="width: 250px; height: 100%; float: left;"></div>
+      <div id="myMainDiv" style="width: calc(100% - 250px); height: calc(100%); float:right;"></div>
+   </div>
 
    <script type='module'>
       import { HierarchyPainter, setDefaultDrawOpt } from 'jsroot';
@@ -35,5 +34,7 @@
 
       await h.display('hpxpy;1', 'colz');
    </script>
+</body>
+
 </html>
 

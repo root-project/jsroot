@@ -1,26 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <title>Building three.js model for supported classes</title>
-      <meta charset="utf-8">
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-      <style>
-         body {
-            font-family: Monospace;
-            background-color: #000;
-            margin: 0px;
-            overflow: hidden;
-         }
-      </style>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs", "three": "../modules/three.mjs" } }
-      </script>
-   </head>
+<head>
+   <title>Building three.js model for supported classes</title>
+   <meta charset="utf-8">
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+   <style>
+      body {
+         font-family: Monospace;
+         background-color: #000;
+         margin: 0px;
+         overflow: hidden;
+      }
+   </style>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs", "three": "../modules/three.mjs" } }
+   </script>
+</head>
 
-   <body>
-   </body>
-
+<body>
    <script type='module'>
 
       import { httpRequest, create, openFile, treeDraw, build3d } from 'jsroot';
@@ -153,5 +151,6 @@
       animate();
 
    </script>
+</body>
 
 </html>

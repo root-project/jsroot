@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Use "same" draw options for histograms drawing</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
-   <body>
-      <div id="drawing" style="position: relative; width: 800px; height: 600px;"></div>
-   </body>
+<head>
+   <meta charset="utf-8">
+   <title>Use "same" draw options for histograms drawing</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
+<body>
+
+   <div id="drawing" style="position: relative; width: 800px; height: 600px;"></div>
+
    <script type='module'>
       import { draw, httpRequest } from 'jsroot';
       const hist1 = await httpRequest('https://jsroot.gsi.de/latest/demo/root10.json', 'object');
@@ -20,4 +21,6 @@
       await draw('drawing', hist1, 'hist');
       await draw('drawing', hist2, 'hist same');
    </script>
+
+</body>
 </html>

@@ -2534,12 +2534,12 @@ class TPadPainter extends ObjectPainter {
                 '</head>\n' +
                 '<body>\n' +
                 '  <div id="drawing" class="main-draw-box"></div>\n' +
+                '  <script type="module">\n' +
+                '    import { parse, draw } from "jsroot";\n' +
+                `    const obj = parse(${json});\n` +
+                '    draw("drawing", obj);\n' +
+                '  </script>\n' +
                 '</body>\n' +
-                '<script type="module">\n' +
-                '  import { parse, draw } from "jsroot";\n' +
-                `  const obj = parse(${json});\n` +
-                '  draw("drawing", obj);\n' +
-                '</script>\n' +
                 '</html>\n';
       }
 
