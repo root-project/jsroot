@@ -2210,7 +2210,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
    handle.grz_min = main_grz_min;
    handle.grz_max = main_grz_max;
 
-   const drawOnlyLines = !is_v7 && !palette && painter.options.Same &&
+   const drawOnlyLines = !is_v7 && !palette && painter.options.Same && painter.getMainPainter()?.draw_content &&
                          ((painter.options.Surf === 1) || (painter.options.Surf === 13));
 
    buildSurf3D(histo, handle, ilevels, (lvl, pos, normindx) => {
