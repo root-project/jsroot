@@ -2509,14 +2509,31 @@ class TPadPainter extends ObjectPainter {
                 '<html lang="en">\n' +
                 '<head>\n' +
                 '  <meta charset="utf-8">\n' +
-                '  <title>Reading object from the ROOT file</title>\n' +
+                '  <title>Dsiplay ROOT canvas</title>\n' +
                 '  <link rel="shortcut icon" href="../img/RootIcon.ico"/>\n' +
                 '  <script type="importmap">\n' +
                 `    { "imports": { "jsroot": "${url}/modules/main.mjs" } }\n` +
                 '  </script>\n' +
+                '  <style>\n' +
+                '    body {\n' +
+                '      margin: 0;\n' +
+                '      padding: 0;\n' +
+                '      display: flex;\n' +
+                '      justify-content: center;\n' +
+                '      align-items: center;\n' +
+                '      min-height: 100vh;\n' +
+                '      background-color: #f0f0f0;\n' +
+                '    }\n' +
+                '    .main-draw-box {\n' +
+                '      width: 80%;\n' +
+                '      min-height: 80vh;\n' +
+                '      background-color: white;\n' +
+                '      box-shadow: 0 4px 10px rgba(0,0,0,0.1);\n' +
+                '    }\n' +
+                '  </style>\n' +
                 '</head>\n' +
                 '<body>\n' +
-                '  <div id="drawing" style="position: relative; width: 800px; height: 600px;"></div>\n' +
+                '  <div id="drawing" class="main-draw-box"></div>\n' +
                 '</body>\n' +
                 '<script type="module">\n' +
                 '  import { parse, draw } from "jsroot";\n' +
