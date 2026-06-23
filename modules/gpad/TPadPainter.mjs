@@ -2510,7 +2510,7 @@ class TPadPainter extends ObjectPainter {
                 '<head>\n' +
                 '  <meta charset="utf-8">\n' +
                 '  <title>Dsiplay ROOT canvas</title>\n' +
-                '  <link rel="shortcut icon" href="../img/RootIcon.ico"/>\n' +
+                `  <link rel="shortcut icon" href="${url}/img/RootIcon.ico"/>\n` +
                 '  <script type="importmap">\n' +
                 `    { "imports": { "jsroot": "${url}/modules/main.mjs" } }\n` +
                 '  </script>\n' +
