@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, browser, source_dir, internals, BIT,
+import { gStyle, settings, constants, browser, source_dir, version_id, internals, BIT,
          create, toJSON, isBatchMode, loadModules, loadScript, injectCode, isPromise, getPromise, postponePromise,
          isObject, isFunc, isStr, clTObjArray, clTColor, clTPad, clTFrame, clTStyle, clTLegend,
          clTHStack, clTMultiGraph, clTLegendEntry, nsSVG, kTitle, clTList, urlClassPrefix } from '../core.mjs';
@@ -1590,10 +1590,11 @@ class TPadPainter extends ObjectPainter {
       const fmts = ['svg', 'png', 'jpeg', 'webp'];
       if (internals.makePDF)
          fmts.push('pdf');
-      fmts.forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.isCanvas(), `${fname}.${fmt}`)));
+      fmts.forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.isCanvas(), `${fname}.${fmt}`), `Produce ${fmt} image`));
       if (this.isCanvas()) {
          menu.separator();
          menu.add(`${fname}.html`, () => this.saveAs('html', true, `${fname}.html`), 'Produce html with canvas display');
+         menu.add(`${fname}0.html`, () => this.saveAs('html', false, `${fname}0.html`), 'Produce compact html with canvas display');
          menu.add(`${fname}.json`, () => this.saveAs('json', true, `${fname}.json`), 'Produce JSON with line spacing');
          menu.add(`${fname}0.json`, () => this.saveAs('json', false, `${fname}0.json`), 'Produce JSON without line spacing');
       }
@@ -2499,6 +2500,11 @@ class TPadPainter extends ObjectPainter {
          const json = isFunc(this.produceJSON) ? this.produceJSON(full_canvas ? 2 : 0) : '';
          if (!json || (file_format === 'json'))
             return json;
+         let url = source_dir;
+         if (url.indexOf('http://localhost') === 0) {
+            url = 'https://root.cern/js/';
+            url += (version_id === 'dev') || /^\d+\.\d+\.\d+$/.test(version_id) ? version_id : 'latest';
+         }
          return '<!DOCTYPE html>\n' +
                 '<html lang="en">\n' +
                 '<head>\n' +
@@ -2506,7 +2512,7 @@ class TPadPainter extends ObjectPainter {
                 '  <title>Reading object from the ROOT file</title>\n' +
                 '  <link rel="shortcut icon" href="../img/RootIcon.ico"/>\n' +
                 '  <script type="importmap">\n' +
-                `    { "imports": { "jsroot": "${source_dir}/modules/main.mjs" } }\n` +
+                `    { "imports": { "jsroot": "${url}/modules/main.mjs" } }\n` +
                 '  </script>\n' +
                 '</head>\n' +
                 '<body>\n' +
