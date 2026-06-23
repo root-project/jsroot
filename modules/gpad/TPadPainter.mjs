@@ -1,11 +1,11 @@
-import { gStyle, settings, constants, browser, internals, BIT,
+import { gStyle, settings, constants, browser, source_dir, internals, BIT,
          create, toJSON, isBatchMode, loadModules, loadScript, injectCode, isPromise, getPromise, postponePromise,
          isObject, isFunc, isStr, clTObjArray, clTColor, clTPad, clTFrame, clTStyle, clTLegend,
          clTHStack, clTMultiGraph, clTLegendEntry, nsSVG, kTitle, clTList, urlClassPrefix } from '../core.mjs';
 import { select as d3_select, rgb as d3_rgb } from '../d3.mjs';
 import { ColorPalette, adoptRootColors, getColorPalette, getGrayColors, extendRootColors,
          getRGBfromTColor, decodeWebCanvasColors } from '../base/colors.mjs';
-import { prSVG, prJSON, getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate,
+import { prSVG, prJSON, prHTML, getElementRect, getAbsPosInCanvas, DrawOptions, compressSVG, makeTranslate,
          getTDatime, convertDate, svgToImage, getBoxDecorations } from '../base/BasePainter.mjs';
 import { ObjectPainter, selectActivePad, getActivePad, isPadPainter } from '../base/ObjectPainter.mjs';
 import { TAttLineHandler } from '../base/TAttLineHandler.mjs';
@@ -1593,6 +1593,7 @@ class TPadPainter extends ObjectPainter {
       fmts.forEach(fmt => menu.add(`${fname}.${fmt}`, () => this.saveAs(fmt, this.isCanvas(), `${fname}.${fmt}`)));
       if (this.isCanvas()) {
          menu.separator();
+         menu.add(`${fname}.html`, () => this.saveAs('html', true, `${fname}.html`), 'Produce html with canvas display');
          menu.add(`${fname}.json`, () => this.saveAs('json', true, `${fname}.json`), 'Produce JSON with line spacing');
          menu.add(`${fname}0.json`, () => this.saveAs('json', false, `${fname}0.json`), 'Produce JSON without line spacing');
       }
@@ -2469,7 +2470,12 @@ class TPadPainter extends ObjectPainter {
             if (res)
                this.getCanvPainter()?.sendWebsocket(`SAVE:${filename}:${res}`);
          } else {
-            const prefix = (kind === 'svg') ? prSVG : (kind === 'json' ? prJSON : '');
+            let prefix = '';
+            switch (kind) {
+               case 'svg': prefix = prSVG; break;
+               case 'json': prefix = prJSON; break;
+               case 'html': prefix = prHTML; break;
+            }
             saveFile(filename, prefix ? prefix + encodeURIComponent(imgdata) : imgdata);
          }
       });
@@ -2489,8 +2495,30 @@ class TPadPainter extends ObjectPainter {
    /** @summary Produce image for the pad
      * @return {Promise} with created image */
    async produceImage(full_canvas, file_format, args) {
-      if (file_format === 'json')
-         return isFunc(this.produceJSON) ? this.produceJSON(full_canvas ? 2 : 0) : '';
+      if ((file_format === 'json') || (file_format === 'html')) {
+         const json = isFunc(this.produceJSON) ? this.produceJSON(full_canvas ? 2 : 0) : '';
+         if (!json || (file_format === 'json'))
+            return json;
+         return '<!DOCTYPE html>\n' +
+                '<html lang="en">\n' +
+                '<head>\n' +
+                '  <meta charset="utf-8">\n' +
+                '  <title>Reading object from the ROOT file</title>\n' +
+                '  <link rel="shortcut icon" href="../img/RootIcon.ico"/>\n' +
+                '  <script type="importmap">\n' +
+                `    { "imports": { "jsroot": "${source_dir}/modules/main.mjs" } }\n` +
+                '  </script>\n' +
+                '</head>\n' +
+                '<body>\n' +
+                '  <div id="drawing" style="position: relative; width: 800px; height: 600px;"></div>\n' +
+                '</body>\n' +
+                '<script type="module">\n' +
+                '  import { parse, draw } from "jsroot";\n' +
+                `  const obj = parse(${json});\n` +
+                '  draw("drawing", obj);\n' +
+                '</script>\n' +
+                '</html>\n';
+      }
 
       const use_frame = (full_canvas === 'frame'),
             elem = use_frame ? this.getFrameSvg() : (full_canvas ? this.getCanvSvg() : this.getPadSvg()),
