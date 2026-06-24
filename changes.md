@@ -2,6 +2,7 @@
 
 ## Changes in 7.11.x
 1. Fix - prevent very long header in context menu
+2. Fix - JSON production for TWebCanvas
 
 
 ## Changes in 7.11.0
