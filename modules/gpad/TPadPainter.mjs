@@ -2513,7 +2513,7 @@ class TPadPainter extends ObjectPainter {
                 `  <link rel="shortcut icon" href="${url}/img/RootIcon.ico"/>\n` +
                 '  <script type="importmap">\n' +
                 `    { "imports": { "jsroot": "${url}/modules/main.mjs" } }\n` +
-                '  </script>\n' +
+                '  </' + 'script>\n' + // avoid problems with batch production
                 '  <style>\n' +
                 '    body {\n' +
                 '      margin: 0;\n' +
@@ -2538,7 +2538,7 @@ class TPadPainter extends ObjectPainter {
                 '    import { parse, draw } from "jsroot";\n' +
                 `    const obj = parse(${json});\n` +
                 '    draw("drawing", obj);\n' +
-                '  </script>\n' +
+                '  </' + 'script>\n' + // avoid problems with batch production
                 '</body>\n' +
                 '</html>\n';
       }
