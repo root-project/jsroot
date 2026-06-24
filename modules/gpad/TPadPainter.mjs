@@ -2251,9 +2251,9 @@ class TPadPainter extends ObjectPainter {
      * @return {Promise} with image data, coded with btoa() function
      * @private */
    async createImage(format) {
-      if ((format === 'png') || (format === 'jpeg') || (format === 'svg') || (format === 'webp') || (format === 'pdf')) {
+      if ((format === 'png') || (format === 'jpeg') || (format === 'html') || (format === 'svg') || (format === 'webp') || (format === 'pdf')) {
          return this.produceImage(true, format).then(res => {
-            if (!res || (format === 'svg'))
+            if (!res || (format === 'svg') || (format === 'html'))
                return res;
             const separ = res.indexOf('base64,');
             return (separ > 0) ? res.slice(separ + 7) : '';
