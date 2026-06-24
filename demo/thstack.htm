@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Create and update THStack object</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
+<head>
+   <meta charset="utf-8">
+   <title>Create and update THStack object</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
 
-   <body>
-      <h3>Text Before </h3>
-      <div id="object_draw" style="position: relative; width: 800px; height: 600px;"></div>
-      <h3>Text After</h3>
-   </body>
+<body>
+   <h3>Text Before </h3>
+   <div id="object_draw" style="position: relative; width: 800px; height: 600px;"></div>
+   <h3>Text After</h3>
 
    <script type='module'>
      import { draw, redraw, createHistogram, createTHStack } from 'jsroot';
@@ -43,4 +42,6 @@
      let cnt = 0;
      setInterval(() => redraw('object_draw', createStack(++cnt), 'nostack'), 2000);
    </script>
+
+</body>
 </html>

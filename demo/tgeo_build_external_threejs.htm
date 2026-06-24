@@ -1,34 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <!-- as prototype used: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometries.html -->
-      <title>Build and draw TGeo object using external three.js</title>
-      <meta charset="utf-8">
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-      <style>
-         body {
-            font-family: Monospace;
-            background-color: #000;
-            margin: 0px;
-            overflow: hidden;
+<head>
+   <!-- as prototype used: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometries.html -->
+   <title>Build and draw TGeo object using external three.js</title>
+   <meta charset="utf-8">
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+   <style>
+      body {
+         font-family: Monospace;
+         background-color: #000;
+         margin: 0px;
+         overflow: hidden;
+      }
+   </style>
+   <script type="importmap">
+      {
+         "imports": {
+            "three": "https://threejs.org/build/three.module.js",
+            "three/addons": "https://threejs.org/examples/jsm/Addons.js",
+            "three_stats": "https://threejs.org/examples/jsm/libs/stats.module.js",
+            "jsroot_geom": "../build/geom_nothreejs.mjs"
          }
-      </style>
-      <script type="importmap">
-         {
-            "imports": {
-               "three": "https://threejs.org/build/three.module.js",
-               "three/addons": "https://threejs.org/examples/jsm/Addons.js",
-               "three_stats": "https://threejs.org/examples/jsm/libs/stats.module.js",
-               "jsroot_geom": "../build/geom_nothreejs.mjs"
-            }
-         }
-      </script>
+      }
+   </script>
 
-   </head>
+</head>
 
-   <body>
-   </body>
+<body>
 
    <script type='module'>
 
@@ -155,5 +154,5 @@
        animate();
 
    </script>
-
+</body>
 </html>

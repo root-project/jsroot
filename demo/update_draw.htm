@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Demonstrator of online usage of JSROOT</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <style>
-         html {
-            height: 100%;
-         }
-         body {
-            min-height: 100%;
-            margin: 0px;
-            overflow: hidden;
-         }
-      </style>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
+<head>
+   <meta charset="utf-8">
+   <title>Demonstrator of online usage of JSROOT</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <style>
+      html {
+         height: 100%;
+      }
+      body {
+         min-height: 100%;
+         margin: 0px;
+         overflow: hidden;
+      }
+   </style>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
 
-   <body>
-      <div id="drawing" style="position: absolute; inset: 1px;"></div>
-   </body>
+<body>
+   <div id="drawing" style="position: absolute; inset: 1px;"></div>
 
    <script type='module'>
       import { httpRequest, redraw, decodeUrl, registerForResize, GridDisplay } from 'jsroot';
@@ -67,4 +66,6 @@
 
       setInterval(updateGUI, monitor);
    </script>
+
+</body>
 </html>

@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Automatic zooming in second histogram</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
+<head>
+   <meta charset="utf-8">
+   <title>Automatic zooming in second histogram</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
 
-   <body>
-     <div id="drawth2" style="position: relative; width: 600px; height: 400px;"></div>
-     <div id="drawth1" style="position: relative; width: 600px; height: 400px;"></div>
-   </body>
+<body>
+   <div id="drawth2" style="position: relative; width: 600px; height: 400px;"></div>
+   <div id="drawth1" style="position: relative; width: 600px; height: 400px;"></div>
 
    <script type='module'>
       import { openFile, draw } from 'jsroot';
@@ -39,4 +38,6 @@
           return this.oldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
       }
    </script>
+
+</body>
 </html>

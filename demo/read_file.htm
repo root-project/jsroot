@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Reading object from the ROOT file</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
-   <body>
-      <div id="drawing" style="position: relative; width: 800px; height: 600px;"></div>
-   </body>
+<head>
+   <meta charset="utf-8">
+   <title>Reading object from the ROOT file</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
+<body>
+   <div id="drawing" style="position: relative; width: 800px; height: 600px;"></div>
    <script type='module'>
       import { openFile, draw } from 'jsroot';
       const file = await openFile('https://root.cern/js/files/hsimple.root');
       const obj = await file.readObject('hpxpy;1');
       draw('drawing', obj, 'colz');
    </script>
+</body>
 </html>

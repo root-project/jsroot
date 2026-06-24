@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Create, draw and update TH2 object</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
+<head>
+   <meta charset="utf-8">
+   <title>Create, draw and update TH2 object</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
 
-   <body>
-      <div id="object_draw" style="position: relative; width: 800px; height: 600px;"></div>
-   </body>
+<body>
+   <div id="object_draw" style="position: relative; width: 800px; height: 600px;"></div>
 
    <script type='module'>
       import { createHistogram, redraw } from 'jsroot';
@@ -46,4 +45,6 @@
       updateGUI();
       setInterval(updateGUI, 3000);
    </script>
+
+</body>
 </html>

@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Load all scripts and data in advance</title>
-      <script src="../build/hist.js"></script>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-   </head>
+<head>
+  <meta charset="utf-8">
+  <title>Load all scripts and data in advance</title>
+  <script src="../build/hist.js"></script>
+  <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+</head>
 
-   <body>
-      <p>Example of loading build/hist.js bundle with only histogram functions</p>
-      <div id="plain" style="position: relative; width: 800px; height: 600px; overflow: hidden;"> </div>
-   </body>
+<body>
+   <p>Example of loading build/hist.js bundle with only histogram functions</p>
+   <div id="plain" style="position: relative; width: 800px; height: 600px; overflow: hidden;"> </div>
 
    <script>
 
@@ -362,4 +361,5 @@
       // draw created object
       JSROOT.TH2Painter.draw('plain', obj, 'lego2');
    </script>
+</body>
 </html>

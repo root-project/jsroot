@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Run interactivity testings</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs", "jsroot/testing": "../modules/testing.mjs" } }
-      </script>
-   </head>
-   <body>
-      <div id="drawing" style="inset: 3px; position: absolute;"></div>
-   </body>
+<head>
+   <meta charset="utf-8">
+   <title>Run interactivity testings</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs", "jsroot/testing": "../modules/testing.mjs" } }
+   </script>
+</head>
+<body>
+   <div id="drawing" style="inset: 3px; position: absolute;"></div>
    <script type='module'>
       import { openFile, draw } from 'jsroot';
       import { testInteractivity } from 'jsroot/testing';
@@ -19,4 +18,5 @@
       await draw('drawing', obj, 'colz');
       testInteractivity({ dom: document.getElementById('drawing'), timeout: 1000 });
    </script>
+</body>
 </html>

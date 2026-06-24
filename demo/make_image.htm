@@ -1,58 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Test svg/png/jpeg creation in the browser</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <style>
-         .grid-container {
-           display: grid;
-           grid-template-columns: auto auto auto;
-           grid-template-rows: 20px 300px 20px 300px 20px 300px 20px;
-           gap: 2px;
-           background-color: #968;
-           padding: 2px;
-           height: 100%;
-         }
-         .grid-container > div {
-           background-color: rgba(255, 255, 255, 0.8);
-           text-align: center;
-           padding: 0 0;
-           font-size: 16px;
-         }
-     </style>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
+<head>
+   <meta charset="utf-8">
+   <title>Test svg/png/jpeg creation in the browser</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <style>
+      .grid-container {
+         display: grid;
+         grid-template-columns: auto auto auto;
+         grid-template-rows: 20px 300px 20px 300px 20px 300px 20px;
+         gap: 2px;
+         background-color: #968;
+         padding: 2px;
+         height: 100%;
+      }
+      .grid-container > div {
+         background-color: rgba(255, 255, 255, 0.8);
+         text-align: center;
+         padding: 0 0;
+         font-size: 16px;
+      }
+   </style>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
+<body>
+   <h1>Example usage of makeImage function</h1>
 
-   <body>
-      <h1>Example usage of makeImage function</h1>
-
-      <div class="grid-container">
-         <div>2D drawing</div>
-         <div>3D drawing</div>
-         <div>Geo drawing</div>
-         <div id="draw_svg1"></div>
-         <div id="draw_svg2"></div>
-         <div id="draw_svg3"></div>
-         <div id="info_svg1"></div>
-         <div id="info_svg2"></div>
-         <div id="info_svg3"></div>
-         <div id="draw_png1"></div>
-         <div id="draw_png2"></div>
-         <div id="draw_png3"></div>
-         <div id="info_png1"></div>
-         <div id="info_png2"></div>
-         <div id="info_png3"></div>
-         <div id="draw_jpeg1"></div>
-         <div id="draw_jpeg2"></div>
-         <div id="draw_jpeg3"></div>
-         <div id="info_jpeg1"></div>
-         <div id="info_jpeg2"></div>
-         <div id="info_jpeg3"></div>
-      </div>
-   </body>
+   <div class="grid-container">
+      <div>2D drawing</div>
+      <div>3D drawing</div>
+      <div>Geo drawing</div>
+      <div id="draw_svg1"></div>
+      <div id="draw_svg2"></div>
+      <div id="draw_svg3"></div>
+      <div id="info_svg1"></div>
+      <div id="info_svg2"></div>
+      <div id="info_svg3"></div>
+      <div id="draw_png1"></div>
+      <div id="draw_png2"></div>
+      <div id="draw_png3"></div>
+      <div id="info_png1"></div>
+      <div id="info_png2"></div>
+      <div id="info_png3"></div>
+      <div id="draw_jpeg1"></div>
+      <div id="draw_jpeg2"></div>
+      <div id="draw_jpeg3"></div>
+      <div id="info_jpeg1"></div>
+      <div id="info_jpeg2"></div>
+      <div id="info_jpeg3"></div>
+   </div>
 
    <script type='module'>
 
@@ -117,4 +115,5 @@
          .then(geom => makeColumn('3', geom, ''));
 
    </script>
+</body>
 </html>

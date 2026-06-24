@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Store canvas in JSON to replicate it</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
+<head>
+   <meta charset="utf-8">
+   <title>Store canvas in JSON to replicate it</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
 
-   <body>
-      <div id="drawing" style="position: relative; width: 600px; height: 400px;"></div>
-      <p>Example show replication of TCanvas with all primitives, using drawingJSON() function</p>
-      <button id="btn1" type="button">Replicate</button> <button id="btn2" type="button">Clear</button>
-      <div id="replica" style="position: relative; width: 600px; height: 400px;"></div>
-   </body>
+<body>
+   <div id="drawing" style="position: relative; width: 600px; height: 400px;"></div>
+   <p>Example show replication of TCanvas with all primitives, using drawingJSON() function</p>
+   <button id="btn1" type="button">Replicate</button> <button id="btn2" type="button">Clear</button>
+   <div id="replica" style="position: relative; width: 600px; height: 400px;"></div>
 
    <script type='module'>
 
@@ -42,5 +41,7 @@
       document.getElementById('btn2').addEventListener('click', () => cleanup('replica'));
 
    </script>
+
+</body>
 </html>
 

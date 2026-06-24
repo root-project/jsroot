@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Context menu tests</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs", "jsroot/menu": "../modules/gui/menu.mjs" } }
-      </script>
-   </head>
-
-   <body>
-      <div id="drawing" style="position: relative; width: 800px; height: 600px;"></div>
-   </body>
+<head>
+   <meta charset="utf-8">
+   <title>Context menu tests</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs", "jsroot/menu": "../modules/gui/menu.mjs" } }
+   </script>
+</head>
+<body>
+   <div id="drawing" style="position: relative; width: 800px; height: 600px;"></div>
 
    <script type='module'>
       import { createMenu } from 'jsroot/menu';
@@ -36,4 +34,5 @@
 
       document.addEventListener('contextmenu', showMenu);
    </script>
+</body>
 </html>

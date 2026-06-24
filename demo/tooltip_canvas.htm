@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>Use of tooltip callback in JSROOT</title>
-      <link rel="shortcut icon" href="../img/RootIcon.ico"/>
-      <script type="importmap">
-         { "imports": { "jsroot": "../modules/main.mjs" } }
-      </script>
-   </head>
+<head>
+   <meta charset="utf-8">
+   <title>Use of tooltip callback in JSROOT</title>
+   <link rel="shortcut icon" href="../img/RootIcon.ico"/>
+   <script type="importmap">
+      { "imports": { "jsroot": "../modules/main.mjs" } }
+   </script>
+</head>
 
-   <body>
-      <div id="user_tooltip">Place for info</div>
-      <form action="">
-         <input type="radio" name="kind" id="btn1" value="Tooltip" checked/> Tooltip
-         <input type="radio" name="kind" id="btn2" value="Click"/> Click
-         <input type="radio" name="kind" id="btn3" value="Dblclick"/> Doubleclk
-         <input type="radio" name="kind" id="btnall" value="All"/> All
-         <input type="checkbox" name="mode3d" id="chkmode3d" checked="true"/> 3D mode
-      </form>
-      <div id="object_draw" style="position: relative; width: 800px; height: 600px;"></div>
-      <div id="tooltip_draw" style="position: relative; width: 400px; height: 300px;"></div>
-   </body>
+<body>
+   <div id="user_tooltip">Place for info</div>
+   <form action="">
+      <input type="radio" name="kind" id="btn1" value="Tooltip" checked/> Tooltip
+      <input type="radio" name="kind" id="btn2" value="Click"/> Click
+      <input type="radio" name="kind" id="btn3" value="Dblclick"/> Doubleclk
+      <input type="radio" name="kind" id="btnall" value="All"/> All
+      <input type="checkbox" name="mode3d" id="chkmode3d" checked="true"/> 3D mode
+   </form>
+   <div id="object_draw" style="position: relative; width: 800px; height: 600px;"></div>
+   <div id="tooltip_draw" style="position: relative; width: 400px; height: 300px;"></div>
 
    <script type='module'>
       import { create, createHistogram, redraw } from 'jsroot';
@@ -147,4 +146,6 @@
       // update drawing also by click on checkbox
       document.getElementById('chkmode3d').addEventListener('click', updateGUI);
    </script>
+
+</body>
 </html>
