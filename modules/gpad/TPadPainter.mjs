@@ -121,15 +121,17 @@ const PadButtonsHandler = {
       if (!this._buttons)
          return;
 
-      const istop = this.isTopPad(), y = 0;
-      let ctrl, x = group.property('leftside') ? this.getButtonSize(1.25) : 0;
+      const istop = this.isTopPad(),
+            isfast = this.isFastDrawing(),
+            y = 0;
+      let ctrl, x = group.property('leftside') ? this.getButtonSize(isfast ? 1.25 : 3.5) : 0;
 
-      if (this.isFastDrawing()) {
+      if (isfast) {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, this.getButtonSize(), 'enlargePad', false)
                             .attr('name', 'Enlarge').attr('x', 0).attr('y', 0)
                             .on('click', evnt => this.clickPadButton('enlargePad', evnt));
       } else {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.rect, this.getButtonSize(), 'Toggle tool buttons', false)
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.logo, this.getButtonSize(), 'Toggle tool buttons', false)
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
                             .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
                             .on('click', evnt => this.toggleButtonsVisibility('toggle', evnt));
