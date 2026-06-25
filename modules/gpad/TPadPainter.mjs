@@ -148,8 +148,23 @@ const PadButtonsHandler = {
                             .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
                             .property('pointer-events', 'visibleFill')
                             .on('click', evnt => this.toggleButtonsVisibility('toggle', evnt));
+
          ctrl.node()._mouseenter = () => this.toggleButtonsVisibility('enable');
          ctrl.node()._mouseleave = () => this.toggleButtonsVisibility('disable');
+
+         if (istop && settings.ContextMenu) {
+            ctrl.on('contextmenu', evnt => {
+               evnt.preventDefault();
+               evnt.stopPropagation();
+               createMenu(evnt).then(menu => {
+                  menu.addSettingsMenu(false, 'JSROOT', arg => {
+                     if (arg === 'dark')
+                        this.changeDarkMode();
+                  });
+                  menu.show();
+               });
+            });
+         }
 
          for (let k = 0; k < this._buttons.length; ++k) {
             const item = this._buttons[k];
