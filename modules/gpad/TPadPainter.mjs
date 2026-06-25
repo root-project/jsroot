@@ -84,15 +84,18 @@ const PadButtonsHandler = {
 
 
    alignButtons(btns, width, height) {
-      const sz0 = this.getButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0;
+      const isfast = this.isFastDrawing(),
+            isvert = btns.property('vertical'),
+            sz0x = isfast || isvert ? this.getButtonSize(1.25) : this.$first_button_width,
+            nextx = (btns.property('nextx') || 0) + sz0x;
       let btns_x, btns_y;
 
-      if (btns.property('vertical')) {
-         btns_x = btns.property('leftside') ? 2 : (width - sz0);
+      if (isvert) {
+         btns_x = btns.property('leftside') ? 2 : (width - sz0x);
          btns_y = height - nextx;
       } else {
          btns_x = btns.property('leftside') ? 2 : (width - nextx);
-         btns_y = height - sz0;
+         btns_y = height - this.getButtonSize(1.25);
       }
 
       makeTranslate(btns, btns_x, btns_y);
@@ -131,14 +134,15 @@ const PadButtonsHandler = {
       const istop = this.isTopPad(),
             isfast = this.isFastDrawing(),
             y = 0;
-      let ctrl, x = group.property('leftside') ? this.getButtonSize(isfast ? 1.25 : 3.5) : 0;
+      this.$first_button_width = this.getButtonSize(isfast || !istop ? 1.25 : 3.5);
+      let ctrl, x = group.property('leftside') ? this.$first_button_width : 0;
 
       if (isfast) {
          ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.circle, this.getButtonSize(), 'enlargePad', false)
                             .attr('name', 'Enlarge').attr('x', 0).attr('y', 0)
                             .on('click', evnt => this.clickPadButton('enlargePad', evnt));
       } else {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.logo, this.getButtonSize(), `JSROOT version: ${version}`, false)
+         ctrl = ToolbarIcons.createSVG(group, istop ? ToolbarIcons.logo : ToolbarIcons.rect, this.getButtonSize(), istop ? `JSROOT version: ${version}` : `Toggle buttons on ${this.getPadName()}`, false)
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
                             .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
                             .property('pointer-events', 'visibleFill')
@@ -183,8 +187,8 @@ const PadButtonsHandler = {
          ctrl.attr('y', x);
       else if (!group.property('leftside'))
          ctrl.attr('x', x);
-      if (!isfast)
-         this.toggleButtonsVisibility('hidemain');
+
+      this.toggleButtonsVisibility('hidemain');
    },
 
    assign(painter) {
