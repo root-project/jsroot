@@ -1,4 +1,4 @@
-import { gStyle, settings, constants, browser, source_dir, version_id, internals, BIT,
+import { gStyle, settings, constants, browser, source_dir, version_id, version, internals, BIT,
          create, toJSON, isBatchMode, loadModules, loadScript, injectCode, isPromise, getPromise, postponePromise,
          isObject, isFunc, isStr, clTObjArray, clTColor, clTPad, clTFrame, clTStyle, clTLegend,
          clTHStack, clTMultiGraph, clTLegendEntry, nsSVG, kTitle, clTList, urlClassPrefix } from '../core.mjs';
@@ -40,7 +40,7 @@ const PadButtonsHandler = {
       let state = btn.property('buttons_state');
 
       if (btn.property('timout_handler')) {
-         if (action !== 'timeout')
+         if ((action !== 'timeout') && (action !== 'timeout2'))
             clearTimeout(btn.property('timout_handler'));
          btn.property('timout_handler', null);
       }
@@ -54,8 +54,13 @@ const PadButtonsHandler = {
          case 'enterbtn':
             this.btns_active_flag = true;
             return; // do nothing, just cleanup timeout
+         case 'hidemain':
          case 'timeout':
+            btn.property('timout_handler', setTimeout(() => this.toggleButtonsVisibility('timeout2'), 5000));
             break;
+         case 'timeout2':
+            btn.style('opacity', 0); // hide JSROOT button, but keep handling
+            return;
          case 'toggle':
             state = !state;
             btn.property('buttons_state', state);
@@ -72,6 +77,8 @@ const PadButtonsHandler = {
       group.selectAll('svg').each(function() {
          if (this !== btn.node())
             d3_select(this).style('display', is_visible ? '' : 'none');
+         else if (is_visible)
+            btn.style('opacity', null); // default opacity
       });
    },
 
@@ -131,9 +138,10 @@ const PadButtonsHandler = {
                             .attr('name', 'Enlarge').attr('x', 0).attr('y', 0)
                             .on('click', evnt => this.clickPadButton('enlargePad', evnt));
       } else {
-         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.logo, this.getButtonSize(), 'Toggle tool buttons', false)
+         ctrl = ToolbarIcons.createSVG(group, ToolbarIcons.logo, this.getButtonSize(), `JSROOT version: ${version}`, false)
                             .attr('name', 'Toggle').attr('x', 0).attr('y', 0)
                             .property('buttons_state', (settings.ToolBar !== 'popup') || browser.touches)
+                            .property('pointer-events', 'visibleFill')
                             .on('click', evnt => this.toggleButtonsVisibility('toggle', evnt));
          ctrl.node()._mouseenter = () => this.toggleButtonsVisibility('enable');
          ctrl.node()._mouseleave = () => this.toggleButtonsVisibility('disable');
@@ -175,6 +183,8 @@ const PadButtonsHandler = {
          ctrl.attr('y', x);
       else if (!group.property('leftside'))
          ctrl.attr('x', x);
+      if (!isfast)
+         this.toggleButtonsVisibility('hidemain');
    },
 
    assign(painter) {
