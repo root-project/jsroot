@@ -56,7 +56,8 @@ const PadButtonsHandler = {
             return; // do nothing, just cleanup timeout
          case 'hidemain':
          case 'timeout':
-            btn.property('timout_handler', setTimeout(() => this.toggleButtonsVisibility('timeout2'), 5000));
+            if (!browser.touches)
+               btn.property('timout_handler', setTimeout(() => this.toggleButtonsVisibility('timeout2'), 5000));
             break;
          case 'timeout2':
             btn.style('opacity', 0); // hide JSROOT button, but keep handling
@@ -188,7 +189,8 @@ const PadButtonsHandler = {
       else if (!group.property('leftside'))
          ctrl.attr('x', x);
 
-      this.toggleButtonsVisibility('hidemain');
+      if (!browser.touches)
+         this.toggleButtonsVisibility('hidemain');
    },
 
    assign(painter) {
