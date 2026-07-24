@@ -11,6 +11,7 @@
 1. Fix - draw 3d contours in "surf3" twice https://root-forum.cern.ch/t/64910
 1. Fix - check evaluated value of TF1
 1. Fix - corrupted page layout in SWAN after calling %rootbrowse
+1. Fix - RNtuple decodeZigzag64 for SplitInt64 columns #410
 
 
 ## Changes in 7.11.0
