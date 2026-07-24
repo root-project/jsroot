@@ -5,6 +5,7 @@
 2. Fix - JSON production for TWebCanvas
 3. Fix - check evaluated value of TF1
 4. Fix - corrupted page layout in SWAN after calling %rootbrowse
+5. Fix - RNtuple decodeZigzag64 for SplitInt64 columns #410
 
 
 ## Changes in 7.11.0
