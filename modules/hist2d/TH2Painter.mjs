@@ -1461,7 +1461,8 @@ class TH2Painter extends THistPainter {
    drawBinsPolar() {
       const histo = this.getHisto(),
             o = this.getOptions(),
-            handle = this.prepareDraw(),
+            use_natural = o.Polar === 3,
+            handle = this.prepareDraw({ original: use_natural }),
             cntr = this.getContour(),
             palette = this.getHistPalette(),
             entries = [],
@@ -1482,9 +1483,10 @@ class TH2Painter extends THistPainter {
       if (skip_zero && (histo?._typename === clTProfile2D))
          skip_zero = 1;
 
+      handle.use_natural = use_natural;
       handle.getBinPath = function(i, j) {
-         const a1 = 2 * Math.PI * (Math.max(0, this.grx[i]) / this.width - 0.5),
-               a2 = 2 * Math.PI * (Math.min(this.grx[i + 1], this.width) / this.width - 0.5),
+         const a1 = this.use_natural ? this.origx[i] : 2 * Math.PI * (Math.max(0, this.grx[i]) / this.width - 0.5),
+               a2 = this.use_natural ? this.origx[i + 1] : 2 * Math.PI * (Math.min(this.grx[i + 1], this.width) / this.width - 0.5),
                r2 = Math.min(this.gry[j], this.height) / this.height,
                r1 = Math.max(0, this.gry[j + 1]) / this.height,
                side = a2 - a1 > Math.PI ? 1 : 0; // handle very large sector
@@ -1522,8 +1524,8 @@ class TH2Painter extends THistPainter {
             angle += 2 * Math.PI;
 
          for (i = this.i1; i < this.i2; ++i) {
-            const a1 = 2 * Math.PI * (this.grx[i] / this.width - 0.5),
-                  a2 = 2 * Math.PI * (this.grx[i + 1] / this.width - 0.5);
+            const a1 = this.use_natural ? this.origx[i] : 2 * Math.PI * (this.grx[i] / this.width - 0.5),
+                  a2 = this.use_natural ? this.origx[i + 1] : 2 * Math.PI * (this.grx[i + 1] / this.width - 0.5);
             if ((a1 <= angle) && (angle <= a2))
                break;
          }
