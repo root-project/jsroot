@@ -4,7 +4,7 @@ import { pointer as d3_pointer, rgb as d3_rgb, chord as d3_chord, arc as d3_arc,
 import { kBlack } from '../base/colors.mjs';
 import { TRandom, floatToString, makeTranslate, addHighlightStyle, getBoxDecorations } from '../base/BasePainter.mjs';
 import { EAxisBits } from '../base/ObjectPainter.mjs';
-import { THistPainter, kPOLAR } from './THistPainter.mjs';
+import { THistPainter } from './THistPainter.mjs';
 import { assignContextMenu } from '../gui/menu.mjs';
 
 
@@ -1483,8 +1483,8 @@ class TH2Painter extends THistPainter {
          skip_zero = 1;
 
       handle.getBinPath = function(i, j) {
-         const a1 = 2 * Math.PI * Math.max(0, this.grx[i]) / this.width,
-               a2 = 2 * Math.PI * Math.min(this.grx[i + 1], this.width) / this.width,
+         const a1 = 2 * Math.PI * (Math.max(0, this.grx[i]) / this.width - 0.5),
+               a2 = 2 * Math.PI * (Math.min(this.grx[i + 1], this.width) / this.width - 0.5),
                r2 = Math.min(this.gry[j], this.height) / this.height,
                r1 = Math.max(0, this.gry[j + 1]) / this.height,
                side = a2 - a1 > Math.PI ? 1 : 0; // handle very large sector
@@ -1518,12 +1518,12 @@ class TH2Painter extends THistPainter {
          let angle = Math.atan2((y - y0) / this.height, (x - x0) / this.width), i, j;
          const radius = Math.abs(Math.cos(angle)) > 0.5 ? (x - x0) / Math.cos(angle) / this.width * 2 : (y - y0) / Math.sin(angle) / this.height * 2;
 
-         if (angle < 0)
+         if (angle < -Math.PI)
             angle += 2 * Math.PI;
 
          for (i = this.i1; i < this.i2; ++i) {
-            const a1 = 2 * Math.PI * this.grx[i] / this.width,
-                  a2 = 2 * Math.PI * this.grx[i + 1] / this.width;
+            const a1 = 2 * Math.PI * (this.grx[i] / this.width - 0.5),
+                  a2 = 2 * Math.PI * (this.grx[i + 1] / this.width - 0.5);
             if ((a1 <= angle) && (angle <= a2))
                break;
          }
@@ -2981,7 +2981,7 @@ class TH2Painter extends THistPainter {
          if (o.Scat)
             handle = this.drawBinsScatter();
 
-         if (o.System === kPOLAR)
+         if (o.Polar)
             handle = this.drawBinsPolar();
          else if (o.Arrow)
             handle = this.drawBinsArrow();
