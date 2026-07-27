@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 7.11.x
+## Changes in 7.11.1
 1. Fix - prevent very long header in context menu
 2. Fix - JSON production for TWebCanvas
 3. Fix - check evaluated value of TF1
