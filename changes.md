@@ -8,11 +8,14 @@
 1. Implement new "POLF" and "POLN" draw options for polar coordinates for `TH2`
 1. Use "JSROOT" label for main pad button, hide it after 5 seconds from the drawing
 1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings
+
+
+## Changes in 7.11.1
 1. Fix - prevent very long header in context menu
-1. Fix - draw 3d contours in "surf3" twice https://root-forum.cern.ch/t/64910
-1. Fix - check evaluated value of TF1
-1. Fix - corrupted page layout in SWAN after calling %rootbrowse
-1. Fix - RNtuple decodeZigzag64 for SplitInt64 columns #410
+2. Fix - JSON production for TWebCanvas
+3. Fix - check evaluated value of TF1
+4. Fix - corrupted page layout in SWAN after calling %rootbrowse
+5. Fix - RNtuple decodeZigzag64 for SplitInt64 columns #410
 
 
 ## Changes in 7.11.0
