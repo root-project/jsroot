@@ -870,7 +870,7 @@ class ReaderItem {
          case kReal32Quant:
             this.nbits = this.column.bitsOnStorage;
             if (!this.buf) {
-               this.factor = (this.column.maxValue - this.column.minValue) / ((1 << this.nbits) - 1);
+               this.factor = (this.column.maxValue - this.column.minValue) / (2 ** this.nbits - 1);
                this.min = this.column.minValue;
             }
 
@@ -899,7 +899,7 @@ class ReaderItem {
                   this.buf.setUint32(0, res << (32 - this.nbits), true);
                   obj[this.name] = this.buf.getFloat32(0, true);
                } else
-                  obj[this.name] = res * this.factor + this.min;
+                  obj[this.name] = (res >>> 0) * this.factor + this.min; // convert res to Uint32
             };
             break;
          case kInt64:
