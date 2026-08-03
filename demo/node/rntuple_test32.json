@@ -1,0 +1,42 @@
+[
+  {
+    "FloatReal32Quant1": "-0x1p+0",
+    "FloatReal32Quant8": "-0x1.fdfdfdfdfdfep-2",
+    "FloatReal32Quant32": "0x1.0000000a1516p-2",
+    "DoubleReal32Quant1": "0x1p+0",
+    "DoubleReal32Quant20": "0x1p+0",
+    "DoubleReal32Quant32": "0x1.000000118p+1"
+  },
+  {
+    "FloatReal32Quant1": "0x1p+0",
+    "FloatReal32Quant8": "0x1.0101010101p-8",
+    "FloatReal32Quant32": "0x1.921fbp-31",
+    "DoubleReal32Quant1": "0x1p+0",
+    "DoubleReal32Quant20": "0x1.00001p-20",
+    "DoubleReal32Quant32": "0x0p+0"
+  },
+  {
+    "FloatReal32Quant1": "0x1p+0",
+    "FloatReal32Quant8": "0x1.0101010101p-8",
+    "FloatReal32Quant32": "0x1.921fbp-31",
+    "DoubleReal32Quant1": "0x1p+0",
+    "DoubleReal32Quant20": "0x1.00001p-20",
+    "DoubleReal32Quant32": "-0x1.2bfffffe0cp+5"
+  },
+  {
+    "FloatReal32Quant1": "-0x1p+0",
+    "FloatReal32Quant8": "-0x1p+0",
+    "FloatReal32Quant32": "-0x1.921fb6p+1",
+    "DoubleReal32Quant1": "-0x1p+0",
+    "DoubleReal32Quant20": "-0x1p+0",
+    "DoubleReal32Quant32": "-0x1.9p+6"
+  },
+  {
+    "FloatReal32Quant1": "0x1p+0",
+    "FloatReal32Quant8": "0x1p+0",
+    "FloatReal32Quant32": "0x1.921fb6p+1",
+    "DoubleReal32Quant1": "0x1p+0",
+    "DoubleReal32Quant20": "0x1p+0",
+    "DoubleReal32Quant32": "0x1.9p+4"
+  }
+]
