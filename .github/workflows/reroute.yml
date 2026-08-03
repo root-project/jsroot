@@ -1,0 +1,20 @@
+name: Reroute PR Base
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  reroute:
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'master' # If they incorrectly targeted main
+    steps:
+      - name: Change base to dev
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              base: 'dev' // Your preferred non-default branch
+            });
