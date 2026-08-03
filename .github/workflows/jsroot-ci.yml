@@ -67,6 +67,7 @@ jobs:
           node demo/node/file_proxy.js buffer ./hsimple.root
           node demo/node/rntuple_buffer_test.js
           node demo/node/rntuple_test.js demo/node/rntuple_test.root
+          node demo/node/rntuple_test32.js demo/node/rntuple_test32.root demo/node/rntuple_test32.json
 
   tests_ubuntu:
     runs-on: ubuntu-latest
@@ -184,6 +185,8 @@ jobs:
           node demo/node/file_proxy.js buffer ./hsimple.root
           node demo/node/rntuple_buffer_test.js
           node demo/node/rntuple_test.js demo/node/rntuple_test.root
+          node demo/node/rntuple_test32.js demo/node/rntuple_test32.root demo/node/rntuple_test32.json
+
 
   build-windows:
     runs-on: windows-latest
@@ -235,3 +238,5 @@ jobs:
           node demo/node/file_proxy.js buffer ./hsimple.root
           node demo/node/rntuple_buffer_test.js
           node demo/node/rntuple_test.js demo/node/rntuple_test.root
+          node demo/node/rntuple_test32.js demo/node/rntuple_test32.root demo/node/rntuple_test32.json
+
