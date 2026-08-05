@@ -4,10 +4,17 @@ import { readFileSync } from 'fs';
 
 
 // convert float to hex representation based on IEEE-754 and C99 standard
-function floatToHex(num)
+function floatToHex(num, field)
 {
    if (num === 0)
       return (Object.is(num, -0) ? '-' : '') + '0x0p+0';
+
+   // convert num to Float32 for correct precision
+   if (field.startsWith("Float")) {
+      const tmp = new DataView(new ArrayBuffer(4));
+      tmp.setFloat32(0, num, false);
+      num = tmp.getFloat32(0, false);
+   }
 
    const buf = new ArrayBuffer(8), // 8 Byte == 64 Bit
          view = new DataView(buf);
@@ -59,7 +66,7 @@ async function read_file(input_root = 'rntuple_test32.root', input_ref = 'rntupl
    selector.Process = function(entryIndex) {
       for (const field of fields) {
          try {
-            const value = floatToHex(this.tgtobj[field]), expected = original[entryIndex][field];
+            const value = floatToHex(this.tgtobj[field], field), expected = original[entryIndex][field];
 
             if (value !== expected) {
                console.error(`FAILURE: ${field} at entry ${entryIndex} expected ${expected},`+
