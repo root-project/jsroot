@@ -1294,8 +1294,9 @@ const prROOT = 'ROOT.', clTObject = 'TObject', clTNamed = 'TNamed', clTString = 
       clTGaxis = 'TGaxis', clTAttAxis = 'TAttAxis', clTAxis = 'TAxis', clTStyle = 'TStyle',
       clTH1 = 'TH1', clTH1I = 'TH1I', clTH1F = 'TH1F', clTH1D = 'TH1D',
       clTH2 = 'TH2', clTH2I = 'TH2I', clTH2F = 'TH2F', clTH2D = 'TH2D',
-      clTH3 = 'TH3', clTH3D = 'TH3D',
-      clTF1 = 'TF1', clTF12 = 'TF12', clTF2 = 'TF2', clTF3 = 'TF3', clTProfile = 'TProfile', clTProfile2D = 'TProfile2D', clTProfile3D = 'TProfile3D',
+      clTH3 = 'TH3', clTH3I = 'TH3I', clTH3F = 'TH3F', clTH3D = 'TH3D',
+      clTProfile = 'TProfile', clTProfile2D = 'TProfile2D', clTProfile3D = 'TProfile3D',
+      clTF1 = 'TF1', clTF12 = 'TF12', clTF2 = 'TF2', clTF3 = 'TF3',
       clTGeoVolume = 'TGeoVolume', clTGeoNode = 'TGeoNode', clTGeoNodeMatrix = 'TGeoNodeMatrix',
       nsROOT = 'ROOT::', nsREX = nsROOT + 'Experimental::', nsSVG = 'http://www.w3.org/2000/svg',
       kNoZoom = -1111, kNoStats = BIT(9), kInspect = 'inspect', kTitle = 'title',
@@ -1435,7 +1436,7 @@ function create(typename, target) {
       case clTH1I:
       case clTH1D:
       case 'TH1L64':
-      case 'TH1F':
+      case clTH1F:
       case 'TH1S':
       case 'TH1C':
          create(clTH1, obj);
@@ -1458,9 +1459,9 @@ function create(typename, target) {
          create(clTH1, obj);
          extend(obj, { fTsumwy: 0, fTsumwy2: 0, fTsumwz: 0, fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
          break;
-      case 'TH3I':
+      case clTH3I:
       case 'TH3L64':
-      case 'TH3F':
+      case clTH3F:
       case clTH3D:
       case 'TH3S':
       case 'TH3C':
@@ -2189,9 +2190,9 @@ export { version_id, version_date, version, source_dir, isNodeJs, isBatchMode, s
          clTAttLine, clTAttFill, clTAttMarker, clTAttText,
          clTPave, clTPaveText, clTPavesText, clTPaveStats, clTPaveLabel, clTPaveClass, clTDiamond,
          clTLegend, clTLegendEntry, clTPaletteAxis, clTImagePalette, clTText, clTLink, clTLatex, clTMathText, clTAnnotation, clTMultiGraph,
-         clTColor, clTLine, clTMarker, clTBox, clTPolyLine, clTPad, clTCanvas, clTFrame, clTAttCanvas, clTGaxis,
-         clTAxis, clTStyle, clTH1, clTH1I, clTH1F, clTH1D, clTH2, clTH2I, clTH2F, clTH2D, clTH3, clTH3D, clTF1, clTF12, clTF2, clTF3,
-         clTProfile, clTProfile2D, clTProfile3D, clTHStack,
+         clTColor, clTLine, clTMarker, clTBox, clTPolyLine, clTPad, clTCanvas, clTFrame, clTAttCanvas, clTGaxis, clTAxis, clTStyle,
+         clTH1, clTH1I, clTH1F, clTH1D, clTH2, clTH2I, clTH2F, clTH2D, clTH3, clTH3I, clTH3F, clTH3D,
+         clTProfile, clTProfile2D, clTProfile3D, clTF1, clTF12, clTF2, clTF3, clTHStack,
          clTGraph, clTGraph2DErrors, clTGraph2DAsymmErrors,
          clTGraphPolar, clTGraphPolargram, clTGraphTime, clTCutG,
          clTPolyLine3D, clTPolyMarker3D, clTGeoVolume, clTGeoNode, clTGeoNodeMatrix,
