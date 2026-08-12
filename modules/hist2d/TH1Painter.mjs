@@ -1003,7 +1003,7 @@ class TH1Painter extends THistPainter {
             tips.push(`entries = ${cont}`);
          else {
             const is_dbl = this.isTProfile() || this.matchObjectType(clTH1D);
-            tips.push(`entries = ${floatToString(cont, is_dbl ? '10.8g' : '8.6g')}`);
+            tips.push(`entries = ${floatToString(cont, is_dbl)}`);
          }
       }
 

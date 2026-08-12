@@ -3351,7 +3351,7 @@ class TH2Painter extends THistPainter {
                      'x = ' + this.getAxisBinTip('x', histo.fXaxis, i),
                      'y = ' + this.getAxisBinTip('y', histo.fYaxis, j),
                      `bin = ${histo.getBin(i + 1, j + 1)}  x: ${i + 1}  y: ${j + 1}`,
-                     'content = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, is_dbl ? '10.8g' : '8.6g'))];
+                     'content = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, is_dbl))];
 
       if ((this.getOptions().TextKind === 'E') || profile2d || histo.fSumw2?.length) {
          const errs = this.getBinErrors(histo, histo.getBin(i + 1, j + 1), bincontent);
@@ -3363,7 +3363,7 @@ class TH2Painter extends THistPainter {
 
       if (profile2d) {
          const entries = histo.getBinEntries(i + 1, j + 1);
-         lines.push('entries = ' + ((entries === Math.round(entries)) ? entries : floatToString(entries, '10.8g')));
+         lines.push('entries = ' + ((entries === Math.round(entries)) ? entries : floatToString(entries, true)));
       }
 
       return lines;
@@ -3429,7 +3429,7 @@ class TH2Painter extends THistPainter {
       if (bin.fContent === Math.round(bin.fContent))
          lines.push('content = ' + bin.fContent);
       else
-         lines.push('content = ' + floatToString(bin.fContent, '10.8g'));
+         lines.push('content = ' + floatToString(bin.fContent, true));
       return lines;
    }
 

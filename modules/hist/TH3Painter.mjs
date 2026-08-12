@@ -272,7 +272,7 @@ class TH3Painter extends THistPainter {
          lines.push(`entries = ${binz}`);
       else {
          const is_dbl = is_profile3d || this.matchObjectType(clTH3D);
-         lines.push(`entries = ${floatToString(binz, is_dbl ? '10.8g' : '8.6g')}`);
+         lines.push(`entries = ${floatToString(binz, is_dbl)}`);
       }
 
       if (is_profile3d) {
