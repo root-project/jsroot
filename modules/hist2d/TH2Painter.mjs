@@ -3363,7 +3363,7 @@ class TH2Painter extends THistPainter {
 
       if (profile2d) {
          const entries = histo.getBinEntries(i + 1, j + 1);
-         lines.push('entries = ' + ((entries === Math.round(entries)) ? entries : floatToString(entries, gStyle.fStatFormat)));
+         lines.push('entries = ' + ((entries === Math.round(entries)) ? entries : floatToString(entries, '10.8g')));
       }
 
       return lines;
@@ -3429,7 +3429,7 @@ class TH2Painter extends THistPainter {
       if (bin.fContent === Math.round(bin.fContent))
          lines.push('content = ' + bin.fContent);
       else
-         lines.push('content = ' + floatToString(bin.fContent, gStyle.fStatFormat));
+         lines.push('content = ' + floatToString(bin.fContent, '10.8g'));
       return lines;
    }
 
