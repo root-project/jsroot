@@ -1,5 +1,5 @@
 import { gStyle, settings, createHistogram, createTPolyLine, isFunc, isStr,
-         clTMultiGraph, clTH1D, clTF2, clTProfile2D, kInspect } from '../core.mjs';
+         clTMultiGraph, clTH1D, clTH2D, clTF2, clTProfile2D, kInspect } from '../core.mjs';
 import { pointer as d3_pointer, rgb as d3_rgb, chord as d3_chord, arc as d3_arc, ribbon as d3_ribbon } from '../d3.mjs';
 import { kBlack } from '../base/colors.mjs';
 import { TRandom, floatToString, makeTranslate, addHighlightStyle, getBoxDecorations } from '../base/BasePainter.mjs';
@@ -3340,6 +3340,7 @@ class TH2Painter extends THistPainter {
    getBinTooltips(i, j) {
       const histo = this.getHisto(),
             profile2d = this.matchObjectType(clTProfile2D) && isFunc(histo.getBinEntries),
+            is_dbl = profile2d || this.matchObjectType(clTH2D),
             bincontent = histo.getBinContent(i + 1, j + 1);
       let binz = bincontent;
 
@@ -3350,7 +3351,7 @@ class TH2Painter extends THistPainter {
                      'x = ' + this.getAxisBinTip('x', histo.fXaxis, i),
                      'y = ' + this.getAxisBinTip('y', histo.fYaxis, j),
                      `bin = ${histo.getBin(i + 1, j + 1)}  x: ${i + 1}  y: ${j + 1}`,
-                     'content = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, gStyle.fStatFormat))];
+                     'content = ' + ((binz === Math.round(binz)) ? binz : floatToString(binz, is_dbl ? '10.8g' : '8.6g'))];
 
       if ((this.getOptions().TextKind === 'E') || profile2d || histo.fSumw2?.length) {
          const errs = this.getBinErrors(histo, histo.getBin(i + 1, j + 1), bincontent);
