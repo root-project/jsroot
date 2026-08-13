@@ -562,7 +562,7 @@ class RNTupleDescriptorBuilder {
       if (clusterSummaryListSize >= 0)
          throw new Error('Expected a list frame for cluster summaries');
       const clusterSummaryCount = reader.readU32();
-      this.clusterSummaries = [];
+      this.clusterSummaries ??= []; // don't overwrite summaries if there is more than one cluster group
 
       for (let i = 0; i < clusterSummaryCount; ++i) {
          const recordStart = BigInt(reader.offset),
@@ -588,7 +588,7 @@ class RNTupleDescriptorBuilder {
       if (numListClusters >= 0)
          throw new Error('Expected list frame for clusters');
 
-      this.pageLocations = [];
+      this.pageLocations ??= []; // don't overwrite locations if there is more than one cluster group
 
       for (let i = 0; i < numRecordCluster; ++i) {
          const outerListSize = reader.readS64();
@@ -708,33 +708,42 @@ async function readHeaderFooter(tuple) {
       tuple.builder.deserializeHeader(header_blob);
       tuple.builder.deserializeFooter(footer_blob);
 
-      // Deserialize Page List
-      const group = tuple.builder.clusterGroups?.[0];
-      if (!group || !group.pageListLocator)
-         throw new Error('No valid cluster group or page list locator found');
+      // Deserialize Page List. Get byte range of each cluster group
+      const groups = tuple.builder.clusterGroups;
+      if (!groups?.length)
+         throw new Error('No cluster groups found');
 
-      const offset = Number(group.pageListLocator.offset),
-            size = Number(group.pageListLocator.size);
-
-      return tuple.$file.readBuffer([offset, size]);
+      const ranges = [];
+      for (const g of groups) {
+         if (!g.pageListLocator)
+            throw new Error('Missing pageListLocator in cluster group');
+         ranges.push(Number(g.pageListLocator.offset),
+                     Number(g.pageListLocator.size));
+      }
+      return tuple.$file.readBuffer(ranges); // array of DataViews
    }).then(page_list_blob => {
-      if (!(page_list_blob instanceof DataView))
-         throw new Error(`Expected DataView from readBuffer, got ${Object.prototype.toString.call(page_list_blob)}`);
-
-      const group = tuple.builder.clusterGroups?.[0],
-            uncompressedSize = Number(group.pageListLength);
-
-      // Check if page list data is uncompressed
-      if (page_list_blob.byteLength === uncompressedSize)
-         return page_list_blob;
-
-      // Attempt to decompress the page list
-      return R__unzip(page_list_blob, uncompressedSize);
+      const groups = tuple.builder.clusterGroups,
+            blobs = Array.isArray(page_list_blob) ? page_list_blob : [page_list_blob], // keep it an array of DataViews even for one cluster group
+            unzipped_blobs = [];
+      for (let i = 0; i < groups.length; i++) {
+         const g = groups[i],
+               blob = blobs[i],
+               uncompressedSize = Number(g.pageListLength);
+         if (!(blob instanceof DataView))
+            throw new Error(`Expected DataView from readBuffer, got ${Object.prototype.toString.call(blob)}`);
+         if (blob.byteLength === uncompressedSize)
+            unzipped_blobs.push(blob);
+         else
+            unzipped_blobs.push(R__unzip(blob, uncompressedSize));
+      }
+      return Promise.all(unzipped_blobs);
    }).then(unzipped_blob => {
-      if (!(unzipped_blob instanceof DataView))
-         throw new Error(`Unzipped page list is not a DataView, got ${Object.prototype.toString.call(unzipped_blob)}`);
+      unzipped_blob.forEach(blob => {
+         if (!(blob instanceof DataView))
+            throw new Error(`Expected DataView from readBuffer, got ${Object.prototype.toString.call(blob)}`);
 
-      tuple.builder.deserializePageList(unzipped_blob);
+         tuple.builder.deserializePageList(blob);
+      });
       return tuple.builder;
    }).catch(err => {
       console.error('Error during readHeaderFooter execution:', err);
