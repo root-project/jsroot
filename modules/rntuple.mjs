@@ -757,7 +757,7 @@ async function readHeaderFooter(tuple) {
 
 class ReaderItem {
 
-   constructor(column, name) {
+   constructor(column, name, preserveBigInt) {
       this.column = null;
       this.name = name;
       this.id = -1;
@@ -765,6 +765,7 @@ class ReaderItem {
       this.sz = 0;
       this.simple = true;
       this.page = -1; // current page for the reading
+      this.preserveBigInt = preserveBigInt; // keep precision of bigint
 
       if (column?.coltype !== undefined) {
          this.column = column;
@@ -914,16 +915,16 @@ class ReaderItem {
          case kInt64:
          case kIndex64:
             this.func = function(obj) {
-               // FIXME: let process BigInt in the TTree::Draw
-               obj[this.name] = Number(this.view.getBigInt64(this.o, LITTLE_ENDIAN));
+               const val = this.view.getBigInt64(this.o, LITTLE_ENDIAN);
+               obj[this.name] = this.preserveBigInt ? val : Number(val);
                this.shift_o(8);
             };
             this.sz = 8;
             break;
          case kUInt64:
             this.func = function(obj) {
-               // FIXME: let process BigInt in the TTree::Draw
-               obj[this.name] = Number(this.view.getBigUint64(this.o, LITTLE_ENDIAN));
+               const val = this.view.getBigUint64(this.o, LITTLE_ENDIAN);
+               obj[this.name] = this.preserveBigInt ? val : Number(val);
                this.shift_o(8);
             };
             this.sz = 8;
@@ -1446,7 +1447,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
    }
 
    function addColumnReadout(column, tgtname) {
-      const item = new ReaderItem(column, tgtname);
+      const item = new ReaderItem(column, tgtname, args.preserveBigInt);
       item.assignReadFunc();
       handle.columns.push(item);
       return item;
