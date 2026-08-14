@@ -711,7 +711,7 @@ async function readHeaderFooter(tuple) {
       // Deserialize Page List. Get byte range of each cluster group
       const groups = tuple.builder.clusterGroups;
       if (!groups?.length)
-         throw new Error('No cluster groups found');
+         return tuple.builder; // process RNTuples with no cluster groups
 
       const ranges = [];
       for (const g of groups) {
@@ -1561,6 +1561,10 @@ async function rntupleProcess(rntuple, selector, args = {}) {
          const item = addFieldReading(builder, field, tgtname);
          handle.items.push(item);
       }
+
+      // no entries for empty clusters
+      if (builder.clusterSummaries === undefined)
+         return selector;
 
       // calculate number of entries
       builder.clusterSummaries.forEach(summary => { handle.lastentry += summary.numEntries; });
