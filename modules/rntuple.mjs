@@ -1348,6 +1348,17 @@ class PairReaderItem extends ReaderItem {
 }
 
 
+/** @summary Process selector for the RNtuple
+  * @desc function similar to the {@link treeProcess}
+  * @param {object} rntuple - instance of RNtuple class
+  * @param {object} selector - instance of {@link TSelector} class
+  * @param {object} [args] - different arguments
+  * @param {number} [args.firstentry] - first entry to process, 0 when not specified
+  * @param {number} [args.numentries] - number of entries to process, all when not specified
+  * @param {Array} [args.elist] - arrays of entries id to process
+  * @param {Array} [args.preserveBigInt] - do not convert BigInt values to Number
+  * @return {Promise} with TSelector instance */
+
 async function rntupleProcess(rntuple, selector, args = {}) {
    const handle = {
       rntuple, // keep rntuple reference
