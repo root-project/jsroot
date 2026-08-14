@@ -59,8 +59,8 @@
   "dependencies": {
     "@oneidentity/zstd-js": "^1.0.3",
     "@resvg/resvg-js": "^2.6.2",
-    "canvas": "^3.2.2",
-    "jsdom": "^29.0.2",
+    "canvas": "^3.2.3",
+    "jsdom": "^30.0.1",
     "mathjax": "3.2.2",
     "three": "0.162.0",
     "tmp": "^0.2.5",
@@ -74,10 +74,10 @@
     "@stylistic/eslint-plugin": "^4.4.1",
     "docdash": "^2.0.2",
     "globals": "^17.3.0",
-    "eslint": "^10.2.0",
+    "eslint": "^10.8.1",
     "gl": "9.0.0-rc.10",
     "jsdoc": "^4.0.5",
-    "rollup": "4.60.1"
+    "rollup": "4.62.4"
   },
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
@@ -119,5 +119,9 @@
     "html2canvas": false,
     "core-js": false,
     "dompurify": false
+  },
+  "allowScripts": {
+    "canvas@3.2.3": true,
+    "gl@9.0.0-rc.10": true
   }
 }
