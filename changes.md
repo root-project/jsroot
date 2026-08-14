@@ -7,6 +7,7 @@
 1. When draw TH2/TF2 with "surf same" draw option, only lines are drawn
 1. Implement new "POLF" and "POLN" draw options for polar coordinates for `TH2`
 1. Use "JSROOT" label for main pad button, hide it after 5 seconds from the drawing
+1. Let preserve `BigInt` values when calling `rntupleProcess()` function #418
 1. Use `8.6g`/`10.8g` format for float/double historgam content-to-text conversion in tooltips
 1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings
 1. Fix - read all cluster groups from ntuple #415
