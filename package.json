@@ -96,6 +96,7 @@
     "fs": false,
     "crypto": false,
     "@oneidentity/zstd-js": false,
+    "@resvg/resvg-js": false,
     "node:worker_threads": false,
     "zlib": false,
     "stream": false,
