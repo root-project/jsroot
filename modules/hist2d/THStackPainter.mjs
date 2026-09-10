@@ -230,7 +230,6 @@ class THStackPainter extends ObjectPainter {
 
       const rindx = o.horder ? indx : nhists - indx - 1,
             h_id = `hists_${rindx}`, s_id = `stack_${rindx}`,
-            subid = o.nostack ? h_id : s_id,
             hist = hlst.arr[rindx],
             hopt = this.getHistDrawOption(hist, stack.fHists.opt[rindx]);
       let dom;
@@ -255,7 +254,10 @@ class THStackPainter extends ObjectPainter {
 
       return this.drawHist(dom, hist, hopt).then(subp => {
          if (subp) {
-            subp.setSecondaryId(this, subid);
+            subp.setSecondaryId(this, o.nostack ? h_id : s_id);
+            // workaround to assign weboptions also back to original histogram
+            if (!o.nostack)
+               subp.$copywebid = h_id;
             this.#painters.push(subp);
          }
          return this.drawNextHisto(indx + 1, pad_painter);
