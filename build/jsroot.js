@@ -176946,10 +176946,8 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
             return this;
 
          pp.cleanPrimitives(true);
-      } else {
-         // used in automatic colors numbering
-         pp = this.getPadPainter();
-      }
+      } else
+         pp = this.#firstpainter?.getPadPainter() || getElementPadPainter(this.getDrawDom());
 
       // assign auto color to graph, exclude web canvas
       if ((this.#pfc || this.#plc || this.#pmc) && pp && !pp.getSnapId()) {
