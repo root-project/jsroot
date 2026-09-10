@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '26/08/2026',
+version_date = '10/09/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -89720,10 +89720,11 @@ const PadButtonsHandler = {
 /** @summary Fill TWebObjectOptions for painter
   * @private */
 function createWebObjectOptions(painter) {
-   if (!painter?.getSnapId())
+   const snapid = painter?.getSnapId();
+   if (!snapid)
       return null;
 
-   const obj = { _typename: 'TWebObjectOptions', snapid: painter.getSnapId(), opt: painter.getDrawOpt(true), fcust: '', fopt: [] };
+   const obj = { _typename: 'TWebObjectOptions', snapid, opt: painter.getDrawOpt(true), fcust: '', fopt: [] };
    if (isFunc(painter.fillWebObjectOptions))
       painter.fillWebObjectOptions(obj);
    return obj;
@@ -91866,6 +91867,12 @@ class TPadPainter extends ObjectPainter {
             const opt = createWebObjectOptions(sub);
             if (opt)
                elem.primitives.push(opt);
+            if (sub.$copywebid && opt?.fcust) {
+               // workaround for stack histograms to assign attributes to original histo
+               const opt2 = Object.assign({}, opt);
+               opt2.snapid = sub.getPrimary().getSnapId() + '#' + sub.$copywebid;
+               elem.primitives.push(opt2);
+            }
          }
       });
 
@@ -172367,7 +172374,9 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
             hopt = hopt.slice(0, p + 3) + hopt.slice(p + 4);
       }
       if (!o.pads)
-         hopt += ' same nostat' + o.auto;
+         hopt += ' same nostat';
+      if (!this.getPadPainter()?.getSnapId())
+         hopt += o.auto;
       return hopt;
    }
 
@@ -172382,40 +172391,37 @@ let THStackPainter$2 = class THStackPainter extends ObjectPainter {
          return this;
 
       const rindx = o.horder ? indx : nhists - indx - 1,
-            subid = o.nostack ? `hists_${rindx}` : `stack_${rindx}`,
+            h_id = `hists_${rindx}`, s_id = `stack_${rindx}`,
             hist = hlst.arr[rindx],
             hopt = this.getHistDrawOption(hist, stack.fHists.opt[rindx]);
+      let dom;
 
-      // handling of 'pads' draw option
       if (pad_painter) {
+         // handling of 'pads' draw option
          const subpad_painter = pad_painter.getSubPadPainter(indx + 1);
          if (!subpad_painter)
             return this;
-
          subpad_painter.cleanPrimitives(true);
-
-         return this.drawHist(subpad_painter, hist, hopt).then(subp => {
-            if (subp) {
-               subp.setSecondaryId(this, subid);
-               this.#painters.push(subp);
-            }
-            return this.drawNextHisto(indx + 1, pad_painter);
-         });
+         dom = subpad_painter;
+      } else {
+         // special handling of stacked histograms
+         // also used to provide tooltips
+         if ((rindx > 0) && !o.nostack)
+            hist.$baseh = hlst.arr[rindx - 1];
+         // this number used for auto colors creation
+         if (o.auto)
+            hist.$num_histos = nhists;
+         dom = this.#firstpainter?.getPadPainter() || this.getDrawDom();
       }
 
-      // special handling of stacked histograms
-      // also used to provide tooltips
-      if ((rindx > 0) && !o.nostack)
-         hist.$baseh = hlst.arr[rindx - 1];
-      // this number used for auto colors creation
-      if (o.auto)
-         hist.$num_histos = nhists;
-
-      const dom = this.#firstpainter?.getPadPainter() || this.getDrawDom();
-
       return this.drawHist(dom, hist, hopt).then(subp => {
-         subp.setSecondaryId(this, subid);
-         this.#painters.push(subp);
+         if (subp) {
+            subp.setSecondaryId(this, o.nostack ? h_id : s_id);
+            // workaround to assign weboptions also back to original histogram
+            if (!o.nostack)
+               subp.$copywebid = h_id;
+            this.#painters.push(subp);
+         }
          return this.drawNextHisto(indx + 1, pad_painter);
       });
    }
