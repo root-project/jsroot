@@ -263,36 +263,29 @@ class TMultiGraphPainter extends ObjectPainter {
 
       const gr = graphs.arr[indx],
             draw_opt = (graphs.opt[indx] || this.#restopt) + this.#auto,
-            pos3d = graphs.arr.length - indx,
-            subid = `graphs_${indx}`;
+            pos3d = graphs.arr.length - indx;
+      let pp;
 
       // handling of 'pads' draw option
       if (pad_painter) {
-         const subpad_painter = pad_painter.getSubPadPainter(indx + 1);
-         if (!subpad_painter)
+         pp = pad_painter.getSubPadPainter(indx + 1);
+         if (!pp)
             return this;
 
-         subpad_painter.cleanPrimitives(true);
-
-         return this.drawGraph(subpad_painter, gr, draw_opt, pos3d).then(subp => {
-            if (subp) {
-               subp.setSecondaryId(this, subid);
-               this.#painters.push(subp);
-            }
-            return this.drawNextGraph(indx + 1, pad_painter);
-         });
+         pp.cleanPrimitives(true);
+      } else {
+         // used in automatic colors numbering
+         if (this.#auto)
+            gr.$num_graphs = graphs.arr.length;
+         pp = this.getPadPainter();
       }
 
-      // used in automatic colors numbering
-      if (this.#auto)
-         gr.$num_graphs = graphs.arr.length;
-
-      return this.drawGraph(this.getPadPainter(), gr, draw_opt, pos3d).then(subp => {
+      return this.drawGraph(pp, gr, draw_opt, pos3d).then(subp => {
          if (subp) {
-            subp.setSecondaryId(this, subid);
+            subp.setSecondaryId(this, `graphs_${indx}`);
             this.#painters.push(subp);
          }
-         return this.drawNextGraph(indx + 1);
+         return this.drawNextGraph(indx + 1, pad_painter);
       });
    }
 
