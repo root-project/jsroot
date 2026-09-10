@@ -108546,7 +108546,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       if (o._pfc > 1 || o._plc > 1 || o._pmc > 1) {
          const pp = this.getPadPainter();
          if (isFunc(pp?.getAutoColor)) {
-            const icolor = pp.getAutoColor(graph.$num_graphs);
+            const icolor = pp.getAutoColor();
             this.#auto_exec = ''; // can be reused when sending option back to server
             if (o._pfc > 1) {
                o._pfc = 1;
@@ -176690,7 +176690,9 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
    #painters; // array of sub-painters
    #funcs_handler; // special instance for functions drawing
    #restopt; // remaining part of draw options
-   #auto; // extra options for auto colors
+   #pfc; // extra options for auto colors
+   #plc; // extra options for auto colors
+   #pmc; // extra options for auto colors
    #is3d; // if 3d drawing
    #pads;  // pads draw option
    #pads_columns; // number pads columns
@@ -176709,7 +176711,9 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
       this.#painters = [];
       this.#is3d = undefined;
       this.#pads = undefined;
-      this.#auto = undefined;
+      this.#pfc = undefined;
+      this.#pmc = undefined;
+      this.#plc = undefined;
       this.#restopt = undefined;
       super.cleanup();
    }
@@ -176739,7 +176743,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
 
       // TODO: handle changing number of graphs
       for (let i = 0; i < ngr; ++i) {
-         if (this.#painters[i].updateObject(graphs.arr[i], (graphs.opt[i] || this.#restopt) + this.#auto))
+         if (this.#painters[i].updateObject(graphs.arr[i], (graphs.opt[i] || this.#restopt)))
             isany = true;
       }
 
@@ -176931,37 +176935,39 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
          return this;
 
       const gr = graphs.arr[indx],
-            draw_opt = (graphs.opt[indx] || this.#restopt) + this.#auto,
-            pos3d = graphs.arr.length - indx,
-            subid = `graphs_${indx}`;
+            draw_opt = (graphs.opt[indx] || this.#restopt),
+            pos3d = graphs.arr.length - indx;
+      let pp;
 
       // handling of 'pads' draw option
       if (pad_painter) {
-         const subpad_painter = pad_painter.getSubPadPainter(indx + 1);
-         if (!subpad_painter)
+         pp = pad_painter.getSubPadPainter(indx + 1);
+         if (!pp)
             return this;
 
-         subpad_painter.cleanPrimitives(true);
-
-         return this.drawGraph(subpad_painter, gr, draw_opt, pos3d).then(subp => {
-            if (subp) {
-               subp.setSecondaryId(this, subid);
-               this.#painters.push(subp);
-            }
-            return this.drawNextGraph(indx + 1, pad_painter);
-         });
+         pp.cleanPrimitives(true);
+      } else {
+         // used in automatic colors numbering
+         pp = this.getPadPainter();
       }
 
-      // used in automatic colors numbering
-      if (this.#auto)
-         gr.$num_graphs = graphs.arr.length;
+      // assign auto color to graph, exclude web canvas
+      if ((this.#pfc || this.#plc || this.#pmc) && pp && !pp.getSnapId()) {
+         const col = pp.getAutoColor(graphs.arr.length, indx);
+         if (this.#pfc)
+            gr.fFillColor = col;
+         if (this.#plc)
+            gr.fLineColor = col;
+         if (this.#pmc)
+            gr.fMarkerColor = col;
+      }
 
-      return this.drawGraph(this.getPadPainter(), gr, draw_opt, pos3d).then(subp => {
+      return this.drawGraph(pp, gr, draw_opt, pos3d).then(subp => {
          if (subp) {
-            subp.setSecondaryId(this, subid);
+            subp.setSecondaryId(this, `graphs_${indx}`);
             this.#painters.push(subp);
          }
-         return this.drawNextGraph(indx + 1);
+         return this.drawNextGraph(indx + 1, pad_painter);
       });
    }
 
@@ -176986,14 +176992,12 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
             mgraph = this.getObject();
 
       this.#is3d = d.check('3D');
-      this.#auto = '';
       this.#pads = d.check('PADS', true);
       if (this.#pads)
          this.#pads_columns = d.partAsInt();
-      ['PFC', 'PLC', 'PMC'].forEach(f => {
-         if (d.check(f))
-            this.#auto += ' ' + f;
-      });
+      this.#pfc = d.check('PFC');
+      this.#plc = d.check('PLC');
+      this.#pmc = d.check('PMC');
 
       let hopt = '', pad_painter = null;
       if (d.check('FB') && this.is3d())
