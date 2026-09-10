@@ -228,8 +228,7 @@ class THStackPainter extends ObjectPainter {
       if (indx >= nhists)
          return this;
 
-      const rindx = o.horder ? indx : nhists - indx - 1,
-            h_id = `hists_${rindx}`, s_id = `stack_${rindx}`,
+      const rindx = o.nostack ? indx : nhists - indx - 1,
             hist = hlst.arr[rindx],
             hopt = this.getHistDrawOption(hist, stack.fHists.opt[rindx]);
       let pp;
@@ -261,7 +260,7 @@ class THStackPainter extends ObjectPainter {
 
       return this.drawHist(pp, hist, hopt).then(subp => {
          if (subp) {
-            subp.setSecondaryId(this, o.nostack ? h_id : s_id);
+            subp.setSecondaryId(this, o.nostack ? `hists_${rindx}` : `stack_${rindx}`);
             this.#painters.push(subp);
          }
          return this.drawNextHisto(indx + 1, pad_painter);
@@ -270,7 +269,7 @@ class THStackPainter extends ObjectPainter {
 
    /** @summary Decode draw options of THStack painter */
    decodeOptions(opt) {
-      const o = this.setOptions({ ndim: 1, nostack: false, same: false, horder: true, has_errors: false, draw_errors: false, _pfc: false, _pmc: false, _plc: false, hopt: '' }),
+      const o = this.setOptions({ ndim: 1, nostack: false, same: false, has_errors: false, draw_errors: false, _pfc: false, _pmc: false, _plc: false, hopt: '' }),
             stack = this.getObject(),
             hist = stack.fHistogram || stack.fHists?.arr[0] || this.#stack?.arr[0];
 
@@ -325,8 +324,6 @@ class THStackPainter extends ObjectPainter {
       // if any histogram appears with pre-calculated errors, use E for all histograms
       if (!o.nostack && o.has_errors && !dolego && !d.check('HIST') && (o.hopt.indexOf('E') < 0))
          o.draw_errors = true;
-
-      o.horder = o.nostack || dolego;
    }
 
    /** @summary Create main histogram for THStack axis drawing */
@@ -423,7 +420,7 @@ class THStackPainter extends ObjectPainter {
       } else {
          this.#did_update = 2;
          for (let indx = 0; indx < nhists; ++indx) {
-            const rindx = o.horder ? indx : nhists - indx - 1,
+            const rindx = o.nostack ? indx : nhists - indx - 1,
                   hist = hlst.arr[rindx];
             this.#painters[indx].updateObject(hist, this.getHistDrawOption(hist, stack.fHists.opt[rindx]));
          }
@@ -475,7 +472,7 @@ class THStackPainter extends ObjectPainter {
                   hlst = o.nostack ? stack.fHists : this.#stack,
                   nhists = hlst?.arr?.length ?? 0;
             for (let indx = 0; indx < nhists; ++indx) {
-               const rindx = o.horder ? indx : nhists - indx - 1,
+               const rindx = o.nostack ? indx : nhists - indx - 1,
                      hist = hlst.arr[rindx];
                this.#painters[indx].decodeOptions(this.getHistDrawOption(hist, stack.fHists.opt[rindx]));
             }
