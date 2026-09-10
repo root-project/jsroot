@@ -1,6 +1,6 @@
 import { create, createHistogram, clTH1F, clTH2F, clTObjString, clTHashList, kNoZoom, kNoStats, BIT } from '../core.mjs';
 import { DrawOptions } from '../base/BasePainter.mjs';
-import { ObjectPainter } from '../base/ObjectPainter.mjs';
+import { ObjectPainter, getElementPadPainter } from '../base/ObjectPainter.mjs';
 import { FunctionsHandler } from './THistPainter.mjs';
 import { TH1Painter, PadDrawOptions } from './TH1Painter.mjs';
 import { TGraphPainter } from './TGraphPainter.mjs';
@@ -277,10 +277,8 @@ class TMultiGraphPainter extends ObjectPainter {
             return this;
 
          pp.cleanPrimitives(true);
-      } else {
-         // used in automatic colors numbering
-         pp = this.getPadPainter();
-      }
+      } else
+         pp = this.#firstpainter?.getPadPainter() || getElementPadPainter(this.getDrawDom());
 
       // assign auto color to graph, exclude web canvas
       if ((this.#pfc || this.#plc || this.#pmc) && pp && !pp.getSnapId()) {
