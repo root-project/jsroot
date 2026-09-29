@@ -13,7 +13,11 @@
 1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings
 1. Fix - read all cluster groups from ntuple #415
 1. Fix - correctly handle empty clusters in ntuple #420
-1. Fix - hstack autocolor handling in TWebCanvas
+
+
+## Changes in 7.11.2
+1. Fix - exclude @resvg/resvg-js from browser bundlers #421
+2. Fix - hstack autocolor handling in `TWebCanvas`
 
 
 ## Changes in 7.11.1
