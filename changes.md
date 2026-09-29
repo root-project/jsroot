@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 
-## Changes in 7.11.x
+## Changes in 7.11.2
 1. Fix - exclude @resvg/resvg-js from browser bundlers #421
 2. Fix - hstack autocolor handling in TWebCanvas
 
