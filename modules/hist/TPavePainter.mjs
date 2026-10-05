@@ -592,7 +592,7 @@ class TPavePainter extends ObjectPainter {
          // this.getG().classed('most_upper_primitives', true); // this primitive will remain on top of list
 
          return this.finishTextDrawing(undefined, (nlines > 1));
-      });
+      }).then(() => this.#drawHeader(pt.fLabel, this.getG(), width, this.getPadPainter().getPadHeight()));
    }
 
    /** @summary draw header for TPaveText-derived classes */
