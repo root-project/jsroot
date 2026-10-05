@@ -1394,11 +1394,28 @@ class TPavePainter extends ObjectPainter {
       }, 'Corner radius when ARC is enabled');
       menu.endsub();
 
-      if (this.isStats() || this.isPaveText() || this.isPavesText() || this.isDiamond()) {
-         menu.add('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => {
+      const is_text = this.isStats() || this.isPaveText() || this.isPavesText() || this.isDiamond();
+
+      if (is_text || (pave._typename === clTPaveLabel) || (pave._typename === clTPaveClass)) {
+         // all classes have fLabel and SetLabel()
+         menu.sub('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => {
             pave.fLabel = lbl;
-            this.interactiveRedraw('pad', `exec:SetLabel("${lbl}")`);
-         }));
+            this.interactiveRedraw('pad', `exec:SetLabel("${pave.fLabel}")`);
+         }), 'Enter new label');
+         menu.add('Clear', () => {
+            pave.fLabel = '';
+            this.interactiveRedraw('pad', `exec:SetLabel("${pave.fLabel}")`);
+         }, 'Clear existing label');
+         menu.add('Copy', () => navigator.clipboard.writeText(pave.fLabel), 'Copy label into clipboard');
+         menu.add('Paste', () => navigator.clipboard.readText().then(lbl => {
+            console.log('Paste lbl', lbl);
+            pave.fLabel = isStr(lbl) ? lbl : '';
+            this.interactiveRedraw('pad', `exec:SetLabel("${pave.fLabel}")`);
+         }), 'Set label from clipboard');
+         menu.endsub();
+      }
+
+      if (is_text) {
          menu.addSizeMenu('Margin', 0, 0.2, 0.02, pave.fMargin, val => {
             pave.fMargin = val;
             this.interactiveRedraw(true, `exec:SetMargin(${val})`);
