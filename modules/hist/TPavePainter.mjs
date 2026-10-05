@@ -321,7 +321,7 @@ class TPavePainter extends ObjectPainter {
          if (this.fillatt.empty() && arc_radius)
             this.fillatt.setSolidColor(this.getColor(pt.fFillColor) || 'white');
 
-         if (pt._typename === clTDiamond) {
+         if (this.isDiamond()) {
             const h2 = Math.round(height / 2), w2 = Math.round(width / 2),
                   dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
@@ -1392,7 +1392,7 @@ class TPavePainter extends ObjectPainter {
       }, 'Corner radius when ARC is enabled');
       menu.endsub();
 
-      if (this.isStats() || this.isPaveText() || this.isPavesText()) {
+      if (this.isStats() || this.isPaveText() || this.isPavesText() || this.isDiamond()) {
          menu.add('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => {
             pave.fLabel = lbl;
             this.interactiveRedraw('pad', `exec:SetLabel("${lbl}")`);
@@ -1611,6 +1611,11 @@ class TPavePainter extends ObjectPainter {
    /** @summary Returns true when stat box is drawn */
    isPalette() {
       return this.matchObjectType(clTPaletteAxis);
+   }
+
+   /** @summary Returns true when diamond is drawn */
+   isDiamond() {
+      return this.matchObjectType(clTDiamond);
    }
 
    /** @summary Returns true when title is drawn */
