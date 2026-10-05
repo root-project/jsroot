@@ -592,20 +592,22 @@ class TPavePainter extends ObjectPainter {
          // this.getG().classed('most_upper_primitives', true); // this primitive will remain on top of list
 
          return this.finishTextDrawing(undefined, (nlines > 1));
-      }).then(() => this.#drawHeader(pt.fLabel, this.getG(), width, this.getPadPainter().getPadHeight()));
+      }).then(() => this.#drawHeader(pt.fLabel, this.getG(), width, height, this.getPadPainter().getPadHeight()));
    }
 
    /** @summary draw header for TPaveText-derived classes */
-   async #drawHeader(lbl, text_g, width, pad_height)
+   async #drawHeader(lbl, text_g, width, height, pad_height)
    {
       if (!lbl?.length)
          return this;
 
-      const w = Math.round(width * 0.5),
+      // special handling of diamond while text area smaller than diamond itself
+      const dmnd = this.isDiamond(),
+            w = dmnd ? width : Math.round(width * 0.5),
             h = Math.round(pad_height * 0.04),
             lbl_g = text_g.append('svg:g');
 
-      makeTranslate(lbl_g, Math.round(width * 0.25), Math.round(-pad_height * 0.02));
+      makeTranslate(lbl_g, Math.round(dmnd ? 0 : width * 0.25), Math.round(dmnd ? -height / 2 - h / 2 : -h / 2));
 
       this.drawBorder(lbl_g, w, h);
 
@@ -755,7 +757,7 @@ class TPavePainter extends ObjectPainter {
             this.getG().style('display', !num_txt ? 'none' : null);
 
          return Promise.all(promises).then(() => this);
-      }).then(() => this.#drawHeader(pt.fLabel, text_g, width, pad_height))
+      }).then(() => this.#drawHeader(pt.fLabel, text_g, width, height, pad_height))
         .then(() => { return this; });
    }
 
