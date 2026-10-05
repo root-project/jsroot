@@ -1348,6 +1348,30 @@ class TPavePainter extends ObjectPainter {
       }
    }
 
+   /** @summary Get title text */
+   #getTitle() {
+      const pave = this.getObject();
+      return pave?.fLines?.arr[0] ? pave?.fLines.arr[0].fTitle : '';
+   }
+
+   /** @summary Change title text */
+   #setTitle(lbl) {
+      const ltx = create(clTLatex),
+            pave = this.getObject();
+
+      ltx.fTitle = isStr(lbl) ? lbl : '';
+      pave.fLines.Clear();
+      pave.fLines.Add(ltx);
+      this.interactiveRedraw(true, `exec:Clear();;AddText("${ltx.fTitle}")`);
+   }
+
+   /** @summary Change label text */
+   #setLabel(lbl) {
+      const pave = this.getObject();
+      pave.fLabel = isStr(lbl) ? lbl : '';
+      this.interactiveRedraw('pad', `exec:SetLabel("${pave.fLabel}")`);
+   }
+
    /** @summary Fill context menu items for the TPave object */
    fillContextMenuItems(menu) {
       const pave = this.getObject(),
@@ -1394,24 +1418,23 @@ class TPavePainter extends ObjectPainter {
       }, 'Corner radius when ARC is enabled');
       menu.endsub();
 
+      if (this.isTitle()) {
+         menu.sub('Title', () => menu.input('Enter new title', this.#getTitle())
+             .then(lbl => this.#setTitle(lbl)), 'Enter new title');
+         menu.add('Clear', () => this.#setTitle(''), 'Clear title');
+         menu.add('Copy', () => navigator.clipboard.writeText(this.#getTitle()), 'Copy title into clipboard');
+         menu.add('Paste', () => navigator.clipboard.readText().then(lbl => this.#setTitle(lbl)), 'Set title from clipboard');
+         menu.endsub();
+      }
+
       const is_text = this.isStats() || this.isPaveText() || this.isPavesText() || this.isDiamond();
 
       if (is_text || (pave._typename === clTPaveLabel) || (pave._typename === clTPaveClass)) {
          // all classes have fLabel and SetLabel()
-         menu.sub('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => {
-            pave.fLabel = lbl;
-            this.interactiveRedraw('pad', `exec:SetLabel("${pave.fLabel}")`);
-         }), 'Enter new label');
-         menu.add('Clear', () => {
-            pave.fLabel = '';
-            this.interactiveRedraw('pad', `exec:SetLabel("${pave.fLabel}")`);
-         }, 'Clear existing label');
+         menu.sub('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => this.#setLabel(lbl)), 'Enter new label');
+         menu.add('Clear', () => this.#setLabel(''), 'Clear existing label');
          menu.add('Copy', () => navigator.clipboard.writeText(pave.fLabel), 'Copy label into clipboard');
-         menu.add('Paste', () => navigator.clipboard.readText().then(lbl => {
-            console.log('Paste lbl', lbl);
-            pave.fLabel = isStr(lbl) ? lbl : '';
-            this.interactiveRedraw('pad', `exec:SetLabel("${pave.fLabel}")`);
-         }), 'Set label from clipboard');
+         menu.add('Paste', () => navigator.clipboard.readText().then(lbl => this.#setLabel(lbl)), 'Set label from clipboard');
          menu.endsub();
       }
 
