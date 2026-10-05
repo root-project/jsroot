@@ -595,6 +595,30 @@ class TPavePainter extends ObjectPainter {
       });
    }
 
+   /** @summary draw header for TPaveText-derived classes */
+   async #drawHeader(lbl, text_g, width, pad_height)
+   {
+      if (!lbl?.length)
+         return this;
+
+      const w = Math.round(width * 0.5),
+            h = Math.round(pad_height * 0.04),
+            lbl_g = text_g.append('svg:g');
+
+      makeTranslate(lbl_g, Math.round(width * 0.25), Math.round(-pad_height * 0.02));
+
+      this.drawBorder(lbl_g, w, h);
+
+      lbl_g.append('svg:path')
+           .attr('d', `M${0},${0}h${w}v${h}h${-w}z`)
+           .call(this.fillatt.func)
+           .call(this.lineatt.func);
+
+      return this.startTextDrawingAsync(this.textatt.font, 0.9 * h, lbl_g)
+                 .then(() => this.drawText({ align: 22, x: 0, y: 0, width: w, height: h, text: lbl, color: this.textatt.color, draw_g: lbl_g }))
+                 .then(() => this.finishTextDrawing(lbl_g));
+   }
+
    /** @summary draw TPaveText object */
    async drawPaveText(width, height, _dummy_arg, text_g) {
       const pt = this.getObject(),
@@ -602,7 +626,6 @@ class TPavePainter extends ObjectPainter {
             nlines = arr.length,
             pp = this.getPadPainter(),
             pad_height = pp.getPadHeight(),
-            draw_header = pt.fLabel.length,
             promises = [],
             margin_x = pt.fMargin * width,
             stepy = height / (nlines || 1),
@@ -731,29 +754,9 @@ class TPavePainter extends ObjectPainter {
          if (this.isTitle())
             this.getG().style('display', !num_txt ? 'none' : null);
 
-
          return Promise.all(promises).then(() => this);
-      }).then(() => {
-         if (!draw_header)
-            return;
-
-         const w = Math.round(width * 0.5),
-               h = Math.round(pad_height * 0.04),
-               lbl_g = text_g.append('svg:g');
-
-         makeTranslate(lbl_g, Math.round(width * 0.25), Math.round(-pad_height * 0.02));
-
-         this.drawBorder(lbl_g, w, h);
-
-         lbl_g.append('svg:path')
-               .attr('d', `M${0},${0}h${w}v${h}h${-w}z`)
-               .call(this.fillatt.func)
-               .call(this.lineatt.func);
-
-         return this.startTextDrawingAsync(this.textatt.font, 0.9 * h, lbl_g)
-                    .then(() => this.drawText({ align: 22, x: 0, y: 0, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g }))
-                    .then(() => promises.push(this.finishTextDrawing(lbl_g)));
-      }).then(() => { return this; });
+      }).then(() => this.#drawHeader(pt.fLabel, text_g, width, pad_height))
+        .then(() => { return this; });
    }
 
    /** @summary Method used to convert value to string according specified format
