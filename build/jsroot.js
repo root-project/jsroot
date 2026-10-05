@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '10/09/2026',
+version_date = '5/10/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -80738,7 +80738,7 @@ function setStoragePrefix(prefix) {
 /** @summary Save object in local storage
   * @private */
 function saveLocalStorage(obj, expires, name) {
-   if (typeof localStorage === 'undefined')
+   if (isNodeJs() || (typeof localStorage === 'undefined'))
       return;
    if (Number.isFinite(expires) && (expires < 0))
       localStorage.removeItem(_storage_prefix + name);
@@ -80749,7 +80749,7 @@ function saveLocalStorage(obj, expires, name) {
 /** @summary Read object from storage with specified name
   * @private */
 function readLocalStorage(name) {
-   if (typeof localStorage === 'undefined')
+   if (isNodeJs() || (typeof localStorage === 'undefined'))
       return null;
    const v = localStorage.getItem(_storage_prefix + name),
          s = v ? JSON.parse(atob_func(v)) : null;
@@ -93815,7 +93815,7 @@ class TPavePainter extends ObjectPainter {
          if (this.fillatt.empty() && arc_radius)
             this.fillatt.setSolidColor(this.getColor(pt.fFillColor) || 'white');
 
-         if (pt._typename === clTDiamond) {
+         if (this.isDiamond()) {
             const h2 = Math.round(height / 2), w2 = Math.round(width / 2),
                   dpath = `l${w2},${-h2}l${w2},${h2}l${-w2},${h2}z`;
 
@@ -94086,7 +94086,33 @@ class TPavePainter extends ObjectPainter {
          // this.getG().classed('most_upper_primitives', true); // this primitive will remain on top of list
 
          return this.finishTextDrawing(undefined, (nlines > 1));
-      });
+      }).then(() => this.#drawHeader(pt.fLabel, this.getG(), width, height, this.getPadPainter().getPadHeight()));
+   }
+
+   /** @summary draw header for TPaveText-derived classes */
+   async #drawHeader(lbl, text_g, width, height, pad_height)
+   {
+      if (!lbl?.length)
+         return this;
+
+      // special handling of diamond while text area smaller than diamond itself
+      const dmnd = this.isDiamond(),
+            w = dmnd ? width : Math.round(width * 0.5),
+            h = Math.round(pad_height * 0.04),
+            lbl_g = text_g.append('svg:g');
+
+      makeTranslate(lbl_g, Math.round(dmnd ? 0 : width * 0.25), Math.round(dmnd ? -height / 2 - h / 2 : -h / 2));
+
+      this.drawBorder(lbl_g, w, h);
+
+      lbl_g.append('svg:path')
+           .attr('d', `M${0},${0}h${w}v${h}h${-w}z`)
+           .call(this.fillatt.func)
+           .call(this.lineatt.func);
+
+      return this.startTextDrawingAsync(this.textatt.font, 0.9 * h, lbl_g)
+                 .then(() => this.drawText({ align: 22, x: 0, y: 0, width: w, height: h, text: lbl, color: this.textatt.color, draw_g: lbl_g }))
+                 .then(() => this.finishTextDrawing(lbl_g));
    }
 
    /** @summary draw TPaveText object */
@@ -94096,7 +94122,6 @@ class TPavePainter extends ObjectPainter {
             nlines = arr.length,
             pp = this.getPadPainter(),
             pad_height = pp.getPadHeight(),
-            draw_header = pt.fLabel.length,
             promises = [],
             margin_x = pt.fMargin * width,
             stepy = height / (nlines || 1),
@@ -94225,29 +94250,9 @@ class TPavePainter extends ObjectPainter {
          if (this.isTitle())
             this.getG().style('display', !num_txt ? 'none' : null);
 
-
          return Promise.all(promises).then(() => this);
-      }).then(() => {
-         if (!draw_header)
-            return;
-
-         const w = Math.round(width * 0.5),
-               h = Math.round(pad_height * 0.04),
-               lbl_g = text_g.append('svg:g');
-
-         makeTranslate(lbl_g, Math.round(width * 0.25), Math.round(-pad_height * 0.02));
-
-         this.drawBorder(lbl_g, w, h);
-
-         lbl_g.append('svg:path')
-               .attr('d', `M${0},${0}h${w}v${h}h${-w}z`)
-               .call(this.fillatt.func)
-               .call(this.lineatt.func);
-
-         return this.startTextDrawingAsync(this.textatt.font, 0.9 * h, lbl_g)
-                    .then(() => this.drawText({ align: 22, x: 0, y: 0, width: w, height: h, text: pt.fLabel, color: this.textatt.color, draw_g: lbl_g }))
-                    .then(() => promises.push(this.finishTextDrawing(lbl_g)));
-      }).then(() => { return this; });
+      }).then(() => this.#drawHeader(pt.fLabel, text_g, width, height, pad_height))
+        .then(() => { return this; });
    }
 
    /** @summary Method used to convert value to string according specified format
@@ -94837,6 +94842,30 @@ class TPavePainter extends ObjectPainter {
       }
    }
 
+   /** @summary Get title text */
+   #getTitle() {
+      const pave = this.getObject();
+      return pave?.fLines?.arr[0] ? pave?.fLines.arr[0].fTitle : '';
+   }
+
+   /** @summary Change title text */
+   #setTitle(lbl) {
+      const ltx = create$1(clTLatex),
+            pave = this.getObject();
+
+      ltx.fTitle = isStr(lbl) ? lbl : '';
+      pave.fLines.Clear();
+      pave.fLines.Add(ltx);
+      this.interactiveRedraw(true, `exec:Clear();;AddText("${ltx.fTitle}")`);
+   }
+
+   /** @summary Change label text */
+   #setLabel(lbl) {
+      const pave = this.getObject();
+      pave.fLabel = isStr(lbl) ? lbl : '';
+      this.interactiveRedraw('pad', `exec:SetLabel("${pave.fLabel}")`);
+   }
+
    /** @summary Fill context menu items for the TPave object */
    fillContextMenuItems(menu) {
       const pave = this.getObject(),
@@ -94883,11 +94912,27 @@ class TPavePainter extends ObjectPainter {
       }, 'Corner radius when ARC is enabled');
       menu.endsub();
 
-      if (this.isStats() || this.isPaveText() || this.isPavesText()) {
-         menu.add('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => {
-            pave.fLabel = lbl;
-            this.interactiveRedraw('pad', `exec:SetLabel("${lbl}")`);
-         }));
+      if (this.isTitle()) {
+         menu.sub('Title', () => menu.input('Enter new title', this.#getTitle())
+             .then(lbl => this.#setTitle(lbl)), 'Enter new title');
+         menu.add('Clear', () => this.#setTitle(''), 'Clear title');
+         menu.add('Copy', () => navigator.clipboard.writeText(this.#getTitle()), 'Copy title into clipboard');
+         menu.add('Paste', () => navigator.clipboard.readText().then(lbl => this.#setTitle(lbl)), 'Set title from clipboard');
+         menu.endsub();
+      }
+
+      const is_text = this.isStats() || this.isPaveText() || this.isPavesText() || this.isDiamond();
+
+      if (is_text || (pave._typename === clTPaveLabel) || (pave._typename === clTPaveClass)) {
+         // all classes have fLabel and SetLabel()
+         menu.sub('Label', () => menu.input('Enter new label', pave.fLabel).then(lbl => this.#setLabel(lbl)), 'Enter new label');
+         menu.add('Clear', () => this.#setLabel(''), 'Clear existing label');
+         menu.add('Copy', () => navigator.clipboard.writeText(pave.fLabel), 'Copy label into clipboard');
+         menu.add('Paste', () => navigator.clipboard.readText().then(lbl => this.#setLabel(lbl)), 'Set label from clipboard');
+         menu.endsub();
+      }
+
+      if (is_text) {
          menu.addSizeMenu('Margin', 0, 0.2, 0.02, pave.fMargin, val => {
             pave.fMargin = val;
             this.interactiveRedraw(true, `exec:SetMargin(${val})`);
@@ -95102,6 +95147,11 @@ class TPavePainter extends ObjectPainter {
    /** @summary Returns true when stat box is drawn */
    isPalette() {
       return this.matchObjectType(clTPaletteAxis);
+   }
+
+   /** @summary Returns true when diamond is drawn */
+   isDiamond() {
+      return this.matchObjectType(clTDiamond);
    }
 
    /** @summary Returns true when title is drawn */
