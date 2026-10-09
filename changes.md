@@ -14,6 +14,7 @@
 1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings
 1. Fix - read all cluster groups from ntuple #415
 1. Fix - correctly handle empty clusters in ntuple #420
+1. Fix - reading of negative 64-bit integers #422
 
 
 ## Changes in 7.11.2
