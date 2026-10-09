@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '5/10/2026',
+version_date = '9/10/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -94842,23 +94842,6 @@ class TPavePainter extends ObjectPainter {
       }
    }
 
-   /** @summary Get title text */
-   #getTitle() {
-      const pave = this.getObject();
-      return pave?.fLines?.arr[0] ? pave?.fLines.arr[0].fTitle : '';
-   }
-
-   /** @summary Change title text */
-   #setTitle(lbl) {
-      const ltx = create$1(clTLatex),
-            pave = this.getObject();
-
-      ltx.fTitle = isStr(lbl) ? lbl : '';
-      pave.fLines.Clear();
-      pave.fLines.Add(ltx);
-      this.interactiveRedraw(true, `exec:Clear();;AddText("${ltx.fTitle}")`);
-   }
-
    /** @summary Change label text */
    #setLabel(lbl) {
       const pave = this.getObject();
@@ -94911,15 +94894,6 @@ class TPavePainter extends ObjectPainter {
          this.interactiveRedraw(true, `exec:SetCornerRadius(${val})`);
       }, 'Corner radius when ARC is enabled');
       menu.endsub();
-
-      if (this.isTitle()) {
-         menu.sub('Title', () => menu.input('Enter new title', this.#getTitle())
-             .then(lbl => this.#setTitle(lbl)), 'Enter new title');
-         menu.add('Clear', () => this.#setTitle(''), 'Clear title');
-         menu.add('Copy', () => navigator.clipboard.writeText(this.#getTitle()), 'Copy title into clipboard');
-         menu.add('Paste', () => navigator.clipboard.readText().then(lbl => this.#setTitle(lbl)), 'Set title from clipboard');
-         menu.endsub();
-      }
 
       const is_text = this.isStats() || this.isPaveText() || this.isPavesText() || this.isDiamond();
 
@@ -97599,8 +97573,13 @@ class THistPainter extends ObjectPainter {
          menu.addchk(this.toggleTitle(kOnlyCheck), 'Show', () => this.toggleTitle());
          menu.add('Edit', () => menu.input('Enter histogram title', histo.fTitle).then(res => {
             setHistogramTitle(histo, res);
-            this.interactiveRedraw();
+            this.interactiveRedraw('pad', `exec:SetTitle("${res}")`);
          }));
+         menu.add('Copy', () => navigator.clipboard.writeText(histo.fTitle), 'Copy histogram title into clipboard');
+         menu.add('Paste', () => navigator.clipboard.readText().then(res => {
+            setHistogramTitle(histo, res);
+            this.interactiveRedraw('pad', `exec:SetTitle("${res}")`);
+         }), 'Set histogram title from clipboard');
          menu.endsub();
       }
 
@@ -126219,7 +126198,9 @@ class TBuffer {
       this.o += 4;
       if (high < 0x80000000)
          return (high < 0x200000) ? (high * 0x100000000 + low) : (BigInt(high) * BigInt(0x100000000) + BigInt(low));
-      return (~high < 0x200000) ? (-1 - ((~high) * 0x100000000 + ~low)) : (BigInt(-1) - (BigInt(~high) * BigInt(0x100000000) + BigInt(~low)));
+      // ~ returns signed int32, convert back to unsigned
+      const nhigh = ~high >>> 0, nlow = ~low >>> 0;
+      return (nhigh < 0x200000) ? (-1 - (nhigh * 0x100000000 + nlow)) : (BigInt(-1) - (BigInt(nhigh) * BigInt(0x100000000) + BigInt(nlow)));
    }
 
    /** @summary read float */
