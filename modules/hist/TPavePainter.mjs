@@ -1348,23 +1348,6 @@ class TPavePainter extends ObjectPainter {
       }
    }
 
-   /** @summary Get title text */
-   #getTitle() {
-      const pave = this.getObject();
-      return pave?.fLines?.arr[0] ? pave?.fLines.arr[0].fTitle : '';
-   }
-
-   /** @summary Change title text */
-   #setTitle(lbl) {
-      const ltx = create(clTLatex),
-            pave = this.getObject();
-
-      ltx.fTitle = isStr(lbl) ? lbl : '';
-      pave.fLines.Clear();
-      pave.fLines.Add(ltx);
-      this.interactiveRedraw(true, `exec:Clear();;AddText("${ltx.fTitle}")`);
-   }
-
    /** @summary Change label text */
    #setLabel(lbl) {
       const pave = this.getObject();
@@ -1417,15 +1400,6 @@ class TPavePainter extends ObjectPainter {
          this.interactiveRedraw(true, `exec:SetCornerRadius(${val})`);
       }, 'Corner radius when ARC is enabled');
       menu.endsub();
-
-      if (this.isTitle()) {
-         menu.sub('Title', () => menu.input('Enter new title', this.#getTitle())
-             .then(lbl => this.#setTitle(lbl)), 'Enter new title');
-         menu.add('Clear', () => this.#setTitle(''), 'Clear title');
-         menu.add('Copy', () => navigator.clipboard.writeText(this.#getTitle()), 'Copy title into clipboard');
-         menu.add('Paste', () => navigator.clipboard.readText().then(lbl => this.#setTitle(lbl)), 'Set title from clipboard');
-         menu.endsub();
-      }
 
       const is_text = this.isStats() || this.isPaveText() || this.isPavesText() || this.isDiamond();
 
