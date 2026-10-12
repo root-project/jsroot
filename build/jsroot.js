@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '9/10/2026',
+version_date = '12/10/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -80394,7 +80394,7 @@ async function loadOpenui5(args) {
    }
 
    const openui5_sources = [];
-   let openui5_dflt = 'https://openui5.hana.ondemand.com/1.135.0/',
+   let openui5_dflt = 'https://openui5.hana.ondemand.com/1.152.0/',
        openui5_root = rootui5sys ? rootui5sys + 'distribution/' : '';
 
    if (isStr(args.openui5src)) {
@@ -172105,10 +172105,15 @@ class TTextPainter extends ObjectPainter {
 
    fillContextMenuItems(menu) {
       const text = this.getObject();
-      menu.add('Change text', () => menu.input('Enter new text', text.fTitle).then(t => {
+      menu.add('Edit', () => menu.input('Enter new text', text.fTitle).then(t => {
          text.fTitle = t;
          this.interactiveRedraw('pad', `exec:SetTitle("${t}")`);
-      }));
+      }), `Edit ${text._typename} text`);
+      menu.add('Copy', () => navigator.clipboard.writeText(text.fTitle), 'Copy text into clipboard');
+      menu.add('Paste', () => navigator.clipboard.readText().then(t => {
+         text.fTitle = t;
+         this.interactiveRedraw('pad', `exec:SetTitle("${t}")`);
+      }), 'Set text from clipboard');
    }
 
    /** @summary draw TText-derived object */
