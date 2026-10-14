@@ -12,6 +12,7 @@
 1. Let preserve `BigInt` values when calling `rntupleProcess()` function #418
 1. Use `8.6g`/`10.8g` format for float/double historgam content-to-text conversion in tooltips
 1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings
+1. Upgrade three.js r183 -> r186 #424
 1. Fix - read all cluster groups from ntuple #415
 1. Fix - correctly handle empty clusters in ntuple #420
 1. Fix - reading of negative 64-bit integers #422
