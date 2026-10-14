@@ -467,6 +467,15 @@ function getNumBranches(tree) {
 }
 */
 
+/** @summary JavaScript equivalents of TMath functions, used in draw expressions
+  * @private */
+const tmathFunctions = {
+   Abs: 'Math.abs', Sqrt: 'Math.sqrt', Exp: 'Math.exp', Log: 'Math.log', Log10: 'Math.log10',
+   Sin: 'Math.sin', Cos: 'Math.cos', Tan: 'Math.tan', ASin: 'Math.asin', ACos: 'Math.acos', ATan: 'Math.atan',
+   ATan2: 'Math.atan2', SinH: 'Math.sinh', CosH: 'Math.cosh', TanH: 'Math.tanh',
+   Ceil: 'Math.ceil', Floor: 'Math.floor', Power: 'Math.pow', Max: 'Math.max', Min: 'Math.min'
+};
+
 /**
  * @summary object with single variable in TTree::Draw expression
  *
@@ -664,11 +673,12 @@ class TDrawVariable {
          pos += replace.length;
       }
 
-      // support usage of some standard TMath functions
-      code = code.replace(/TMath::Exp\(/g, 'Math.exp(')
-                 .replace(/TMath::Abs\(/g, 'Math.abs(')
+      // support usage of standard TMath functions
+      code = code.replace(/TMath::Pi\(\)/g, 'Math.PI')
+                 .replace(/TMath::E\(\)/g, 'Math.E')
                  .replace(/TMath::Prob\(/g, 'arg.$math.Prob(')
-                 .replace(/TMath::Gaus\(/g, 'arg.$math.Gaus(');
+                 .replace(/TMath::Gaus\(/g, 'arg.$math.Gaus(')
+                 .replace(/TMath::(\w+)\(/g, (match, name) => (tmathFunctions[name] ? `${tmathFunctions[name]}(` : match));
 
       this.func = new Function('arg', `return (${code})`);
 
