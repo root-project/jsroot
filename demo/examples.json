@@ -281,7 +281,7 @@
      { "name": "expr", "asurl": true, "file": "WJets.root", "opt": "TMath::Abs(lep1_p4.M())", "item": "t", "title": "Use of expression and object methods" },
      { "name": "vect_expr", "asurl": true, "file": "WJets.root", "item": "t", "opt": "jets.M()", "title": "Use of expression for objects, stored in the vector" }
     ],
-   "RNtuple" : [
+   "RNTuple" : [
      { "name": "uint32", "file": "rntuple/customer_Compressed.root", "item": "CustomerData", "opt": "customerId", "title": "kUInt32" },
      { "name": "uint8", "opt": "age", "title": "kUInt8" },
      { "name": "char32", "opt": "firstName", "title": "kSplitIndex32 + kChar" },
