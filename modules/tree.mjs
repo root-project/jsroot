@@ -476,6 +476,66 @@ const tmathFunctions = {
    Ceil: 'Math.ceil', Floor: 'Math.floor', Power: 'Math.pow', Max: 'Math.max', Min: 'Math.min'
 };
 
+/** @summary Replace ROOT power operator 'a^b' by JavaScript 'a**b'
+  * @desc Operands are taken as primary expressions (names, numbers, brackets, calls), so unary minus
+  * stays outside of the power: '-x^2' is '-(x**2)', as in ROOT. Operators are processed from the left,
+  * so 'a^b^c' is '(a**b)**c', as ROOT evaluates it.
+  * @private */
+function convertPowerOperator(code) {
+   const isNameChar = c => (c !== undefined) && /[\w$.]/.test(c),
+         skipBrackets = (str, pos, open, close) => { // pos points to opening bracket, returns index after closing one
+            let cnt = 0;
+            for (let p = pos; p < str.length; ++p) {
+               if (str[p] === open) cnt++;
+               else if (str[p] === close && --cnt === 0) return p + 1;
+            }
+            return str.length;
+         };
+
+   let pos;
+   while ((pos = code.indexOf('^')) >= 0) {
+      // left operand: find its start
+      let start = pos - 1;
+      while ((start >= 0) && (code[start] === ' ')) start--;
+      if ((start < 0) || (!isNameChar(code[start]) && (code[start] !== ')') && (code[start] !== ']')))
+         break; // no left operand
+      if (code[start] === ')' || code[start] === ']') {
+         // walk back to matching bracket
+         const close = code[start], open = (close === ')') ? '(' : '[';
+         let cnt = 0;
+         for (; start >= 0; start--) {
+            if (code[start] === close) cnt++;
+            else if (code[start] === open && --cnt === 0) break;
+         }
+         if (start < 0)
+            break;
+      }
+      while ((start > 0) && isNameChar(code[start - 1]))
+         start--;
+
+      // right operand: optional unary signs, then a primary expression
+      let end = pos + 1;
+      while ((end < code.length) && (code[end] === ' '))
+         end++;
+      while ((end < code.length) && ('+-!~'.indexOf(code[end]) >= 0))
+         end++;
+      if (code[end] === '(')
+         end = skipBrackets(code, end, '(', ')');
+      else {
+         const m = /^(?:\d+\.?\d*(?:[eE][+-]?\d+)?|\.\d+(?:[eE][+-]?\d+)?|[A-Za-z_$][\w$.]*)/.exec(code.slice(end));
+         if (!m)
+            break;
+         end += m[0].length;
+      }
+      while ((end < code.length) && ((code[end] === '(') || (code[end] === '[')))
+         end = (code[end] === '(') ? skipBrackets(code, end, '(', ')') : skipBrackets(code, end, '[', ']');
+
+      const base = code.slice(start, pos).trim(), exp = code.slice(pos + 1, end).trim();
+      code = `${code.slice(0, start)}((${base})**(${exp}))${code.slice(end)}`;
+   }
+   return code;
+}
+
 /**
  * @summary object with single variable in TTree::Draw expression
  *
@@ -679,6 +739,9 @@ class TDrawVariable {
                  .replace(/TMath::Prob\(/g, 'arg.$math.Prob(')
                  .replace(/TMath::Gaus\(/g, 'arg.$math.Gaus(')
                  .replace(/TMath::(\w+)\(/g, (match, name) => (tmathFunctions[name] ? `${tmathFunctions[name]}(` : match));
+
+      // ROOT uses '^' as power operator, in JavaScript it is bitwise XOR
+      code = convertPowerOperator(code);
 
       this.func = new Function('arg', `return (${code})`);
 
