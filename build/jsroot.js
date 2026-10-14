@@ -167381,7 +167381,7 @@ const drawFuncs = { lst: [
    { name: clTBranchFunc, icon: 'img_leaf_method', draw: () => import_tree().then(h => h.drawTree), opt: ';dump;dumpall', noinspect: true, transform: true },
    { name: /^TBranch/, icon: 'img_branch', draw: () => import_tree().then(h => h.drawTree), dflt: 'expand', opt: ';dump;dumpall', ctrl: 'dump', shift: kInspect, ignore_online: true, always_draw: true, transform: true },
    { name: /^TLeaf/, icon: 'img_leaf', noexpand: true, draw: () => import_tree().then(h => h.drawTree), opt: ';dump;dumpall', ctrl: 'dump', ignore_online: true, always_draw: true, transform: true },
-   { name: 'ROOT::RNTuple', icon: 'img_tree', get_expand: () => Promise.resolve().then(function () { return rntuple; }).then(h => h.tupleHierarchy), draw: () => Promise.resolve().then(function () { return RNTuple; }).then(h => h.drawRNTuple), dflt: 'expand', pm: true, transform: true },
+   { name: 'ROOT::RNTuple', icon: 'img_tree', get_expand: () => Promise.resolve().then(function () { return rntuple; }).then(h => h.tupleHierarchy), draw: () => Promise.resolve().then(function () { return RNTuple; }).then(h => h.drawRNTuple), dflt: 'expand', opt: 'player', pm: true, transform: true },
    { name: 'ROOT::RNTupleField', icon: 'img_leaf', draw: () => Promise.resolve().then(function () { return RNTuple; }).then(h => h.drawRNTuple), opt: ';dump;dumpall', ctrl: 'dump', shift: kInspect, ignore_online: true, always_draw: true, transform: true },
    { name: clTList, icon: 'img_list', draw: () => import_h().then(h => h.drawList), get_expand: () => import_h().then(h => h.listHierarchy), dflt: 'expand' },
    { name: clTHashList, sameas: clTList },
@@ -173206,8 +173206,13 @@ async function treeDrawProgress(obj, final) {
 
 /** @summary Create painter to perform tree drawing on server side
   * @private */
-function createTreePlayer(player) {
+function createTreePlayer(player, tree, rntuple) {
    player.draw_first = true;
+
+   if (tree)
+      player.local_tree = tree;
+   else if (rntuple)
+      player.local_rntuple = rntuple;
 
    player.configureOnline = function(itemname, url, askey, root_version, expr) {
       this.setItemName(itemname, '', this);
@@ -173217,13 +173222,9 @@ function createTreePlayer(player) {
       this.draw_expr = expr;
    };
 
-   player.configureTree = function(tree) {
-      this.local_tree = tree;
-   };
-
    player.showExtraButtons = function(args) {
       const main = this.selectDom(),
-            numentries = this.local_tree?.fEntries || 0;
+            numentries = this.local_tree?.fEntries || (this.local_rntuple ? 10000000 : 0);
 
       main.select('.treedraw_more').remove(); // remove more button first
 
@@ -173264,13 +173265,13 @@ function createTreePlayer(player) {
       // ObjectPainter allow such usage of methods from BasePainter
       this.setTopPainter();
 
-      if (this.local_tree) {
-         main.select('.treedraw_buttons')
-             .attr('title', 'Tree draw player for: ' + this.local_tree.fName);
-      }
+      if (this.local_tree)
+         main.select('.treedraw_buttons').attr('title', 'Tree draw player for: ' + this.local_tree.fName);
+      else if (this.local_rntuple)
+         main.select('.treedraw_buttons').attr('title', 'RNTuple draw player for local rntuple');
       main.select('.treedraw_exe').on('click', () => this.performDraw());
       main.select('.treedraw_varexp')
-          .attr('value', args?.parse_expr || this.draw_expr || 'px:py')
+          .attr('value', args?.parse_expr || args?.expr || this.draw_expr || 'px:py')
           .on('change', () => this.performDraw());
       main.select('.treedraw_varexp_info')
           .attr('title', 'Example of valid draw expressions:\n' +
@@ -173301,9 +173302,6 @@ function createTreePlayer(player) {
    };
 
    player.performLocalDraw = function() {
-      if (!this.local_tree)
-         return;
-
       const frame = this.selectDom(),
             args = { expr: this.getValue('.treedraw_varexp') };
 
@@ -173329,13 +173327,23 @@ function createTreePlayer(player) {
             delete args.firstentry;
       }
 
+      const json = JSON.stringify(args);
+
+      // prevent execute same expression twice because of some extra browser events
+      if (this._last_args_json && this._last_args_json === json)
+         return;
+      this._last_args_json = json;
+
       cleanup(this.drawid);
 
       args.drawid = this.drawid;
 
       args.progress = treeDrawProgress.bind(args);
 
-      treeDraw(this.local_tree, args).then(obj => args.progress(obj, true));
+      if (this.local_tree)
+         treeDraw(this.local_tree, args).then(obj => args.progress(obj, true));
+      else if (this.local_rntuple && isFunc(this.rntupleDraw))
+         this.rntupleDraw(this.local_rntuple, args).then(obj => args.progress(obj, true));
    };
 
    player.getDrawOpt = function() {
@@ -173347,7 +173355,7 @@ function createTreePlayer(player) {
    };
 
    player.performDraw = function() {
-      if (this.local_tree)
+      if (this.local_tree || this.local_rntuple)
          return this.performLocalDraw();
 
       const frame = this.selectDom();
@@ -173540,8 +173548,7 @@ async function drawTree(dom, obj, opt) {
 
    if (args.player) {
       painter = new ObjectPainter(dom, obj, opt);
-      createTreePlayer(painter);
-      painter.configureTree(tree);
+      createTreePlayer(painter, tree);
       painter.showPlayer(args);
       args.drawid = painter.drawid;
    } else
@@ -173567,6 +173574,7 @@ async function drawTree(dom, obj, opt) {
 
 var TTree = /*#__PURE__*/Object.freeze({
 __proto__: null,
+createTreePlayer: createTreePlayer,
 drawLeafPlayer: drawLeafPlayer,
 drawTree: drawTree,
 drawTreePlayer: drawTreePlayer,
@@ -183170,16 +183178,42 @@ async function drawRNTuple(dom, obj, opt) {
    } else {
       tuple = obj;
       args.expr = opt;
+      if (args.expr && isStr(args.expr)) {
+         const p = args.expr.indexOf('player');
+         if (p === 0) {
+            args.player = true;
+            args.expr = args.expr.slice(6);
+            if (args.expr[0] === ':')
+               args.expr = args.expr.slice(1);
+         } else if ((p >= 0) && (p === args.expr.length - 6)) {
+            args.player = true;
+            args.expr = args.expr.slice(0, p);
+            if ((p > 0) && (args.expr[p - 1] === ';'))
+               args.expr = args.expr.slice(0, p - 1);
+         }
+      }
    }
 
    if (!tuple)
       throw Error('No RNTuple object available for drawing');
 
-   args.drawid = dom;
+   let painter;
+
+   if (args.player) {
+      painter = new ObjectPainter(dom, obj, opt);
+      createTreePlayer(painter, null, tuple);
+      painter.rntupleDraw = rntupleDraw;
+      painter.showPlayer(args);
+      args.drawid = painter.drawid;
+   } else
+      args.drawid = dom;
 
    args.progress = treeDrawProgress.bind(args);
 
-   return rntupleDraw(tuple, args).then(res => args.progress(res, true));
+   if (args.expr || args.branch)
+      return rntupleDraw(tuple, args).then(res => args.progress(res, true));
+
+   return painter;
 }
 
 var RNTuple = /*#__PURE__*/Object.freeze({
