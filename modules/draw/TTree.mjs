@@ -202,7 +202,7 @@ function createTreePlayer(player, tree, rntuple) {
          main.select('.treedraw_buttons').attr('title', 'RNTuple draw player for local rntuple');
       main.select('.treedraw_exe').on('click', () => this.performDraw());
       main.select('.treedraw_varexp')
-          .attr('value', args?.parse_expr || this.draw_expr || 'px:py')
+          .attr('value', args?.parse_expr || args?.expr || this.draw_expr || 'px:py')
           .on('change', () => this.performDraw());
       main.select('.treedraw_varexp_info')
           .attr('title', 'Example of valid draw expressions:\n' +
