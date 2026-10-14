@@ -155,7 +155,7 @@ function createTreePlayer(player, tree, rntuple) {
 
    player.showExtraButtons = function(args) {
       const main = this.selectDom(),
-            numentries = this.local_tree?.fEntries || 0;
+            numentries = this.local_tree?.fEntries || (this.local_rntuple ? 10000000 : 0);
 
       main.select('.treedraw_more').remove(); // remove more button first
 
@@ -257,6 +257,13 @@ function createTreePlayer(player, tree, rntuple) {
          if (!Number.isInteger(args.firstentry))
             delete args.firstentry;
       }
+
+      const json = JSON.stringify(args);
+
+      // prevent execute same expression twice because of some extra browser events
+      if (this._last_args_json && this._last_args_json === json)
+         return;
+      this._last_args_json = json;
 
       cleanup(this.drawid);
 
