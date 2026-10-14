@@ -14,6 +14,7 @@
 1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings
 1. Upgrade three.js r183 -> r186 #424
 1. Upgrade openui5 1.135.0 -> 1.152.0
+1. Upgrade svg2pdf.js 2.6.0 -> 2.8.1
 1. Fix - read all cluster groups from ntuple #415
 1. Fix - correctly handle empty clusters in ntuple #420
 1. Fix - reading of negative 64-bit integers #422
