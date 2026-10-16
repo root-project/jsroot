@@ -172,6 +172,15 @@ function createTreePlayer(player, tree, rntuple) {
       main.select('.treedraw_number').attr('value', args?.numentries || ''); // .on('change', () => this.performDraw());
       main.select('.treedraw_first').attr('value', args?.firstentry || ''); // .on('change', () => this.performDraw());
       main.select('.treedraw_clear').on('click', () => cleanup(this.drawid));
+
+      const expr = this.getValue('.treedraw_varexp');
+      if (isStr(expr)) {
+         const p = expr.indexOf('::');
+         if (p >= 0) {
+            main.select('.treedraw_varexp').attr('value', expr.slice(0, p));
+            main.select('.treedraw_cut').attr('value', expr.slice(p + 2));
+         }
+      }
    };
 
    player.showPlayer = function(args) {
