@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Add textendash and textemdash `TLatex` symbols #407 (thanks to @ ferdymercury)
+1. Add textendash and textemdash `TLatex` symbols #407 (thanks to @ferdymercury)
 1. Let store canvas as html file via context menu
 1. Improve `TGraph` update
 1. When draw `TH2`/`TF2` with "surf same" draw option, only lines are drawn
