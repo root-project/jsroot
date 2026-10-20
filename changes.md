@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Add textendash and textemdash `TLatex` symbols #407
+1. Add textendash and textemdash `TLatex` symbols #407 (thanks to @ ferdymercury)
 1. Let store canvas as html file via context menu
 1. Improve `TGraph` update
 1. When draw `TH2`/`TF2` with "surf same" draw option, only lines are drawn
@@ -9,7 +9,7 @@
 1. Adjust automatic colors handling in `THStack` and `TMultiGraph`
 1. Let copy and paste histogram title, `TLatex` text and `TPave` label via context menu
 1. Use "JSROOT" label for main pad button, hide it after 5 seconds from the drawing
-1. Let preserve `BigInt` values when calling `rntupleProcess()` function #418
+1. Let preserve `BigInt` values when calling `rntupleProcess()` function #418 (thanks to @undefined-panda)
 1. Let use primitive "player" for RNTuple to edit draw expressions
 1. Use `8.6g`/`10.8g` format for float/double historgam content-to-text conversion in tooltips
 1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings
@@ -17,9 +17,9 @@
 1. Upgrade openui5 1.135.0 -> 1.152.0
 1. Upgrade svg2pdf.js 2.6.0 -> 2.8.1
 1. Upgrade jsPDF 3.0.3 -> 4.2.1
-1. Fix - read all cluster groups from ntuple #415
-1. Fix - correctly handle empty clusters in ntuple #420
-1. Fix - reading of negative 64-bit integers #422
+1. Fix - read all cluster groups from ntuple #415 (thanks to @undefined-panda)
+1. Fix - correctly handle empty clusters in ntuple #420 (thanks to @undefined-panda)
+1. Fix - reading of negative 64-bit integers #422 (thanks to @Prafyl)
 1. Fix - include first value in TTree::Draw histogram range #427 (thanks to @auraseb)
 
 
