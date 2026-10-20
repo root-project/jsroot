@@ -2846,7 +2846,7 @@ class TH2Painter extends THistPainter {
 
       handle.ScatterPlot = true;
 
-      if (scale * handle.sumz < 1e5) {
+      if ((scale * handle.sumz < 1e5) && (o.Scat !== 11)) {
          // one can use direct drawing of scatter plot without any patterns
 
          this.createAttMarker({ attr: histo });
