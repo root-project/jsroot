@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.11.2
+// https://root.cern/js/ v7.11.3
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -10,7 +10,7 @@ var _documentCurrentScript = typeof document !== 'undefined' ? document.currentS
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = '7.11.x',
+const version_id = '7.11.3',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
