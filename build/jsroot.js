@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '14/10/2026',
+version_date = '20/10/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -130582,7 +130582,7 @@ class TDrawSelector extends TSelector {
          res.max = this.hist_args[axisid * 3 + 2];
       } else {
          let is_any = false;
-         for (let i = 1; i < arr.length; ++i) {
+         for (let i = 0; i < arr.length; ++i) {
             const v = arr[i];
             if (!Number.isFinite(v))
                continue;
@@ -173241,6 +173241,15 @@ function createTreePlayer(player, tree, rntuple) {
       main.select('.treedraw_number').attr('value', args?.numentries || ''); // .on('change', () => this.performDraw());
       main.select('.treedraw_first').attr('value', args?.firstentry || ''); // .on('change', () => this.performDraw());
       main.select('.treedraw_clear').on('click', () => cleanup(this.drawid));
+
+      const expr = this.getValue('.treedraw_varexp');
+      if (isStr(expr)) {
+         const p = expr.indexOf('::');
+         if (p >= 0) {
+            main.select('.treedraw_varexp').attr('value', expr.slice(0, p));
+            main.select('.treedraw_cut').attr('value', expr.slice(p + 2));
+         }
+      }
    };
 
    player.showPlayer = function(args) {
@@ -173252,9 +173261,9 @@ function createTreePlayer(player, tree, rntuple) {
 
       main.html('<div style="display:flex; flex-flow:column; height:100%; width:100%;">' +
                    '<div class="treedraw_buttons" style="flex: 0 1 auto;margin-top:0.2em;">' +
-                      '<button class="treedraw_exe" title="Execute draw expression" style="margin-left:0.5em">Draw</button>' +
+                      '<button class="treedraw_exe" title="Execute draw expression" style="margin-inline:0.5em">Draw</button>' +
                       'Expr:<input class="treedraw_varexp treedraw_varexp_info" style="width:12em;margin-left:5px" title="draw expression"></input>' +
-                      '<label class="treedraw_varexp_info">\u24D8</label>' +
+                      '<label class="treedraw_varexp_info" style="margin-inline:0.5em">\u24D8</label>' +
                      '<button class="treedraw_more">More</button>' +
                    '</div>' +
                    '<div style="flex: 0 1 auto"><hr/></div>' +
