@@ -68,6 +68,7 @@ jobs:
           node demo/node/rntuple_buffer_test.js
           node demo/node/rntuple_test.js demo/node/rntuple_test.root
           node demo/node/tree_int64_test.js demo/node/tree_int64_test.root
+          node demo/node/tree_draw_range.js demo/node/rntuple_test.root
           node demo/node/rntuple_test32.js demo/node/rntuple_test32.root demo/node/rntuple_test32.json
 
   tests_ubuntu:
@@ -187,6 +188,7 @@ jobs:
           node demo/node/rntuple_buffer_test.js
           node demo/node/rntuple_test.js demo/node/rntuple_test.root
           node demo/node/tree_int64_test.js demo/node/tree_int64_test.root
+          node demo/node/tree_draw_range.js demo/node/rntuple_test.root
           node demo/node/rntuple_test32.js demo/node/rntuple_test32.root demo/node/rntuple_test32.json
 
 
@@ -241,5 +243,6 @@ jobs:
           node demo/node/rntuple_buffer_test.js
           node demo/node/rntuple_test.js demo/node/rntuple_test.root
           node demo/node/tree_int64_test.js demo/node/tree_int64_test.root
+          node demo/node/tree_draw_range.js demo/node/rntuple_test.root
           node demo/node/rntuple_test32.js demo/node/rntuple_test32.root demo/node/rntuple_test32.json
 
