@@ -96965,7 +96965,7 @@ class THistDrawOptions {
          Bar: false, BarStyle: 0, Curve: false,
          Hist: 1, Line: false, Fill: false,
          Error: 0, ErrorKind: -1, errorX: gStyle.fErrorX,
-         Mark: false, Same: false, Scat: false, ScatCoef: 1.0, Func: true, AllFunc: false,
+         Mark: false, Same: false, Scat: 0, ScatCoef: 1.0, Func: true, AllFunc: false,
          Arrow: false, Box: false, BoxStyle: 0,
          Text: false, TextAngle: 0, TextKind: '', Char: 0, Color: false, Contour: 0, Cjust: false,
          Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0, Ortho: gStyle.fOrthoCamera,
@@ -97451,14 +97451,16 @@ class THistDrawOptions {
       }
 
       if (d.check('SCAT=', true)) {
-         this.Scat = true;
+         this.Scat = 1;
          this.ScatCoef = parseFloat(d.part);
          if (!Number.isFinite(this.ScatCoef) || (this.ScatCoef <= 0))
             this.ScatCoef = 1.0;
       }
 
+      if (d.check('SCAT1'))
+         this.Scat = 11;
       if (d.check('SCAT'))
-         this.Scat = true;
+         this.Scat = 1;
 
       if (d.check('TRI', true)) {
          this.Color = false;
@@ -102753,7 +102755,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
 
       handle.ScatterPlot = true;
 
-      if (scale * handle.sumz < 1e5) {
+      if ((scale * handle.sumz < 1e5) && (o.Scat !== 11)) {
          // one can use direct drawing of scatter plot without any patterns
 
          this.createAttMarker({ attr: histo });
@@ -102835,7 +102837,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       }
 
       const pp = this.getPadPainter(),
-            layer = pp.selectChild('.main_layer');
+            layer = pp.getFrameSvg().selectChild('.main_layer');
       let defs = layer.selectChild('defs');
       if (defs.empty() && colPaths.length)
          defs = layer.insert('svg:defs', ':first-child');

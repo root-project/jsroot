@@ -18,6 +18,7 @@
    ],
    "TH2": [
      { "opt": "axis", "file": "hsimple.root", "item": "hpxpy;1", "title": "Draw only histogram axes" },
+     { "opt": "scat1", "title": "Scatter plot with forced pattern painting, only for testing" },
      { "name": "hitmap", "file": "hitmap.root", "item": "HitMap;1" },
      { "name": "atlas", "opt": "col", "file": "atlas.root", "item": "LEDShapeHeightCorr_Gain0;1" },
      { "name": "logx", "opt": "colz", "file": "QAresults.root", "item": "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_electron;1", "title": "histogram with custom x bins assigned in log steps" },
