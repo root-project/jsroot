@@ -1,6 +1,11 @@
 # JSROOT changelog
 
 
+## Changes in 7.11.x
+1. Fix - reading of negative 64-bit integers #422 (thanks to @Prafyl)
+2. Fix - include first value in TTree::Draw histogram range #427 (thanks to @auraseb)
+
+
 ## Changes in 7.11.2
 1. Fix - exclude @resvg/resvg-js from browser bundlers #421
 2. Fix - hstack autocolor handling in TWebCanvas
