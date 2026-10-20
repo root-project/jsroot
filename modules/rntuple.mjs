@@ -1210,7 +1210,7 @@ class BitsetReaderItem extends ReaderItem {
             if (this.bigint)
                res |= (1n << BigInt(len));
             else
-               res |= 1 << len;
+               res += 2 ** len;
          }
          len++;
       }
