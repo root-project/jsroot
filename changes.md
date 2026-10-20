@@ -4,6 +4,7 @@
 ## Changes in 7.11.x
 1. Fix - reading of negative 64-bit integers #422 (thanks to @Prafyl)
 2. Fix - include first value in TTree::Draw histogram range #427 (thanks to @auraseb)
+3. Fix - `TH2` scat drawing for large histogram stats #428 (thanks to @Prafyl)
 
 
 ## Changes in 7.11.2

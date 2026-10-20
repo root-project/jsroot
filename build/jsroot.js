@@ -101174,7 +101174,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       }
 
       const pp = this.getPadPainter(),
-            layer = pp.selectChild('.main_layer');
+            layer = pp.getFrameSvg().selectChild('.main_layer');
       let defs = layer.selectChild('defs');
       if (defs.empty() && colPaths.length)
          defs = layer.insert('svg:defs', ':first-child');
