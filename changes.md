@@ -19,11 +19,12 @@
 1. Upgrade jsPDF 3.0.3 -> 4.2.1
 1. Fix - read all cluster groups from ntuple #415 (thanks to @undefined-panda)
 1. Fix - correctly handle empty clusters in ntuple #420 (thanks to @undefined-panda)
+1. Fix - reading of RNTuple std::bitset with 32 to 48 bits #430 (thanks to @sebxt)
 
 
 ## Changes in 7.11.3
 1. Fix - reading of negative 64-bit integers #422 (thanks to @Prafyl)
-2. Fix - include first value in TTree::Draw histogram range #427 (thanks to @auraseb)
+2. Fix - include first value in TTree::Draw histogram range #427 (thanks to @sebxt)
 3. Fix - `TH2` scat drawing for large histogram stats #428 (thanks to @Prafyl)
 
 
