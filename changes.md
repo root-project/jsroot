@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Add textendash and textemdash `TLatex` symbols #407 (thanks to @ferdymercury)
+1. Add textendash and textemdash `TLatex` symbols #407 (@ferdymercury)
 1. Let store canvas as html file via context menu
 1. Improve `TGraph` update
 1. When draw `TH2`/`TF2` with "surf same" draw option, only lines are drawn
@@ -9,27 +9,27 @@
 1. Adjust automatic colors handling in `THStack` and `TMultiGraph`
 1. Let copy and paste histogram title, `TLatex` text and `TPave` label via context menu
 1. Use "JSROOT" label for main pad button, hide it after 5 seconds from the drawing
-1. Let preserve `BigInt` values when calling `rntupleProcess()` function #418 (thanks to @undefined-panda)
-1. Let use primitive "player" for RNTuple to edit draw expressions
+1. Let preserve `BigInt` values when calling `rntupleProcess()` function #418 (@undefined-panda)
+1. Let use primitive "player" for RNTuple to let edit draw expressions
 1. Use `8.6g`/`10.8g` format for float/double historgam content-to-text conversion in tooltips
-1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings
+1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings #409 (@prawnsgupta)
 1. Upgrade three.js r183 -> r186 #424
 1. Upgrade openui5 1.135.0 -> 1.152.0
 1. Upgrade svg2pdf.js 2.6.0 -> 2.8.1
 1. Upgrade jsPDF 3.0.3 -> 4.2.1
-1. Fix - read all cluster groups from ntuple #415 (thanks to @undefined-panda)
-1. Fix - correctly handle empty clusters in ntuple #420 (thanks to @undefined-panda)
-1. Fix - reading of RNTuple std::bitset with 32 to 48 bits #430 (thanks to @sebxt)
+1. Fix - read all cluster groups from ntuple #415 (@undefined-panda)
+1. Fix - correctly handle empty clusters in ntuple #420 (@undefined-panda)
+1. Fix - reading of RNTuple std::bitset with 32 to 48 bits #430 (@sebxt)
 
 
 ## Changes in 7.11.3
-1. Fix - reading of negative 64-bit integers #422 (thanks to @Prafyl)
-2. Fix - include first value in TTree::Draw histogram range #427 (thanks to @sebxt)
-3. Fix - `TH2` scat drawing for large histogram stats #428 (thanks to @Prafyl)
+1. Fix - reading of negative 64-bit integers #422 (@Prafyl)
+2. Fix - include first value in TTree::Draw histogram range #427 (@sebxt)
+3. Fix - `TH2` scat drawing for large histogram stats #428 (@Prafyl)
 
 
 ## Changes in 7.11.2
-1. Fix - exclude @resvg/resvg-js from browser bundlers #421
+1. Fix - exclude @resvg/resvg-js from browser bundlers #421 (@wiso)
 2. Fix - hstack autocolor handling in `TWebCanvas`
 
 
@@ -38,7 +38,7 @@
 2. Fix - JSON production for TWebCanvas
 3. Fix - check evaluated value of TF1
 4. Fix - corrupted page layout in SWAN after calling %rootbrowse
-5. Fix - RNtuple decodeZigzag64 for SplitInt64 columns #410
+5. Fix - RNtuple decodeZigzag64 for SplitInt64 columns #410 (@undefined-panda)
 
 
 ## Changes in 7.11.0
