@@ -191,7 +191,7 @@ function findColor(name) {
 /** @summary Add new color
   * @param {string} rgb - color name or just string with rgb value
   * @param {Array} [lst] - optional colors list, to which add colors
-  * @param {Array} [lst] - optional colors list, to which add colors
+  * @param {number} [indx] - optional color index in provided colors list
   * @return {number} index of new color
   * @private */
 function addColor(rgb, lst, indx) {

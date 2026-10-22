@@ -290,9 +290,9 @@ class ObjectPainter extends BasePainter {
    /** @summary Generic method to update object content.
      * @desc Default implementation just copies first-level members to current object
      * @param {object} obj - object with new data
-     * @param {string} [opt] - option which will be used for redrawing
+     * @param {string} [_opt] - option which will be used for redrawing
      * @protected */
-   updateObject(obj /* , opt */) {
+   updateObject(obj, _opt) {
       if (!this.matchObjectType(obj))
          return false;
       Object.assign(this.getObject(), obj);
@@ -499,11 +499,11 @@ class ObjectPainter extends BasePainter {
    getCanvSvg() { return this.selectDom().select('.root_canvas'); }
 
    /** @summary Method selects current pad name
-     * @param {string} [new_name] - when specified, new current pad name will be configured
+     * @param {string} [_new_name] - when specified, new current pad name will be configured
      * @return {string} previous selected pad or actual pad when new_name not specified
      * @private
      * @deprecated to be removed in v8 */
-   selectCurrentPad() {
+   selectCurrentPad(_new_name) {
       console.warn('selectCurrentPad is deprecated, will be removed in v8');
       return '';
    }
@@ -512,7 +512,7 @@ class ObjectPainter extends BasePainter {
      * @desc X and Y coordinates can be converted by calling func.x(x) and func.y(y)
      * Only can be used for painting in the pad, means CreateG() should be called without arguments
      * @param {boolean} isndc - if NDC coordinates will be used
-     * @param {boolean} [noround] - if set, return coordinates will not be rounded
+     * @param {boolean} [nornd] - if set, return coordinates will not be rounded
      * @param {boolean} [use_frame_coordinates] - use frame coordinates even when drawing on the pad
      * @protected */
    getAxisToSvgFunc(isndc, nornd, use_frame_coordinates) {
@@ -1249,8 +1249,7 @@ class ObjectPainter extends BasePainter {
      * @desc The only legal way to draw text, support plain, latex and math text output
      * @param {object} arg - different text draw options
      * @param {string} arg.text - text to draw
-     * @param {number} [arg.align = 12] - int value like 12 or 31
-     * @param {string} [arg.align = undefined] - end;bottom
+     * @param {number|string} [arg.align = 12] - int value like 12 or 31 or string 'end;bottom'
      * @param {number} [arg.x = 0] - x position
      * @param {number} [arg.y = 0] - y position
      * @param {number} [arg.width] - when specified, adjust font size in the specified box

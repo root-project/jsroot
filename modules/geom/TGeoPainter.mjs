@@ -1375,8 +1375,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Method used to set transparency for all geometrical shapes
-     * @param {number|Function} transparency - one could provide function
-     * @param {boolean} [skip_render] - if specified, do not perform rendering */
+     * @param {number|Function} transparency - one could provide function */
    changedGlobalTransparency(transparency) {
       const func = isFunc(transparency) ? transparency : null;
       if (func || (transparency === undefined))

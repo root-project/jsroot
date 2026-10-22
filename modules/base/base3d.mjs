@@ -700,7 +700,7 @@ function afterRender3D(renderer) {
 class TooltipFor3D {
 
    /** @summary constructor
-     * @param {object} dom - DOM element
+     * @param {object} prnt - parent tooltip object
      * @param {object} canvas - canvas for 3D rendering */
    constructor(prnt, canvas) {
       this.tt = null;

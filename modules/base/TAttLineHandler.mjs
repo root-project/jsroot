@@ -16,7 +16,7 @@ const root_line_styles = [
 class TAttLineHandler {
 
    /** @summary constructor
-     * @param {object} attr - attributes, see {@link TAttLineHandler#setArgs} */
+     * @param {object} args - attributes or arguments of {@link TAttLineHandler#setArgs} */
    constructor(args) {
       this.func = this.apply.bind(this);
       this.used = true;
