@@ -11,12 +11,14 @@ import { FontHandler } from './FontHandler.mjs';
 import { getRootColors } from './colors.mjs';
 
 
-/** @summary returns true if pad painter @private */
+/** @summary returns true if pad painter
+ * @private */
 function isPadPainter(p) {
    return isFunc(p?.getRootPad) && isFunc(p?.forEachPainterInPad);
 }
 
-/** @summary returns canvas painter from DOM element @private */
+/** @summary returns canvas painter from DOM element
+ * @private */
 function getDomCanvasPainter(dom) {
    const elem = dom?.select('.root_canvas');
    return !elem || elem.empty() ? null : elem.property('pad_painter');

@@ -10,7 +10,8 @@ let sessionKey = '';
 
 /** @summary HMAC implementation
  * @desc see https://en.wikipedia.org/wiki/HMAC for more details
- * @private */
+ * @private
+ */
 function HMAC(key, m, o) {
    const kbis = sha256(sessionKey + key),
          block_size = 64,
@@ -579,7 +580,7 @@ class WebWindowHandle {
    }
 
    /** @summary Method open channel, which will share same connection, but can be used independently from main
-     * If @param url is provided - creates fully independent instance and perform connection with it
+     * @param {String} [url] - when provided creates fully independent instance and perform connection with it
      * @private */
    createChannel(url) {
       if (url)

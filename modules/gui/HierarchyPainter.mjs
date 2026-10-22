@@ -2203,7 +2203,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Display specified item
      * @param {string} itemname - item name
      * @param {string} [drawopt] - draw option for the item
-     * @param {string|Object} [dom] - place where to draw item, same as for @ref draw function
+     * @param {string|Object} [dom] - place where to draw item, same as for {@link draw} function
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @return {Promise} with created painter object */
    async display(itemname, drawopt, dom = null, interactive = false) {
