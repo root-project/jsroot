@@ -22,12 +22,12 @@ export default defineConfig([ {
       'jsdoc/check-syntax': 0,
       'jsdoc/check-tag-names': 0, // Recommended
       'jsdoc/check-template-names': 0,
-      'jsdoc/check-types': 0, // Recommended
-      'jsdoc/check-values': 0, // Recommended
+      'jsdoc/check-types': 1, // Recommended
+      'jsdoc/check-values': 1, // Recommended
       'jsdoc/convert-to-jsdoc-comments': 0,
       'jsdoc/empty-tags': 0, // Recommended
-      'jsdoc/escape-inline-tags': 0, // Recommended for TS configs
-      'jsdoc/implements-on-classes': 0, // Recommended
+      'jsdoc/escape-inline-tags': 1, // Recommended for TS configs
+      'jsdoc/implements-on-classes': 1, // Recommended
       'jsdoc/imports-as-dependencies': 0,
       'jsdoc/informative-docs': 0,
       'jsdoc/lines-before-block': 0,
@@ -41,7 +41,7 @@ export default defineConfig([ {
       'jsdoc/no-multi-asterisks': 0, // Recommended
       'jsdoc/no-restricted-syntax': 0,
       'jsdoc/no-types': 0, // Recommended for TS configs
-      'jsdoc/no-undefined-types': 0, // Recommended for non-TS configs
+      'jsdoc/no-undefined-types': 0, // Recommended for non-TS configs  ????
       'jsdoc/no-unnecessary-type-assertion': 0,
       'jsdoc/normalize-see-links': 0,
       'jsdoc/prefer-import-tag': 0,
@@ -54,9 +54,9 @@ export default defineConfig([ {
       'jsdoc/require-file-overview': 0,
       'jsdoc/require-hyphen-before-param-description': 0,
       'jsdoc/require-jsdoc': 0, // Recommended
-      'jsdoc/require-next-description': 0,
-      'jsdoc/require-next-type': 0, // Recommended
-      'jsdoc/require-param-description': 0, // Recommended
+      'jsdoc/require-next-description': 1,
+      'jsdoc/require-next-type': 1, // Recommended
+      'jsdoc/require-param-description': 1, // Recommended
       'jsdoc/require-param-name': 1, // Recommended
       'jsdoc/require-param-type': 1, // Recommended in non-TS configs
       'jsdoc/require-param': 0, // Recommended
