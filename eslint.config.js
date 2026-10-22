@@ -17,10 +17,10 @@ export default defineConfig([ {
       'jsdoc/check-alignment': 0, // Recommended
       'jsdoc/check-indentation': 0,
       'jsdoc/check-line-alignment': 0,
-      'jsdoc/check-param-names': 0, // Recommended
-      'jsdoc/check-property-names': 0, // Recommended
+      'jsdoc/check-param-names': 1, // Recommended
+      'jsdoc/check-property-names': 1, // Recommended
       'jsdoc/check-syntax': 0,
-      'jsdoc/check-tag-names': 0, // Recommended
+      'jsdoc/check-tag-names': 0, // Recommended  !!!!!
       'jsdoc/check-template-names': 0,
       'jsdoc/check-types': 1, // Recommended
       'jsdoc/check-values': 1, // Recommended
@@ -97,7 +97,7 @@ export default defineConfig([ {
       curly: [ 'warn', 'multi-or-nest' ],
       'one-var': [ 'warn', 'consecutive' ],
       'no-new-func': 'off',
-      'no-unused-vars': 'error',
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'no-use-before-define':
          [ 'error', {functions : true, classes : true, variables : true, allowNamedExports : false} ],
       'no-unreachable-loop': 'error',
