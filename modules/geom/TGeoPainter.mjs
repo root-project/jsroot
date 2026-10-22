@@ -3178,8 +3178,8 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Place camera to default position,
-     * @param arg - true forces camera readjustment, 'first' is called when suppose to be first after complete drawing
-     * @param keep_zoom - tries to keep zooming factor of the camera */
+     * @param {Boolean|String} arg - true forces camera readjustment, 'first' is called when suppose to be first after complete drawing
+     * @param {Boolean} keep_zoom - tries to keep zooming factor of the camera */
    adjustCameraPosition(arg, keep_zoom) {
       if (!this.#toplevel || this.#superimpose)
          return;
@@ -4451,7 +4451,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Checks camera position and recalculate rendering order if needed
-     * @param force - if specified, forces calculations of render order */
+     * @param {Boolean} [force] - if specified, forces calculations of render order */
    testCameraPosition(force) {
       this.#camera.updateMatrixWorld();
 
@@ -4480,8 +4480,8 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Call 3D rendering of the geometry
-     * @param tmout - specifies delay, after which actual rendering will be invoked
-     * @param [measure] - when true, for the first time printout rendering time
+     * @param {Number} tmout - specifies delay, after which actual rendering will be invoked
+     * @param {Boolean} [measure] - when true, for the first time printout rendering time
      * @return {Promise} when tmout bigger than 0 is specified
      * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
      * superimposed with each other. If tmout <= 0, rendering performed immediately

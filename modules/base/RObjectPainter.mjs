@@ -347,9 +347,9 @@ class RObjectPainter extends ObjectPainter {
    }
 
    /** @summary Submit request to server-side drawable
-    * @param kind defines request kind, only single request a time can be submitted
-    * @param req is object derived from DrawableRequest, including correct _typename
-    * @param method is method of painter object which will be called when getting reply */
+    * @param {String} kind defines request kind, only single request a time can be submitted
+    * @param {Object} req is object derived from DrawableRequest, including correct _typename
+    * @param {string} method is method of painter object which will be called when getting reply */
    v7SubmitRequest(kind, req, method) {
       const canp = this.getCanvPainter();
       if (!isFunc(canp?.submitDrawableRequest))

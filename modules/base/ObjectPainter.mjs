@@ -223,7 +223,7 @@ class ObjectPainter extends BasePainter {
    getDrawDom() { return this.getPadPainter() || this.getDom(); }
 
    /** @summary Return actual draw options as string
-     * @param ignore_pad - do not include pad settings into histogram draw options
+     * @param {boolean} ignore_pad - do not include pad settings into histogram draw options
      * @desc if options are not modified - returns original string which was specified for object draw */
    getDrawOpt(ignore_pad) {
       if (!this.#options)
@@ -1612,7 +1612,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Provide projection areas
-     * @param kind - 'X', 'Y', 'XY' or ''
+     * @param {String} kind - 'X', 'Y', 'XY' or ''
      * @private */
    async provideSpecialDrawArea(kind) {
       if (kind === this.#special_draw_area)
@@ -1625,9 +1625,9 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Draw in special projection areas
-     * @param obj - object to draw
-     * @param opt - draw option
-     * @param kind - '', 'X', 'Y'
+     * @param {Object} obj - object to draw
+     * @param {String} opt - draw option
+     * @param {String} kind - '', 'X', 'Y'
      * @private */
    async drawInSpecialArea(obj, opt, kind) {
       const canp = this.getCanvPainter();
