@@ -2911,7 +2911,7 @@ class TDirectory {
    }
 
    /** @summary Read object from the directory
-     * @param {string} name - object name
+     * @param {string} obj_name - object name
      * @param {number} [cycle] - cycle number
      * @return {Promise} with read object */
    readObject(obj_name, cycle) {
@@ -3710,7 +3710,7 @@ class TFile {
    }
 
    /** @summary Search streamer info
-     * @param {string} clanme - class name
+     * @param {string} clname - class name
      * @param {number} [clversion] - class version
      * @param {number} [checksum] - streamer info checksum, have to match when specified
      * @private */

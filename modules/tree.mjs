@@ -75,26 +75,26 @@ class TSelector {
 
    /** @summary function called during TTree processing
     * @abstract
-    * @param {number} progress - current value between 0 and 1 */
-   ShowProgress(/* progress */) {}
+    * @param {number} _progress - current value between 0 and 1 */
+   ShowProgress(_progress) {}
 
    /** @summary call this function to abort processing */
    Abort() { this._break = -1111; }
 
    /** @summary function called before start processing
     * @abstract
-    * @param {object} tree - tree object */
-   Begin(/* tree */) {}
+    * @param {object} _tree - tree object */
+   Begin(_tree) {}
 
    /** @summary function called when next entry extracted from the tree
     * @abstract
-    * @param {number} entry - read entry number */
-   Process(/* entry */) {}
+    * @param {number} _entry - read entry number */
+   Process(_entry) {}
 
    /** @summary function called at the very end of processing
     * @abstract
-    * @param {boolean} res - true if all data were correctly processed */
-   Terminate(/* res */) {}
+    * @param {boolean} _res - true if all data were correctly processed */
+   Terminate(_res) {}
 
 } // class TSelector
 
@@ -369,6 +369,7 @@ function getTreeBranch(tree, id) {
 
 /** @summary Special branch search
   * @desc Name can include extra part, which will be returned in the result
+  * @param {object} tree - tree where branch is searched
   * @param {string} name - name of the branch
   * @return {object} with 'branch' and 'rest' members
   * @private */
@@ -441,6 +442,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
 
 
 /** @summary Search branch with specified name
+  * @param {object} tree - tree where branch is searched
   * @param {string} name - name of the branch
   * @return {object} found branch
   * @private */
@@ -2889,6 +2891,7 @@ async function treeProcess(tree, selector, args) {
 }
 
 /** @summary implementation of TTree::Draw
+  * @param {object} tree - TTree object
   * @param {object|string} args - different setting or simply draw expression
   * @param {string} args.expr - draw expression
   * @param {string} [args.cut=undefined] - cut expression (also can be part of 'expr' after '::')

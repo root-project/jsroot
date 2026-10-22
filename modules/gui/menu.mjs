@@ -77,6 +77,7 @@ class JSRootMenu {
    /** @summary Add checked menu item
      * @param {boolean} flag - flag
      * @param {string} name - item name
+     * @param {number|string} arg - argument associated with the checked item
      * @param {Function} func - func called when item is selected
      * @param {string} [title] - optional title */
    addchk(flag, name, arg, func, title) {
@@ -1268,6 +1269,7 @@ class StandaloneMenu extends JSRootMenu {
 
    /** @summary Add menu item
      * @param {string} name - item name
+     * @param {number|string} arg - argument associated with the item
      * @param {Function} func - func called when item is selected */
    add(name, arg, func, title) {
       let curr = this.stack.at(-1);

@@ -1121,7 +1121,6 @@ class HierarchyPainter extends BasePainter {
      * @desc If command requires additional arguments, they could be specified as extra arguments arg1, arg2, ...
      * @param {string} itemname - name of command item
      * @param {object} [elem] - HTML element for command execution
-     * @param {any} [useragrs] - optional command arguments
      * @return {Promise} with command result */
    async executeCommand(itemname, elem, ...userargs) {
       const hitem = this.findItem(itemname),
@@ -3447,7 +3446,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Configures monitoring interval
      * @param {number} interval - repetition interval in ms
-     * @param {boolean} flag - initial monitoring state */
+     * @param {boolean} monitor_on - initial monitoring state */
    setMonitoring(interval, monitor_on) {
       this.#runMonitoring('cleanup');
 
