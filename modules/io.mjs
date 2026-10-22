@@ -2130,7 +2130,7 @@ function ZIP_inflate(arr, tgt) {
  *
  * @param {Buffer} input  input data
  * @param {Buffer} output  output data
- * @return {Number} number of decoded bytes
+ * @return {number} number of decoded bytes
  * @private */
 function LZ4_uncompress(input, output, sIdx, eIdx) {
    sIdx = sIdx || 0;
@@ -3018,7 +3018,7 @@ class TFile {
 
    /** @summary Assign remap for web servers
     * @desc Allows to specify fallback server if main server fails
-    * @param {Object} remap - looks like { 'https://original.server/': 'https://fallback.server/' } */
+    * @param {object} remap - looks like { 'https://original.server/': 'https://fallback.server/' } */
    assignRemap(remap) {
       if (!remap && !isObject(remap))
          return;
@@ -4143,8 +4143,8 @@ class TProxyFile extends TFile {
   *  - [FileProxy]{@link FileProxy} let access arbitrary files via tiny proxy API
   * @param {string|object} arg - argument for file open like url, see details
   * @param {object} [opts] - extra arguments
-  * @param {Number} [opts.timeout=0] - read timeout for http requests in ms
-  * @param {Object} [opts.remap={}] - http server remap to fallback when main server fails, like { 'https://original.server/': 'https://fallback.server/' }
+  * @param {number} [opts.timeout=0] - read timeout for http requests in ms
+  * @param {object} [opts.remap={}] - http server remap to fallback when main server fails, like { 'https://original.server/': 'https://fallback.server/' }
   * @return {object} - Promise with {@link TFile} instance when file is opened
   * @example
   *

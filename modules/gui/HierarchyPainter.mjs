@@ -1088,8 +1088,8 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Produce full string name for item
-     * @param {Object} node - item element
-     * @param {Object} [uptoparent] - up to which parent to continue
+     * @param {object} node - item element
+     * @param {object} [uptoparent] - up to which parent to continue
      * @param {boolean} [compact] - if specified, top parent is not included
      * @return {string} produced name
      * @private */
@@ -1119,8 +1119,8 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Executes item marked as 'Command'
      * @desc If command requires additional arguments, they could be specified as extra arguments arg1, arg2, ...
-     * @param {String} itemname - name of command item
-     * @param {Object} [elem] - HTML element for command execution
+     * @param {string} itemname - name of command item
+     * @param {object} [elem] - HTML element for command execution
      * @param {any} [useragrs] - optional command arguments
      * @return {Promise} with command result */
    async executeCommand(itemname, elem, ...userargs) {
@@ -1173,9 +1173,9 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Get object item with specified name
      * @desc depending from provided option, same item can generate different object types
-     * @param {Object} arg - item name or config object
+     * @param {object} arg - item name or config object
      * @param {string} arg.name - item name
-     * @param {Object} arg.item - or item itself
+     * @param {object} arg.item - or item itself
      * @param {string} options - supposed draw options
      * @return {Promise} with object like { item, obj, itemname }
      * @private */
@@ -1662,7 +1662,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Focus on hierarchy item
-     * @param {Object|string} hitem - item to open or its name
+     * @param {object|string} hitem - item to open or its name
      * @desc all parents to the item will be opened first
      * @return {Promise} when done
      * @private */
@@ -2203,7 +2203,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Display specified item
      * @param {string} itemname - item name
      * @param {string} [drawopt] - draw option for the item
-     * @param {string|Object} [dom] - place where to draw item, same as for {@link draw} function
+     * @param {string|object} [dom] - place where to draw item, same as for {@link draw} function
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @return {Promise} with created painter object */
    async display(itemname, drawopt, dom = null, interactive = false) {
@@ -2455,7 +2455,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Update specified items
      * @desc Method can be used to fetch new objects and update all existing drawings
-     * @param {string|array|boolean} arg - either item name or array of items names to update or true if only automatic items will be updated
+     * @param {string|Array|boolean} arg - either item name or array of items names to update or true if only automatic items will be updated
      * @return {Promise} when ready */
    async updateItems(arg) {
       if (!this.disp)
@@ -2829,7 +2829,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary expand specified item
-     * @param {String} itemname - item name
+     * @param {string} itemname - item name
      * @return {Promise} when ready */
    async expandItem(itemname, d3cont, silent) {
       const hitem = this.findItem(itemname), hpainter = this;
@@ -3640,8 +3640,8 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary If possible, creates custom MDIDisplay for given item
-     * @param {String} itemname - name of item, for which drawing is created
-     * @param {String} custom_kind - display kind
+     * @param {string} itemname - name of item, for which drawing is created
+     * @param {string} custom_kind - display kind
      * @return {Promise} with mdi object created
      * @private */
    async createCustomDisplay(itemname, custom_kind) {
@@ -4031,7 +4031,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Create status line
      * @param {number} [height] - size of the status line
-     * @param {Boolean} [mode] - false / true / 'toggle'
+     * @param {boolean} [mode] - false / true / 'toggle'
      * @return {Promise} when ready */
    async createStatusLine(height, mode) {
       if (this.status_disabled || !this.gui_div || !this.brlayout)

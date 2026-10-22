@@ -271,9 +271,9 @@ class TPadPainter extends ObjectPainter {
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} pad - TPad object to draw
-     * @param {String} [opt] - draw option
-     * @param {Boolean} [iscan] - if TCanvas object
-     * @param {Boolean} [add_to_primitives] - add pad painter to canvas
+     * @param {string} [opt] - draw option
+     * @param {boolean} [iscan] - if TCanvas object
+     * @param {boolean} [add_to_primitives] - add pad painter to canvas
      * */
    constructor(dom, pad, opt, iscan, add_to_primitives) {
       super(dom, pad);
@@ -350,7 +350,7 @@ class TPadPainter extends ObjectPainter {
    isReadonly() { return this.#readonly; }
 
    /** @summary Returns true if it is canvas
-    * @param {Boolean} [is_online = false] - if specified, checked if it is canvas with configured connection to server */
+    * @param {boolean} [is_online = false] - if specified, checked if it is canvas with configured connection to server */
    isCanvas(is_online = false) {
       if (!this.#iscan)
          return false;
@@ -2518,7 +2518,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Search active pad
-     * @return {Object} pad painter for active pad */
+     * @return {object} pad painter for active pad */
    findActivePad() {
       let active_pp;
       this.forEachPainterInPad(pp => {

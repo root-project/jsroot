@@ -1614,7 +1614,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Provide projection areas
-     * @param {String} kind - 'X', 'Y', 'XY' or ''
+     * @param {string} kind - 'X', 'Y', 'XY' or ''
      * @private */
    async provideSpecialDrawArea(kind) {
       if (kind === this.#special_draw_area)
@@ -1627,9 +1627,9 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Draw in special projection areas
-     * @param {Object} obj - object to draw
-     * @param {String} opt - draw option
-     * @param {String} kind - '', 'X', 'Y'
+     * @param {object} obj - object to draw
+     * @param {string} opt - draw option
+     * @param {string} kind - '', 'X', 'Y'
      * @private */
    async drawInSpecialArea(obj, opt, kind) {
       const canp = this.getCanvPainter();
@@ -1640,7 +1640,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Get tooltip for painter and specified event position
-     * @param {Object} evnt - object with clientX and clientY positions
+     * @param {object} evnt - object with clientX and clientY positions
      * @private */
    getToolTip(evnt) {
       if ((evnt?.clientX === undefined) || (evnt?.clientY === undefined))

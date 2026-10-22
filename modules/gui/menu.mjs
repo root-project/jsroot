@@ -413,11 +413,11 @@ class JSRootMenu {
    }
 
    /** @summary Add selection menu entries
-     * @param {String} name - name of submenu
+     * @param {string} name - name of submenu
      * @param {Array} values - array of string entries used as list for selection
-     * @param {String|Number} value - currently selected value, either name or index
+     * @param {string|number} value - currently selected value, either name or index
      * @param {Function} set_func - function called when item selected, either name or index depending from value parameter
-     * @param {String} [title] - optional title for menu items
+     * @param {string} [title] - optional title for menu items
      * @protected */
    addSelectMenu(name, values, value, set_func, title) {
       const use_number = (typeof value === 'number');
@@ -1094,16 +1094,16 @@ class JSRootMenu {
    }
 
    /** @summary Show modal info dialog
-     * @param {String} title - title
-     * @param {String} message - message
+     * @param {string} title - title
+     * @param {string} message - message
      * @protected */
    info(title, message) {
       return this.runModal(title, `<p>${message}</p>`, { height: 120, width: 400, resizable: true });
    }
 
    /** @summary Show confirm dialog
-     * @param {String} title - title
-     * @param {String} message - message
+     * @param {string} title - title
+     * @param {string} message - message
      * @return {Promise} with true when 'Ok' pressed or false when 'Cancel' pressed
      * @protected */
    async confirm(title, message) {

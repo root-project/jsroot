@@ -580,7 +580,7 @@ class WebWindowHandle {
    }
 
    /** @summary Method open channel, which will share same connection, but can be used independently from main
-     * @param {String} [url] - when provided creates fully independent instance and perform connection with it
+     * @param {string} [url] - when provided creates fully independent instance and perform connection with it
      * @private */
    createChannel(url) {
       if (url)
@@ -664,7 +664,7 @@ class WebWindowHandle {
    }
 
    /** @summary Connect to the server
-     * @param {String} [href] - optional URL to widget, use document URL instead
+     * @param {string} [href] - optional URL to widget, use document URL instead
      * @private */
    connect(href) {
       // ignore connect if channel from master connection configured

@@ -47,7 +47,7 @@ class TSelector {
     * If second parameter not specified, branch name (here 'px') will be used
     * If branch object specified as first parameter and second parameter missing,
     * then member like 'br0', 'br1' and so on will be assigned
-    * @param {string|Object} branch - name of branch (or branch object itself}
+    * @param {string|object} branch - name of branch (or branch object itself}
     * @param {string} [name] - member name in tgtobj where data will be read
     * @param {boolean} [direct] - if only branch without any children should be read */
    addBranch(branch, name, direct) {
@@ -347,7 +347,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
 
 /** @summary Get branch with specified id
   * @desc All sub-branches checked as well
-  * @return {Object} branch
+  * @return {object} branch
   * @private */
 function getTreeBranch(tree, id) {
    if (!Number.isInteger(id))
@@ -370,7 +370,7 @@ function getTreeBranch(tree, id) {
 /** @summary Special branch search
   * @desc Name can include extra part, which will be returned in the result
   * @param {string} name - name of the branch
-  * @return {Object} with 'branch' and 'rest' members
+  * @return {object} with 'branch' and 'rest' members
   * @private */
 function findBranchComplex(tree, name, lst = undefined, only_search = false) {
    let top_search = false, search = name, res = null;
@@ -442,7 +442,7 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
 
 /** @summary Search branch with specified name
   * @param {string} name - name of the branch
-  * @return {Object} found branch
+  * @return {object} found branch
   * @private */
 function findBranch(tree, name) {
    const res = findBranchComplex(tree, name, tree.fBranches, true);
@@ -2896,9 +2896,9 @@ async function treeProcess(tree, selector, args) {
   * @param {number} [args.firstentry=0] - first entry to process
   * @param {number} [args.numentries=undefined] - number of entries to process, all by default
   * @param {Array} [args.elist=undefined] - array of entries id to process, all by default
-  * @param {Boolean} [args.dump] - dump values of expression instead creating histogram
-  * @param {Boolean} [args.dump_entries] - if array of entries should be return which match cut condition
-  * @param {Boolean} [args.staged] - staged processing, first apply cut to select entries and then perform drawing for selected entries
+  * @param {boolean} [args.dump] - dump values of expression instead creating histogram
+  * @param {boolean} [args.dump_entries] - if array of entries should be return which match cut condition
+  * @param {boolean} [args.staged] - staged processing, first apply cut to select entries and then perform drawing for selected entries
   * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
   * @param {Function} [args.progress=undefined] - function called during histogram accumulation with obj argument
   * @return {Promise} with produced object */

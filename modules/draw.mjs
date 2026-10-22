@@ -170,7 +170,7 @@ const drawFuncs = { lst: [
 
 /** @summary Register draw function for the class
   * @param {object} args - arguments
-  * @param {string|regexp} args.name - class name or regexp pattern or '*'
+  * @param {string|RegExp} args.name - class name or regexp pattern or '*'
   * @param {Function} [args.func] - draw function
   * @param {string} [args.sameas] - let behave same as specified class
   * @param {Function} [args.draw] - async function to load draw function

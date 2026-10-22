@@ -2983,13 +2983,13 @@ class TFramePainter extends FrameInteractive {
 
    /** @summary Function can be used for zooming into specified range
      * @desc if both limits for each axis 0 (like xmin === xmax === 0), axis will be un-zoomed
-     * @param {Number} xmin - X minimum
-     * @param {Number} xmax - X maximum
-     * @param {Number} [ymin] - Y minimum
-     * @param {Number} [ymax] - Y maximum
-     * @param {Number} [zmin] - Z minimum
-     * @param {Number} [zmax] - Z maximum
-     * @param {Boolean} [interactive] - if changes was performed interactively
+     * @param {number} xmin - X minimum
+     * @param {number} xmax - X maximum
+     * @param {number} [ymin] - Y minimum
+     * @param {number} [ymax] - Y maximum
+     * @param {number} [zmin] - Z minimum
+     * @param {number} [zmax] - Z maximum
+     * @param {boolean} [interactive] - if changes was performed interactively
      * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax, interactive) {
       if (xmin === 'x') {
@@ -3143,10 +3143,10 @@ class TFramePainter extends FrameInteractive {
    }
 
    /** @summary Zooming of single axis
-     * @param {String} name - axis name like x/y/z but also second axis x2 or y2
-     * @param {Number} vmin - axis minimal value, 0 for unzoom
-     * @param {Number} vmax - axis maximal value, 0 for unzoom
-     * @param {Boolean} [interactive] - if change was performed interactively
+     * @param {string} name - axis name like x/y/z but also second axis x2 or y2
+     * @param {number} vmin - axis minimal value, 0 for unzoom
+     * @param {number} vmax - axis maximal value, 0 for unzoom
+     * @param {boolean} [interactive] - if change was performed interactively
      * @protected */
    async zoomSingle(name, vmin, vmax, interactive) {
       const handle = this[`${name}_handle`], name_min = `zoom_${name}min`, name_max = `zoom_${name}max`;

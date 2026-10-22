@@ -202,7 +202,7 @@ function produceNormal(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
 class GeometryCreator {
 
    /** @summary Constructor
-     * @param {Number} numfaces - number of faces */
+     * @param {number} numfaces - number of faces */
    constructor(numfaces) {
       this.nfaces = numfaces;
       this.indx = 0;
@@ -1798,7 +1798,7 @@ function getNodeMatrix(kind, node) {
 }
 
 /** @summary Returns number of faces for provided geometry
-  * @param {Object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
+  * @param {object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
 function numGeometryFaces(geom) {
    if (!geom)
@@ -1816,7 +1816,7 @@ function numGeometryFaces(geom) {
 }
 
 /** @summary Returns number of faces for provided geometry
-  * @param {Object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
+  * @param {object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
 function numGeometryVertices(geom) {
    if (!geom)
@@ -2028,8 +2028,8 @@ function projectGeometry(geom, matrix, projection, position = 0, flippedMesh = f
 }
 
 /** @summary Creates geometry model for the provided shape
-  * @param {Object} shape - instance of TGeoShape object
-  * @param {Number} limit - defines return value, see details
+  * @param {object} shape - instance of TGeoShape object
+  * @param {number} limit - defines return value, see details
   * @desc
   *  - if limit === 0 returns BufferGeometry
   *  - if limit < 0 just returns estimated number of faces
@@ -2172,7 +2172,7 @@ function createServerGeometry(rd, nsegm) {
 }
 
 /** @summary Provides info about geo object, used for tooltip info
-  * @param {Object} obj - any kind of TGeo-related object like shape or node or volume
+  * @param {object} obj - any kind of TGeo-related object like shape or node or volume
   * @private */
 function provideObjectInfo(obj) {
    let info = [], shape = null;
@@ -2411,7 +2411,7 @@ function createMaterial(cfg, args0) {
 }
 
 /** @summary Compares two stacks.
-  * @return {Number} 0 if same, -1 when stack1 < stack2, +1 when stack1 > stack2
+  * @return {number} 0 if same, -1 when stack1 < stack2, +1 when stack1 > stack2
   * @private */
 function compare_stacks(stack1, stack2) {
    if (stack1 === stack2)
@@ -2509,8 +2509,8 @@ function createFlippedGeom(geom) {
 /** @summary Create flipped mesh for the shape
   * @desc When transformation matrix includes one or several inversion of axis,
   * one should inverse geometry object, otherwise three.js cannot correctly draw it
-  * @param {Object} shape - TGeoShape object
-  * @param {Object} material - material
+  * @param {object} shape - TGeoShape object
+  * @param {object} material - material
   * @private */
 function createFlippedMesh(shape, material) {
    if (shape.geomZ === undefined)
@@ -4030,9 +4030,9 @@ function cleanupShape(shape) {
 
 /** @summary Set rendering order for created hierarchy
   * @desc depending from provided method sort differently objects
-  * @param {Object} toplevel - top element
-  * @param {Object} origin - camera position used to provide sorting
-  * @param {String} method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
+  * @param {object} toplevel - top element
+  * @param {object} origin - camera position used to provide sorting
+  * @param {string} method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
 function produceRenderOrder(toplevel, origin, method, clones) {
    const raycast = new THREE.Raycaster();
 
