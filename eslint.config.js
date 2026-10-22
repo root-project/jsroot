@@ -13,7 +13,7 @@ export default defineConfig([ {
    },
    plugins: {'@stylistic/js': stylisticJs, jsdoc},
    rules: {
-      'jsdoc/check-access': 0, // Recommended
+      'jsdoc/check-access': 1, // Recommended
       'jsdoc/check-alignment': 0, // Recommended
       'jsdoc/check-indentation': 0,
       'jsdoc/check-line-alignment': 0,
