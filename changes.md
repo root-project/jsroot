@@ -20,6 +20,7 @@
 1. Fix - read all cluster groups from ntuple #415 (@undefined-panda)
 1. Fix - correctly handle empty clusters in ntuple #420 (@undefined-panda)
 1. Fix - reading of RNTuple std::bitset with 32 to 48 bits #430 (@sebxt)
+1. Fix - decoding large LZMA buffers #431 (@Prafyl)
 
 
 ## Changes in 7.11.3

@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '20/10/2026',
+version_date = '22/10/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -149,7 +149,7 @@ if ((typeof document !== 'undefined') && (typeof window !== 'undefined') && (typ
 }
 
 /** @summary Check if prototype string match to array (typed on untyped)
-  * @return {Number} 0 - not array, 1 - regular array, 2 - typed array
+  * @return {number} 0 - not array, 1 - regular array, 2 - typed array
   * @private */
 function isArrayProto(proto) {
     if ((proto.length < 14) || proto.indexOf('[object '))
@@ -599,7 +599,7 @@ exports._ensureJSROOT = null;
 
 /** @summary Generate mask for given bit
   * @param {number} n bit number
-  * @return {Number} produced mask
+  * @return {number} produced mask
   * @private */
 function BIT(n) { return 1 << n; }
 
@@ -887,7 +887,7 @@ function toJSON(obj, spacing) {
 /** @summary decodes URL options after '?' mark
   * @desc Following options supported ?opt1&opt2=3
   * @param {string} [url] URL string with options, document.URL will be used when not specified
-  * @return {Object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
+  * @return {object} with ```.has(opt)``` and ```.get(opt,dflt)``` methods
   * @example
   * import { decodeUrl } from 'https://root.cern/js/latest/modules/core.mjs';
   * let d = decodeUrl('any?opt1&op2=3');
@@ -1184,7 +1184,7 @@ async function injectCode(code) {
 }
 
 /** @summary Load ES6 modules
-  * @param {String} arg - single URL or array of URLs
+  * @param {string} arg - single URL or array of URLs
   * @return {Promise} */
 async function loadModules(arg) {
    if (isStr(arg))
@@ -1195,7 +1195,7 @@ async function loadModules(arg) {
 }
 
 /** @summary Load script or CSS file into the browser
-  * @param {String} url - script or css file URL (or array, in this case they all loaded sequentially)
+  * @param {string} url - script or css file URL (or array, in this case they all loaded sequentially)
   * @return {Promise} */
 async function loadScript(url) {
    if (!url)
@@ -1620,7 +1620,7 @@ function create$1(typename, target) {
   * @param {number} nbinsx - number of bins on X-axis
   * @param {number} [nbinsy] - number of bins on Y-axis (for 2D/3D histograms)
   * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
-  * @return {Object} created histogram object
+  * @return {object} created histogram object
   * @example
   * import { createHistogram } from 'https://root.cern/js/latest/modules/core.mjs';
   * let h1 = createHistogram('TH1I', 20);
@@ -1722,8 +1722,8 @@ function createTPolyLine(npoints, use_int32) {
 
 /** @summary Creates TGraph object
   * @param {number} npoints - number of points in TGraph
-  * @param {array} [xpts] - array with X coordinates
-  * @param {array} [ypts] - array with Y coordinates */
+  * @param {Array} [xpts] - array with X coordinates
+  * @param {Array} [ypts] - array with Y coordinates */
 function createTGraph(npoints, xpts, ypts) {
    const graph = extend$1(create$1(clTGraph), { fBits: 0x408, fName: 'graph', fTitle: 'title' });
 
@@ -8421,7 +8421,7 @@ function adoptRootColors(objarr) {
 
 /** @summary Return ROOT color by index
   * @desc Color numbering corresponds typical ROOT colors
-  * @return {String} with RGB color code or existing color name like 'cyan'
+  * @return {string} with RGB color code or existing color name like 'cyan'
   * @private */
 function getColor(indx) {
    return gbl_colors_list[indx];
@@ -8442,8 +8442,8 @@ function findColor(name) {
 
 /** @summary Add new color
   * @param {string} rgb - color name or just string with rgb value
-  * @param {array} [lst] - optional colors list, to which add colors
-  * @param {array} [lst] - optional colors list, to which add colors
+  * @param {Array} [lst] - optional colors list, to which add colors
+  * @param {number} [indx] - optional color index in provided colors list
   * @return {number} index of new color
   * @private */
 function addColor(rgb, lst, indx) {
@@ -8785,10 +8785,10 @@ const prSVG = 'data:image/svg+xml;charset=utf-8,',
 
 /** @summary Returns visible rect of element
   * @param {object} elem - d3.select object with element
-  * @param {string} [kind] - which size method is used
-  * @desc kind = 'bbox' use getBBox, works only with SVG
-  * kind = 'full' - full size of element, using getBoundingClientRect function
-  * kind = 'nopadding' - excludes padding area
+  * @param {string} [sizearg] - which size method is used
+  * @desc sizearg = 'bbox' use getBBox, works only with SVG
+  * sizearg = 'full' - full size of element, using getBoundingClientRect function
+  * sizearg = 'nopadding' - excludes padding area
   * With node.js can use 'width' and 'height' attributes when provided in element
   * @private */
 function getElementRect(elem, sizearg) {
@@ -11676,7 +11676,7 @@ const root_50_67 = [2, 3, 5, 4, 25, 26, 27, 28, 30, 32, 35, 36, 37, 38, 40, 42, 
 class TAttMarkerHandler {
 
    /** @summary constructor
-     * @param {object} args - attributes, see {@link TAttMarkerHandler#setArgs} for details */
+     * @param {object} args - attributes or arguments of {@link TAttMarkerHandler#setArgs} */
    constructor(args) {
       this.x0 = this.y0 = 0;
       this.color = 'black';
@@ -12564,7 +12564,7 @@ const root_line_styles = [
 class TAttLineHandler {
 
    /** @summary constructor
-     * @param {object} attr - attributes, see {@link TAttLineHandler#setArgs} */
+     * @param {object} args - attributes or arguments of {@link TAttLineHandler#setArgs} */
    constructor(args) {
       this.func = this.apply.bind(this);
       this.used = true;
@@ -12750,7 +12750,7 @@ function calcTextSize(sz, sz0, fact, pp) {
 class TAttTextHandler {
 
    /** @summary constructor
-     * @param {object} attr - attributes, see {@link TAttTextHandler#setArgs} */
+     * @param {object} args - attributes or arguments of {@link TAttTextHandler#setArgs} */
    constructor(args) {
       this.used = true;
       if (args._typename && (args.fTextFont !== undefined))
@@ -12851,12 +12851,14 @@ class TAttTextHandler {
 
 } // class TAttTextHandler
 
-/** @summary returns true if pad painter @private */
+/** @summary returns true if pad painter
+ * @private */
 function isPadPainter(p) {
    return isFunc(p?.getRootPad) && isFunc(p?.forEachPainterInPad);
 }
 
-/** @summary returns canvas painter from DOM element @private */
+/** @summary returns canvas painter from DOM element
+ * @private */
 function getDomCanvasPainter(dom) {
    const elem = dom?.select('.root_canvas');
    return !elem || elem.empty() ? null : elem.property('pad_painter');
@@ -13063,7 +13065,7 @@ class ObjectPainter extends BasePainter {
    getDrawDom() { return this.getPadPainter() || this.getDom(); }
 
    /** @summary Return actual draw options as string
-     * @param ignore_pad - do not include pad settings into histogram draw options
+     * @param {boolean} ignore_pad - do not include pad settings into histogram draw options
      * @desc if options are not modified - returns original string which was specified for object draw */
    getDrawOpt(ignore_pad) {
       if (!this.#options)
@@ -13128,9 +13130,9 @@ class ObjectPainter extends BasePainter {
    /** @summary Generic method to update object content.
      * @desc Default implementation just copies first-level members to current object
      * @param {object} obj - object with new data
-     * @param {string} [opt] - option which will be used for redrawing
+     * @param {string} [_opt] - option which will be used for redrawing
      * @protected */
-   updateObject(obj /* , opt */) {
+   updateObject(obj, _opt) {
       if (!this.matchObjectType(obj))
          return false;
       Object.assign(this.getObject(), obj);
@@ -13337,11 +13339,11 @@ class ObjectPainter extends BasePainter {
    getCanvSvg() { return this.selectDom().select('.root_canvas'); }
 
    /** @summary Method selects current pad name
-     * @param {string} [new_name] - when specified, new current pad name will be configured
+     * @param {string} [_new_name] - when specified, new current pad name will be configured
      * @return {string} previous selected pad or actual pad when new_name not specified
      * @private
      * @deprecated to be removed in v8 */
-   selectCurrentPad() {
+   selectCurrentPad(_new_name) {
       console.warn('selectCurrentPad is deprecated, will be removed in v8');
       return '';
    }
@@ -13350,7 +13352,7 @@ class ObjectPainter extends BasePainter {
      * @desc X and Y coordinates can be converted by calling func.x(x) and func.y(y)
      * Only can be used for painting in the pad, means CreateG() should be called without arguments
      * @param {boolean} isndc - if NDC coordinates will be used
-     * @param {boolean} [noround] - if set, return coordinates will not be rounded
+     * @param {boolean} [nornd] - if set, return coordinates will not be rounded
      * @param {boolean} [use_frame_coordinates] - use frame coordinates even when drawing on the pad
      * @protected */
    getAxisToSvgFunc(isndc, nornd, use_frame_coordinates) {
@@ -14087,8 +14089,7 @@ class ObjectPainter extends BasePainter {
      * @desc The only legal way to draw text, support plain, latex and math text output
      * @param {object} arg - different text draw options
      * @param {string} arg.text - text to draw
-     * @param {number} [arg.align = 12] - int value like 12 or 31
-     * @param {string} [arg.align = undefined] - end;bottom
+     * @param {number|string} [arg.align = 12] - int value like 12 or 31 or string 'end;bottom'
      * @param {number} [arg.x = 0] - x position
      * @param {number} [arg.y = 0] - y position
      * @param {number} [arg.width] - when specified, adjust font size in the specified box
@@ -14099,7 +14100,7 @@ class ObjectPainter extends BasePainter {
      * @param {number} [arg.rotate] - rotation angle
      * @param {number} [arg.font_size] - fixed font size
      * @param {object} [arg.draw_g] - element where to place text, if not specified central draw_g container is used
-     * @param {function} [arg.post_process] - optional function called when specified text is drawn
+     * @param {Function} [arg.post_process] - optional function called when specified text is drawn
      * @protected */
    drawText(arg) {
       if (!arg.text)
@@ -14229,7 +14230,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Finish text drawing
      * @desc Should be called to complete all text drawing operations
-     * @param {function} [draw_g] - <g> element for text drawing, default is getG()
+     * @param {Function} [draw_g] - <g> element for text drawing, default is getG()
      * @return {Promise} when text drawing completed
      * @protected */
    async finishTextDrawing(draw_g, try_optimize) {
@@ -14250,7 +14251,7 @@ class ObjectPainter extends BasePainter {
      * Arguments fillmenu_func are (menu,kind)
      * First is menu object, second is object sub-element like axis 'x' or 'y'
      * Function should return promise with menu when items are filled
-     * @param {function} fillmenu_func - function to fill custom context menu for object */
+     * @param {Function} fillmenu_func - function to fill custom context menu for object */
    configureUserContextMenu(fillmenu_func) {
       this.#user_context_menu = isFunc(fillmenu_func) ? fillmenu_func : undefined;
    }
@@ -14385,7 +14386,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Configure user-defined tooltip handler
      * @desc Hook for the users to get tooltip information when mouse cursor moves over then object
      * Handler function will be called every time when new data is selected
-     * @param {function} handler - function called when tooltip is produced
+     * @param {Function} handler - function called when tooltip is produced
      * @param {number} [tmout = 100] - delay in ms before tooltip delivered */
    configureUserTooltipHandler(handler, tmout = 100) {
       if (!handler || !isFunc(handler)) {
@@ -14401,7 +14402,7 @@ class ObjectPainter extends BasePainter {
       * @desc Function will be called every time when frame click was performed
       * As argument, tooltip object with selected bins will be provided
       * If handler function returns true, default handling of click will be disabled
-      * @param {function} handler - function called when mouse click is done */
+      * @param {Function} handler - function called when mouse click is done */
    configureUserClickHandler(handler) {
       const fp = this.getFramePainter();
       if (isFunc(fp?.configureUserClickHandler))
@@ -14412,7 +14413,7 @@ class ObjectPainter extends BasePainter {
      * @desc Function will be called every time when double click was called
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of dblclick (unzoom) will be disabled
-     * @param {function} handler - function called when mouse double click is done */
+     * @param {Function} handler - function called when mouse double click is done */
    configureUserDblclickHandler(handler) {
       const fp = this.getFramePainter();
       if (isFunc(fp?.configureUserDblclickHandler))
@@ -14452,7 +14453,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Provide projection areas
-     * @param kind - 'X', 'Y', 'XY' or ''
+     * @param {string} kind - 'X', 'Y', 'XY' or ''
      * @private */
    async provideSpecialDrawArea(kind) {
       if (kind === this.#special_draw_area)
@@ -14465,9 +14466,9 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Draw in special projection areas
-     * @param obj - object to draw
-     * @param opt - draw option
-     * @param kind - '', 'X', 'Y'
+     * @param {object} obj - object to draw
+     * @param {string} opt - draw option
+     * @param {string} kind - '', 'X', 'Y'
      * @private */
    async drawInSpecialArea(obj, opt, kind) {
       const canp = this.getCanvPainter();
@@ -14478,7 +14479,7 @@ class ObjectPainter extends BasePainter {
    }
 
    /** @summary Get tooltip for painter and specified event position
-     * @param {Object} evnt - object with clientX and clientY positions
+     * @param {object} evnt - object with clientX and clientY positions
      * @private */
    getToolTip(evnt) {
       if ((evnt?.clientX === undefined) || (evnt?.clientY === undefined))
@@ -78248,7 +78249,7 @@ function afterRender3D(renderer) {
 class TooltipFor3D {
 
    /** @summary constructor
-     * @param {object} dom - DOM element
+     * @param {object} prnt - parent tooltip object
      * @param {object} canvas - canvas for 3D rendering */
    constructor(prnt, canvas) {
       this.tt = null;
@@ -81722,7 +81723,7 @@ tgamma: gamma
   * if no argument specified, any shown messages will be removed
   * @param {string} msg - message to display
   * @param {number} [tmout] - optional timeout in milliseconds, after message will disappear
-  * @param {function} [click_handle] - optional handle to process click events
+  * @param {Function} [click_handle] - optional handle to process click events
   * @private */
 function showProgress(msg, tmout, click_handle) {
    if (isBatchMode() || (typeof document === 'undefined'))
@@ -82148,7 +82149,7 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
 }
 
 /** @summary Inject style
-  * @param {String} code - css string
+  * @param {string} code - css string
   * @private */
 function injectStyle(code, node, tag) {
    if (isBatchMode() || !code || (typeof document === 'undefined'))
@@ -82226,16 +82227,16 @@ function readLocalStorage(name) {
 }
 
 /** @summary Save JSROOT settings in local storage
-  * @param {Number} [expires] - delete settings when negative
-  * @param {String} [name] - storage name, 'settings' by default
+  * @param {number} [expires] - delete settings when negative
+  * @param {string} [name] - storage name, 'settings' by default
   * @private */
 function saveSettings(expires = 365, name = 'settings') {
    saveLocalStorage(settings, expires, name);
 }
 
 /** @summary Read JSROOT settings from specified cookie parameter
-  * @param {Boolean} only_check - when true just checks if settings were stored before with provided name
-  * @param {String} [name] - storage name, 'settings' by default
+  * @param {boolean} only_check - when true just checks if settings were stored before with provided name
+  * @param {string} [name] - storage name, 'settings' by default
   * @private */
 function readSettings(only_check = false, name = 'settings') {
    const s = readLocalStorage(name);
@@ -82247,16 +82248,16 @@ function readSettings(only_check = false, name = 'settings') {
 }
 
 /** @summary Save JSROOT gStyle object in local storage
-  * @param {Number} [expires] - delete style when negative
-  * @param {String} [name] - storage name, 'style' by default
+  * @param {number} [expires] - delete style when negative
+  * @param {string} [name] - storage name, 'style' by default
   * @private */
 function saveStyle(expires = 365, name = 'style') {
    saveLocalStorage(gStyle, expires, name);
 }
 
 /** @summary Read JSROOT gStyle object from local storage
-  * @param {Boolean} [only_check] - when true just checks if settings were stored before with provided name
-  * @param {String} [name] - storage name, 'style' by default
+  * @param {boolean} [only_check] - when true just checks if settings were stored before with provided name
+  * @param {string} [name] - storage name, 'style' by default
   * @private */
 function readStyle(only_check = false, name = 'style') {
    const s = readLocalStorage(name);
@@ -82491,7 +82492,8 @@ class JSRootMenu {
    /** @summary Add checked menu item
      * @param {boolean} flag - flag
      * @param {string} name - item name
-     * @param {function} func - func called when item is selected
+     * @param {number|string} arg - argument associated with the checked item
+     * @param {Function} func - func called when item is selected
      * @param {string} [title] - optional title */
    addchk(flag, name, arg, func, title) {
       let handler = func;
@@ -82827,11 +82829,11 @@ class JSRootMenu {
    }
 
    /** @summary Add selection menu entries
-     * @param {String} name - name of submenu
+     * @param {string} name - name of submenu
      * @param {Array} values - array of string entries used as list for selection
-     * @param {String|Number} value - currently selected value, either name or index
+     * @param {string|number} value - currently selected value, either name or index
      * @param {Function} set_func - function called when item selected, either name or index depending from value parameter
-     * @param {String} [title] - optional title for menu items
+     * @param {string} [title] - optional title for menu items
      * @protected */
    addSelectMenu(name, values, value, set_func, title) {
       const use_number = (typeof value === 'number');
@@ -83508,16 +83510,16 @@ class JSRootMenu {
    }
 
    /** @summary Show modal info dialog
-     * @param {String} title - title
-     * @param {String} message - message
+     * @param {string} title - title
+     * @param {string} message - message
      * @protected */
    info(title, message) {
       return this.runModal(title, `<p>${message}</p>`, { height: 120, width: 400, resizable: true });
    }
 
    /** @summary Show confirm dialog
-     * @param {String} title - title
-     * @param {String} message - message
+     * @param {string} title - title
+     * @param {string} message - message
      * @return {Promise} with true when 'Ok' pressed or false when 'Cancel' pressed
      * @protected */
    async confirm(title, message) {
@@ -83527,7 +83529,7 @@ class JSRootMenu {
    /** @summary Input value
      * @return {Promise} with input value
      * @param {string} title - input dialog title
-     * @param value - initial value
+     * @param {any} value - initial value
      * @param {string} [kind] - use 'text' (default), 'number', 'float' or 'int'
      * @protected */
    async input(title, value, kind, min, max) {
@@ -83682,7 +83684,8 @@ class StandaloneMenu extends JSRootMenu {
 
    /** @summary Add menu item
      * @param {string} name - item name
-     * @param {function} func - func called when item is selected */
+     * @param {number|string} arg - argument associated with the item
+     * @param {Function} func - func called when item is selected */
    add(name, arg, func, title) {
       let curr = this.stack.at(-1);
 
@@ -88751,13 +88754,13 @@ class TFramePainter extends FrameInteractive {
 
    /** @summary Function can be used for zooming into specified range
      * @desc if both limits for each axis 0 (like xmin === xmax === 0), axis will be un-zoomed
-     * @param {number} xmin
-     * @param {number} xmax
-     * @param {number} [ymin]
-     * @param {number} [ymax]
-     * @param {number} [zmin]
-     * @param {number} [zmax]
-     * @param [interactive] - if changes was performed interactively
+     * @param {number} xmin - X minimum
+     * @param {number} xmax - X maximum
+     * @param {number} [ymin] - Y minimum
+     * @param {number} [ymax] - Y maximum
+     * @param {number} [zmin] - Z minimum
+     * @param {number} [zmax] - Z maximum
+     * @param {boolean} [interactive] - if changes was performed interactively
      * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax, interactive) {
       if (xmin === 'x') {
@@ -88911,10 +88914,10 @@ class TFramePainter extends FrameInteractive {
    }
 
    /** @summary Zooming of single axis
-     * @param {String} name - axis name like x/y/z but also second axis x2 or y2
-     * @param {Number} vmin - axis minimal value, 0 for unzoom
-     * @param {Number} vmax - axis maximal value, 0 for unzoom
-     * @param {Boolean} [interactive] - if change was performed interactively
+     * @param {string} name - axis name like x/y/z but also second axis x2 or y2
+     * @param {number} vmin - axis minimal value, 0 for unzoom
+     * @param {number} vmax - axis maximal value, 0 for unzoom
+     * @param {boolean} [interactive] - if change was performed interactively
      * @protected */
    async zoomSingle(name, vmin, vmax, interactive) {
       const handle = this[`${name}_handle`], name_min = `zoom_${name}min`, name_max = `zoom_${name}max`;
@@ -89146,14 +89149,14 @@ class MDIDisplay extends BasePainter {
    }
 
    /** @summary method dedicated to iterate over existing panels
-     * @param {function} userfunc is called with arguments (frame)
+     * @param {Function} userfunc is called with arguments (frame)
      * @param {boolean} only_visible let select only visible frames */
    forEachFrame(userfunc, only_visible) {
       console.warn(`forEachFrame not implemented in MDIDisplay ${typeof userfunc} ${only_visible}`);
    }
 
    /** @summary method dedicated to iterate over existing panels
-     * @param {function} userfunc is called with arguments (painter, frame)
+     * @param {Function} userfunc is called with arguments (painter, frame)
      * @param {boolean} only_visible let select only visible frames */
    forEachPainter(userfunc, only_visible) {
       this.forEachFrame(frame => {
@@ -91242,9 +91245,9 @@ class TPadPainter extends ObjectPainter {
    /** @summary constructor
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} pad - TPad object to draw
-     * @param {String} [opt] - draw option
+     * @param {string} [opt] - draw option
      * @param {boolean} [iscan] - if TCanvas object
-     * @param [add_to_primitives] - add pad painter to canvas
+     * @param {boolean} [add_to_primitives] - add pad painter to canvas
      * */
    constructor(dom, pad, opt, iscan, add_to_primitives) {
       super(dom, pad);
@@ -91321,7 +91324,7 @@ class TPadPainter extends ObjectPainter {
    isReadonly() { return this.#readonly; }
 
    /** @summary Returns true if it is canvas
-    * @param {Boolean} [is_online = false] - if specified, checked if it is canvas with configured connection to server */
+    * @param {boolean} [is_online = false] - if specified, checked if it is canvas with configured connection to server */
    isCanvas(is_online = false) {
       if (!this.#iscan)
          return false;
@@ -91619,7 +91622,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Call function for each painter in pad
-     * @param {function} userfunc - function to call
+     * @param {Function} userfunc - function to call
      * @param {string} kind - 'all' for all objects (default), 'pads' only pads and sub-pads, 'objects' only for object in current pad
      * @private */
    forEachPainterInPad(userfunc, kind) {
@@ -93489,7 +93492,7 @@ class TPadPainter extends ObjectPainter {
    }
 
    /** @summary Search active pad
-     * @return {Object} pad painter for active pad */
+     * @return {object} pad painter for active pad */
    findActivePad() {
       let active_pp;
       this.forEachPainterInPad(pp => {
@@ -94907,7 +94910,7 @@ class TCanvasPainter extends TPadPainter {
 
 
 /** @summary Ensure TCanvas and TFrame for the painter object
-  * @param {Object} painter  - painter object to process
+  * @param {object} painter  - painter object to process
   * @param {string|boolean} frame_kind  - false for no frame or '3d' for special 3D mode
   * @desc Assign dom, creates TCanvas if necessary, add to list of pad painters */
 async function ensureTCanvas(painter, frame_kind) {
@@ -98296,9 +98299,9 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Update histogram object
-     * @param obj - new histogram instance
-     * @param opt - new drawing option (optional)
-     * @return {Boolean} - true if histogram was successfully updated */
+     * @param {object} obj - new histogram instance
+     * @param {string} [opt] - new drawing option
+     * @return {boolean} - true if histogram was successfully updated */
    updateObject(obj, opt) {
       const histo = this.getHisto(),
             fp = this.getFramePainter(),
@@ -104381,7 +104384,7 @@ function render3D(tmout) {
 function getRenderer() { return this.renderer; }
 
 /** @summary Check is 3D drawing need to be resized
-  * @desc If @par is_main === false, return last resize result called by main painter
+  * @param {boolean} is_main - when false, return last resize result called by main painter
   * @private */
 function resize3D(is_main) {
    if (is_main === false)
@@ -112412,7 +112415,7 @@ function produceNormal(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
 class GeometryCreator {
 
    /** @summary Constructor
-     * @param numfaces - number of faces */
+     * @param {number} numfaces - number of faces */
    constructor(numfaces) {
       this.nfaces = numfaces;
       this.indx = 0;
@@ -114008,7 +114011,7 @@ function getNodeMatrix(kind, node) {
 }
 
 /** @summary Returns number of faces for provided geometry
-  * @param geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
+  * @param {object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
 function numGeometryFaces(geom) {
    if (!geom)
@@ -114222,8 +114225,8 @@ function projectGeometry(geom, matrix, projection, position = 0, flippedMesh = f
 }
 
 /** @summary Creates geometry model for the provided shape
-  * @param {Object} shape - instance of TGeoShape object
-  * @param {Number} limit - defines return value, see details
+  * @param {object} shape - instance of TGeoShape object
+  * @param {number} limit - defines return value, see details
   * @desc
   *  - if limit === 0 returns BufferGeometry
   *  - if limit < 0 just returns estimated number of faces
@@ -114366,7 +114369,7 @@ function createServerGeometry(rd, nsegm) {
 }
 
 /** @summary Provides info about geo object, used for tooltip info
-  * @param {Object} obj - any kind of TGeo-related object like shape or node or volume
+  * @param {object} obj - any kind of TGeo-related object like shape or node or volume
   * @private */
 function provideObjectInfo(obj) {
    let info = [], shape = null;
@@ -114603,7 +114606,7 @@ function createMaterial(cfg, args0) {
 }
 
 /** @summary Compares two stacks.
-  * @return {Number} 0 if same, -1 when stack1 < stack2, +1 when stack1 > stack2
+  * @return {number} 0 if same, -1 when stack1 < stack2, +1 when stack1 > stack2
   * @private */
 function compare_stacks(stack1, stack2) {
    if (stack1 === stack2)
@@ -114701,8 +114704,8 @@ function createFlippedGeom(geom) {
 /** @summary Create flipped mesh for the shape
   * @desc When transformation matrix includes one or several inversion of axis,
   * one should inverse geometry object, otherwise three.js cannot correctly draw it
-  * @param {Object} shape - TGeoShape object
-  * @param {Object} material - material
+  * @param {object} shape - TGeoShape object
+  * @param {object} material - material
   * @private */
 function createFlippedMesh(shape, material) {
    if (shape.geomZ === undefined)
@@ -116221,9 +116224,9 @@ function cleanupShape(shape) {
 
 /** @summary Set rendering order for created hierarchy
   * @desc depending from provided method sort differently objects
-  * @param toplevel - top element
-  * @param origin - camera position used to provide sorting
-  * @param method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
+  * @param {object} toplevel - top element
+  * @param {object} origin - camera position used to provide sorting
+  * @param {string} method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
 function produceRenderOrder(toplevel, origin, method, clones) {
    const raycast = new THREE.Raycaster();
 
@@ -118921,7 +118924,7 @@ function buildCompositeVolume(comp, maxlvl, side) {
 
 
 /** @summary Provides 3D rendering configuration from histogram painter
-  * @return {Object} with scene, renderer and other attributes
+  * @return {object} with scene, renderer and other attributes
   * @private */
 function getHistPainter3DCfg(painter) {
    const main = painter?.getFramePainter();
@@ -120187,8 +120190,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Method used to set transparency for all geometrical shapes
-     * @param {number|Function} transparency - one could provide function
-     * @param {boolean} [skip_render] - if specified, do not perform rendering */
+     * @param {number|Function} transparency - one could provide function */
    changedGlobalTransparency(transparency) {
       const func = isFunc(transparency) ? transparency : null;
       if (func || (transparency === undefined))
@@ -121990,8 +121992,8 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Place camera to default position,
-     * @param arg - true forces camera readjustment, 'first' is called when suppose to be first after complete drawing
-     * @param keep_zoom - tries to keep zooming factor of the camera */
+     * @param {boolean|string} arg - true forces camera readjustment, 'first' is called when suppose to be first after complete drawing
+     * @param {boolean} keep_zoom - tries to keep zooming factor of the camera */
    adjustCameraPosition(arg, keep_zoom) {
       if (!this.#toplevel || this.#superimpose)
          return;
@@ -123263,7 +123265,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Checks camera position and recalculate rendering order if needed
-     * @param force - if specified, forces calculations of render order */
+     * @param {boolean} [force] - if specified, forces calculations of render order */
    testCameraPosition(force) {
       this.#camera.updateMatrixWorld();
 
@@ -123292,8 +123294,8 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Call 3D rendering of the geometry
-     * @param tmout - specifies delay, after which actual rendering will be invoked
-     * @param [measure] - when true, for the first time printout rendering time
+     * @param {number} tmout - specifies delay, after which actual rendering will be invoked
+     * @param {boolean} [measure] - when true, for the first time printout rendering time
      * @return {Promise} when tmout bigger than 0 is specified
      * @desc Timeout used to avoid multiple rendering of the picture when several 3D drawings
      * superimposed with each other. If tmout <= 0, rendering performed immediately
@@ -125161,12 +125163,12 @@ function drawAxis3D() {
 }
 
 /** @summary Build three.js model for given geometry object
-  * @param {Object} obj - TGeo-related object
-  * @param {Object} [opt] - options
-  * @param {Number} [opt.vislevel] - visibility level like TGeoManager, when not specified - show all
-  * @param {Number} [opt.numnodes=1000] - maximal number of visible nodes
-  * @param {Number} [opt.numfaces=100000] - approx maximal number of created triangles
-  * @param {Number} [opt.instancing=-1] - <0 disable use of InstancedMesh, =0 only for large geometries, >0 enforce usage of InstancedMesh
+  * @param {object} obj - TGeo-related object
+  * @param {object} [opt] - options
+  * @param {number} [opt.vislevel] - visibility level like TGeoManager, when not specified - show all
+  * @param {number} [opt.numnodes=1000] - maximal number of visible nodes
+  * @param {number} [opt.numfaces=100000] - approx maximal number of created triangles
+  * @param {number} [opt.instancing=-1] - <0 disable use of InstancedMesh, =0 only for large geometries, >0 enforce usage of InstancedMesh
   * @param {boolean} [opt.doubleside=false] - use double-side material
   * @param {boolean} [opt.wireframe=false] - show wireframe for created shapes
   * @param {boolean} [opt.transparency=0] - make nodes transparent
@@ -127320,9 +127322,9 @@ function ZIP_inflate(arr, tgt) {
  * If the output buffer is too small, an error will be thrown.
  * If the returned value is negative, an error occurred at the returned offset.
  *
- * @param input {Buffer} input data
- * @param output {Buffer} output data
- * @return {Number} number of decoded bytes
+ * @param {Buffer} input  input data
+ * @param {Buffer} output  output data
+ * @return {number} number of decoded bytes
  * @private */
 function LZ4_uncompress(input, output, sIdx, eIdx) {
    sIdx = sIdx || 0;
@@ -128103,7 +128105,7 @@ class TDirectory {
    }
 
    /** @summary Read object from the directory
-     * @param {string} name - object name
+     * @param {string} obj_name - object name
      * @param {number} [cycle] - cycle number
      * @return {Promise} with read object */
    readObject(obj_name, cycle) {
@@ -128210,7 +128212,7 @@ class TFile {
 
    /** @summary Assign remap for web servers
     * @desc Allows to specify fallback server if main server fails
-    * @param {Object} remap - looks like { 'https://original.server/': 'https://fallback.server/' } */
+    * @param {object} remap - looks like { 'https://original.server/': 'https://fallback.server/' } */
    assignRemap(remap) {
       if (!remap && !isObject(remap))
          return;
@@ -128902,7 +128904,7 @@ class TFile {
    }
 
    /** @summary Search streamer info
-     * @param {string} clanme - class name
+     * @param {string} clname - class name
      * @param {number} [clversion] - class version
      * @param {number} [checksum] - streamer info checksum, have to match when specified
      * @private */
@@ -129294,8 +129296,8 @@ class TProxyFile extends TFile {
   *  - [FileProxy]{@link FileProxy} let access arbitrary files via tiny proxy API
   * @param {string|object} arg - argument for file open like url, see details
   * @param {object} [opts] - extra arguments
-  * @param {Number} [opts.timeout=0] - read timeout for http requests in ms
-  * @param {Object} [opts.remap={}] - http server remap to fallback when main server fails, like { 'https://original.server/': 'https://fallback.server/' }
+  * @param {number} [opts.timeout=0] - read timeout for http requests in ms
+  * @param {object} [opts.remap={}] - http server remap to fallback when main server fails, like { 'https://original.server/': 'https://fallback.server/' }
   * @return {object} - Promise with {@link TFile} instance when file is opened
   * @example
   *
@@ -129401,7 +129403,7 @@ class TSelector {
     * If second parameter not specified, branch name (here 'px') will be used
     * If branch object specified as first parameter and second parameter missing,
     * then member like 'br0', 'br1' and so on will be assigned
-    * @param {string|Object} branch - name of branch (or branch object itself}
+    * @param {string|object} branch - name of branch (or branch object itself}
     * @param {string} [name] - member name in tgtobj where data will be read
     * @param {boolean} [direct] - if only branch without any children should be read */
    addBranch(branch, name, direct) {
@@ -129429,26 +129431,26 @@ class TSelector {
 
    /** @summary function called during TTree processing
     * @abstract
-    * @param {number} progress - current value between 0 and 1 */
-   ShowProgress(/* progress */) {}
+    * @param {number} _progress - current value between 0 and 1 */
+   ShowProgress(_progress) {}
 
    /** @summary call this function to abort processing */
    Abort() { this._break = -1111; }
 
    /** @summary function called before start processing
     * @abstract
-    * @param {object} tree - tree object */
-   Begin(/* tree */) {}
+    * @param {object} _tree - tree object */
+   Begin(_tree) {}
 
    /** @summary function called when next entry extracted from the tree
     * @abstract
-    * @param {number} entry - read entry number */
-   Process(/* entry */) {}
+    * @param {number} _entry - read entry number */
+   Process(_entry) {}
 
    /** @summary function called at the very end of processing
     * @abstract
-    * @param {boolean} res - true if all data were correctly processed */
-   Terminate(/* res */) {}
+    * @param {boolean} _res - true if all data were correctly processed */
+   Terminate(_res) {}
 
 } // class TSelector
 
@@ -129701,7 +129703,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
 
 /** @summary Get branch with specified id
   * @desc All sub-branches checked as well
-  * @return {Object} branch
+  * @return {object} branch
   * @private */
 function getTreeBranch(tree, id) {
    if (!Number.isInteger(id))
@@ -129723,8 +129725,9 @@ function getTreeBranch(tree, id) {
 
 /** @summary Special branch search
   * @desc Name can include extra part, which will be returned in the result
+  * @param {object} tree - tree where branch is searched
   * @param {string} name - name of the branch
-  * @return {Object} with 'branch' and 'rest' members
+  * @return {object} with 'branch' and 'rest' members
   * @private */
 function findBranchComplex(tree, name, lst = undefined, only_search = false) {
    let top_search = false, search = name, res = null;
@@ -129795,8 +129798,9 @@ function findBranchComplex(tree, name, lst = undefined, only_search = false) {
 
 
 /** @summary Search branch with specified name
+  * @param {object} tree - tree where branch is searched
   * @param {string} name - name of the branch
-  * @return {Object} found branch
+  * @return {object} found branch
   * @private */
 function findBranch(tree, name) {
    const res = findBranchComplex(tree, name, tree.fBranches, true);
@@ -132242,6 +132246,7 @@ async function treeProcess(tree, selector, args) {
 }
 
 /** @summary implementation of TTree::Draw
+  * @param {object} tree - TTree object
   * @param {object|string} args - different setting or simply draw expression
   * @param {string} args.expr - draw expression
   * @param {string} [args.cut=undefined] - cut expression (also can be part of 'expr' after '::')
@@ -132249,11 +132254,11 @@ async function treeProcess(tree, selector, args) {
   * @param {number} [args.firstentry=0] - first entry to process
   * @param {number} [args.numentries=undefined] - number of entries to process, all by default
   * @param {Array} [args.elist=undefined] - array of entries id to process, all by default
-  * @param {Boolean} [args.dump] - dump values of expression instead creating histogram
-  * @param {Boolean} [args.dump_entries] - if array of entries should be return which match cut condition
-  * @param {Boolean} [args.staged] - staged processing, first apply cut to select entries and then perform drawing for selected entries
+  * @param {boolean} [args.dump] - dump values of expression instead creating histogram
+  * @param {boolean} [args.dump_entries] - if array of entries should be return which match cut condition
+  * @param {boolean} [args.staged] - staged processing, first apply cut to select entries and then perform drawing for selected entries
   * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
-  * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
+  * @param {Function} [args.progress=undefined] - function called during histogram accumulation with obj argument
   * @return {Promise} with produced object */
 async function treeDraw(tree, args) {
    if (isStr(args))
@@ -167417,11 +167422,11 @@ const drawFuncs = { lst: [
 
 /** @summary Register draw function for the class
   * @param {object} args - arguments
-  * @param {string|regexp} args.name - class name or regexp pattern or '*'
-  * @param {function} [args.func] - draw function
+  * @param {string|RegExp} args.name - class name or regexp pattern or '*'
+  * @param {Function} [args.func] - draw function
   * @param {string} [args.sameas] - let behave same as specified class
-  * @param {function} [args.draw] - async function to load draw function
-  * @param {function} [args.class] - async function to load painter class with static draw function
+  * @param {Function} [args.draw] - async function to load draw function
+  * @param {Function} [args.class] - async function to load painter class with static draw function
   * @param {boolean} [args.direct] - if true, function is just Redraw() method of ObjectPainter
   * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like 'col;scat;'
   * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
@@ -168977,7 +168982,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Iterate over all items in hierarchy
-     * @param {function} func - function called for every item
+     * @param {Function} func - function called for every item
      * @param {object} [top] - top item to start from
      * @private */
    forEachItem(func, top) {
@@ -169121,8 +169126,8 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Produce full string name for item
-     * @param {Object} node - item element
-     * @param {Object} [uptoparent] - up to which parent to continue
+     * @param {object} node - item element
+     * @param {object} [uptoparent] - up to which parent to continue
      * @param {boolean} [compact] - if specified, top parent is not included
      * @return {string} produced name
      * @private */
@@ -169152,10 +169157,8 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Executes item marked as 'Command'
      * @desc If command requires additional arguments, they could be specified as extra arguments arg1, arg2, ...
-     * @param {String} itemname - name of command item
-     * @param {Object} [elem] - HTML element for command execution
-     * @param [arg1] - first optional argument
-     * @param [arg2] - second optional argument and so on
+     * @param {string} itemname - name of command item
+     * @param {object} [elem] - HTML element for command execution
      * @return {Promise} with command result */
    async executeCommand(itemname, elem, ...userargs) {
       const hitem = this.findItem(itemname),
@@ -169207,9 +169210,9 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Get object item with specified name
      * @desc depending from provided option, same item can generate different object types
-     * @param {Object} arg - item name or config object
+     * @param {object} arg - item name or config object
      * @param {string} arg.name - item name
-     * @param {Object} arg.item - or item itself
+     * @param {object} arg.item - or item itself
      * @param {string} options - supposed draw options
      * @return {Promise} with object like { item, obj, itemname }
      * @private */
@@ -169694,7 +169697,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Focus on hierarchy item
-     * @param {Object|string} hitem - item to open or its name
+     * @param {object|string} hitem - item to open or its name
      * @desc all parents to the item will be opened first
      * @return {Promise} when done
      * @private */
@@ -170235,7 +170238,7 @@ class HierarchyPainter extends BasePainter {
    /** @summary Display specified item
      * @param {string} itemname - item name
      * @param {string} [drawopt] - draw option for the item
-     * @param {string|Object} [dom] - place where to draw item, same as for @ref draw function
+     * @param {string|object} [dom] - place where to draw item, same as for {@link draw} function
      * @param {boolean} [interactive] - if display was called in interactive mode, will activate selected drawing
      * @return {Promise} with created painter object */
    async display(itemname, drawopt, dom = null, interactive = false) {
@@ -170487,7 +170490,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Update specified items
      * @desc Method can be used to fetch new objects and update all existing drawings
-     * @param {string|array|boolean} arg - either item name or array of items names to update or true if only automatic items will be updated
+     * @param {string|Array|boolean} arg - either item name or array of items names to update or true if only automatic items will be updated
      * @return {Promise} when ready */
    async updateItems(arg) {
       if (!this.disp)
@@ -170861,7 +170864,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary expand specified item
-     * @param {String} itemname - item name
+     * @param {string} itemname - item name
      * @return {Promise} when ready */
    async expandItem(itemname, d3cont, silent) {
       const hitem = this.findItem(itemname), hpainter = this;
@@ -171479,7 +171482,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Configures monitoring interval
      * @param {number} interval - repetition interval in ms
-     * @param {boolean} flag - initial monitoring state */
+     * @param {boolean} monitor_on - initial monitoring state */
    setMonitoring(interval, monitor_on) {
       this.#runMonitoring('cleanup');
 
@@ -171672,8 +171675,8 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary If possible, creates custom MDIDisplay for given item
-     * @param itemname - name of item, for which drawing is created
-     * @param custom_kind - display kind
+     * @param {string} itemname - name of item, for which drawing is created
+     * @param {string} custom_kind - display kind
      * @return {Promise} with mdi object created
      * @private */
    async createCustomDisplay(itemname, custom_kind) {
@@ -172063,7 +172066,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Create status line
      * @param {number} [height] - size of the status line
-     * @param [mode] - false / true / 'toggle'
+     * @param {boolean} [mode] - false / true / 'toggle'
      * @return {Promise} when ready */
    async createStatusLine(height, mode) {
       if (this.status_disabled || !this.gui_div || !this.brlayout)
@@ -172662,8 +172665,8 @@ function readStyleFromURL(url) {
 
 /** @summary Build main GUI
   * @desc Used in many HTML files to create JSROOT GUI elements
-  * @param {String} gui_element - id of the `<div>` element
-  * @param {String} gui_kind - either 'online', 'nobrowser', 'draw'
+  * @param {string} gui_element - id of the `<div>` element
+  * @param {string} gui_kind - either 'online', 'nobrowser', 'draw'
   * @return {Promise} with {@link HierarchyPainter} instance
   * @example
   * import { buildGUI } from 'https://root.cern/js/latest/modules/gui.mjs';
@@ -178332,7 +178335,7 @@ let TMultiGraphPainter$2 = class TMultiGraphPainter extends ObjectPainter {
 
    /** @summary Constructor
      * @param {object|string} dom - DOM element for drawing or element id
-     * @param {object} obj - TMultiGraph object to draw */
+     * @param {object} mgraph - TMultiGraph object to draw */
    constructor(dom, mgraph, opt) {
       super(dom, mgraph, opt);
       this.#firstpainter = null;
@@ -182684,7 +182687,7 @@ class BitsetReaderItem extends ReaderItem {
             if (this.bigint)
                res |= (1n << BigInt(len));
             else
-               res |= 1 << len;
+               res += 2 ** len;
          }
          len++;
       }
@@ -183116,7 +183119,7 @@ class TDrawSelectorTuple extends TDrawSelector {
  * @param {Array} [args.elist=undefined] - array of entries id to process, all by default
  * @param {boolean} [args.staged] - staged processing, first apply cut to select entries and then perform drawing for selected entries
  * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
- * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
+ * @param {Function} [args.progress=undefined] - function called during histogram accumulation with obj argument
  * @return {Promise} with produced object */
 
 async function rntupleDraw(rntuple, args) {
@@ -183425,7 +183428,7 @@ class RObjectPainter extends ObjectPainter {
    }
 
    /** @summary Evaluate RAttrText properties
-     * @return {Object} FontHandler, can be used directly for the text drawing */
+     * @return {object} FontHandler, can be used directly for the text drawing */
    v7EvalFont(name, dflts, fontScale) {
       if (!dflts)
          dflts = {};
@@ -183575,9 +183578,9 @@ class RObjectPainter extends ObjectPainter {
    }
 
    /** @summary Submit request to server-side drawable
-    * @param kind defines request kind, only single request a time can be submitted
-    * @param req is object derived from DrawableRequest, including correct _typename
-    * @param method is method of painter object which will be called when getting reply */
+    * @param {string} kind defines request kind, only single request a time can be submitted
+    * @param {object} req is object derived from DrawableRequest, including correct _typename
+    * @param {string} method is method of painter object which will be called when getting reply */
    v7SubmitRequest(kind, req, method) {
       const canp = this.getCanvPainter();
       if (!isFunc(canp?.submitDrawableRequest))
@@ -184217,7 +184220,7 @@ class RAxisPainter extends RObjectPainter {
    }
 
    /** @summary Draw axis ticks
-     * @return {Object} with gaps on left and right side
+     * @return {object} with gaps on left and right side
      * @private */
    drawTicks(axis_g, side, main_draw) {
       if (main_draw)
@@ -185766,10 +185769,10 @@ class RFramePainter extends RObjectPainter {
    }
 
    /** @summary Zooming of single axis
-     * @param {String} name - axis name like x/y/z but also second axis x2 or y2
-     * @param {Number} vmin - axis minimal value, 0 for unzoom
-     * @param {Number} vmax - axis maximal value, 0 for unzoom
-     * @param {Boolean} [interactive] - if change was performed interactively
+     * @param {string} name - axis name like x/y/z but also second axis x2 or y2
+     * @param {number} vmin - axis minimal value, 0 for unzoom
+     * @param {number} vmax - axis maximal value, 0 for unzoom
+     * @param {boolean} [interactive] - if change was performed interactively
      * @protected */
    async zoomSingle(name, vmin, vmax, interactive) {
       const names = ['x', 'y', 'z', 'x2', 'y2'], indx = names.indexOf(name);
@@ -186168,7 +186171,7 @@ class RPadPainter extends RObjectPainter {
    isButton() { return false; }
 
    /** @summary Returns true if it is canvas
-    * @param {Boolean} [is_online = false] - if specified, checked if it is canvas with configured connection to server */
+    * @param {boolean} [is_online = false] - if specified, checked if it is canvas with configured connection to server */
    isCanvas(is_online = false) {
       if (!this.#iscan)
          return false;
@@ -186486,7 +186489,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Call function for each painter in pad
-     * @param {function} userfunc - function to call
+     * @param {Function} userfunc - function to call
      * @param {string} kind - 'all' for all objects (default), 'pads' only pads and sub-pads, 'objects' only for object in current pad
      * @private */
    forEachPainterInPad(userfunc, kind) {
@@ -187601,7 +187604,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Search active pad
-     * @return {Object} pad painter for active pad */
+     * @return {object} pad painter for active pad */
    findActivePad() { return null; }
 
    /** @summary Produce image for the pad
@@ -188674,7 +188677,7 @@ function drawRPadSnapshot(dom, snap, opt) {
 }
 
 /** @summary Ensure RCanvas and RFrame for the painter object
-  * @param {Object} painter  - painter object to process
+  * @param {object} painter  - painter object to process
   * @desc Assigns DOM, creates and draw RCanvas and RFrame if necessary, add painter to pad list of painters
   * @return {Promise} for ready
   * @private */
