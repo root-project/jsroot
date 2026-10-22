@@ -2983,13 +2983,13 @@ class TFramePainter extends FrameInteractive {
 
    /** @summary Function can be used for zooming into specified range
      * @desc if both limits for each axis 0 (like xmin === xmax === 0), axis will be un-zoomed
-     * @param {number} xmin
-     * @param {number} xmax
-     * @param {number} [ymin]
-     * @param {number} [ymax]
-     * @param {number} [zmin]
-     * @param {number} [zmax]
-     * @param [interactive] - if changes was performed interactively
+     * @param {Number} xmin
+     * @param {Number} xmax
+     * @param {Number} [ymin]
+     * @param {Number} [ymax]
+     * @param {Number} [zmin]
+     * @param {Number} [zmax]
+     * @param {Boolean} [interactive] - if changes was performed interactively
      * @return {Promise} with boolean flag if zoom operation was performed */
    async zoom(xmin, xmax, ymin, ymax, zmin, zmax, interactive) {
       if (xmin === 'x') {

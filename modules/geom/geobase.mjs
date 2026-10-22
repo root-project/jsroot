@@ -202,7 +202,7 @@ function produceNormal(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
 class GeometryCreator {
 
    /** @summary Constructor
-     * @param numfaces - number of faces */
+     * @param {Number} numfaces - number of faces */
    constructor(numfaces) {
       this.nfaces = numfaces;
       this.indx = 0;
@@ -1798,7 +1798,7 @@ function getNodeMatrix(kind, node) {
 }
 
 /** @summary Returns number of faces for provided geometry
-  * @param geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
+  * @param {Object} geom  - can be BufferGeometry, CsgGeometry or interim array of polygons
   * @private */
 function numGeometryFaces(geom) {
    if (!geom)
@@ -4030,9 +4030,9 @@ function cleanupShape(shape) {
 
 /** @summary Set rendering order for created hierarchy
   * @desc depending from provided method sort differently objects
-  * @param toplevel - top element
-  * @param origin - camera position used to provide sorting
-  * @param method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
+  * @param {Object} toplevel - top element
+  * @param {Object} origin - camera position used to provide sorting
+  * @param {String} method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
 function produceRenderOrder(toplevel, origin, method, clones) {
    const raycast = new THREE.Raycaster();
 

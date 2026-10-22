@@ -272,8 +272,8 @@ class TPadPainter extends ObjectPainter {
      * @param {object|string} dom - DOM element for drawing or element id
      * @param {object} pad - TPad object to draw
      * @param {String} [opt] - draw option
-     * @param {boolean} [iscan] - if TCanvas object
-     * @param [add_to_primitives] - add pad painter to canvas
+     * @param {Boolean} [iscan] - if TCanvas object
+     * @param {Boolean} [add_to_primitives] - add pad painter to canvas
      * */
    constructor(dom, pad, opt, iscan, add_to_primitives) {
       super(dom, pad);

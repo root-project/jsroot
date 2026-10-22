@@ -1121,8 +1121,7 @@ class HierarchyPainter extends BasePainter {
      * @desc If command requires additional arguments, they could be specified as extra arguments arg1, arg2, ...
      * @param {String} itemname - name of command item
      * @param {Object} [elem] - HTML element for command execution
-     * @param [arg1] - first optional argument
-     * @param [arg2] - second optional argument and so on
+     * @param {any} [useragrs] - optional command arguments
      * @return {Promise} with command result */
    async executeCommand(itemname, elem, ...userargs) {
       const hitem = this.findItem(itemname),
@@ -3641,8 +3640,8 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary If possible, creates custom MDIDisplay for given item
-     * @param itemname - name of item, for which drawing is created
-     * @param custom_kind - display kind
+     * @param {String} itemname - name of item, for which drawing is created
+     * @param {String} custom_kind - display kind
      * @return {Promise} with mdi object created
      * @private */
    async createCustomDisplay(itemname, custom_kind) {
@@ -4032,7 +4031,7 @@ class HierarchyPainter extends BasePainter {
 
    /** @summary Create status line
      * @param {number} [height] - size of the status line
-     * @param [mode] - false / true / 'toggle'
+     * @param {Boolean} [mode] - false / true / 'toggle'
      * @return {Promise} when ready */
    async createStatusLine(height, mode) {
       if (this.status_disabled || !this.gui_div || !this.brlayout)

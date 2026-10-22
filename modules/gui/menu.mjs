@@ -1113,7 +1113,7 @@ class JSRootMenu {
    /** @summary Input value
      * @return {Promise} with input value
      * @param {string} title - input dialog title
-     * @param value - initial value
+     * @param {any} value - initial value
      * @param {string} [kind] - use 'text' (default), 'number', 'float' or 'int'
      * @protected */
    async input(title, value, kind, min, max) {

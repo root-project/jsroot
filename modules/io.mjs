@@ -2128,8 +2128,8 @@ function ZIP_inflate(arr, tgt) {
  * If the output buffer is too small, an error will be thrown.
  * If the returned value is negative, an error occurred at the returned offset.
  *
- * @param input {Buffer} input data
- * @param output {Buffer} output data
+ * @param {Buffer} input  input data
+ * @param {Buffer} output  output data
  * @return {Number} number of decoded bytes
  * @private */
 function LZ4_uncompress(input, output, sIdx, eIdx) {

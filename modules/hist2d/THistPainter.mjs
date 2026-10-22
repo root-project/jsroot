@@ -1362,8 +1362,8 @@ class THistPainter extends ObjectPainter {
    }
 
    /** @summary Update histogram object
-     * @param obj - new histogram instance
-     * @param opt - new drawing option (optional)
+     * @param {Object} obj - new histogram instance
+     * @param {String} [opt] - new drawing option
      * @return {Boolean} - true if histogram was successfully updated */
    updateObject(obj, opt) {
       const histo = this.getHisto(),

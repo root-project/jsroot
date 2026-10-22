@@ -663,7 +663,7 @@ class WebWindowHandle {
    }
 
    /** @summary Connect to the server
-     * @param [href] - optional URL to widget, use document URL instead
+     * @param {String} [href] - optional URL to widget, use document URL instead
      * @private */
    connect(href) {
       // ignore connect if channel from master connection configured
