@@ -73,9 +73,10 @@
     "@rollup/plugin-terser": "1.0.0",
     "@stylistic/eslint-plugin": "^4.4.1",
     "docdash": "^2.0.2",
-    "globals": "^17.3.0",
     "eslint": "^10.8.1",
+    "eslint-plugin-jsdoc": "^65.4.0",
     "gl": "9.0.0-rc.10",
+    "globals": "^17.3.0",
     "jsdoc": "^4.0.5",
     "rollup": "4.62.4"
   },

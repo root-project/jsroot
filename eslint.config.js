@@ -1,4 +1,5 @@
 import stylisticJs from '@stylistic/eslint-plugin';
+import jsdoc from 'eslint-plugin-jsdoc';
 
 import globals from 'globals';
 
@@ -16,9 +17,12 @@ export default defineConfig([
     }
     },
     plugins: {
-      '@stylistic/js': stylisticJs
+      '@stylistic/js': stylisticJs,
+      jsdoc
     },
     rules: {
+        'jsdoc/require-param-type': 'error',
+        'jsdoc/require-returns-type': 'error',
         'array-callback-return': 'error',
         'consistent-return': 'off',
         camelcase: 'off',
