@@ -369,10 +369,10 @@ class WebWindowHandle {
 
    /** @summary Set callbacks receiver.
      * @param {object} obj - object with receiver functions
-     * @param {function} obj.onWebsocketMsg - called when new data received from RWebWindow
-     * @param {function} obj.onWebsocketOpened - called when connection established
-     * @param {function} obj.onWebsocketClosed - called when connection closed
-     * @param {function} obj.onWebsocketError - called when get error via the connection */
+     * @param {Function} obj.onWebsocketMsg - called when new data received from RWebWindow
+     * @param {Function} obj.onWebsocketOpened - called when connection established
+     * @param {Function} obj.onWebsocketClosed - called when connection closed
+     * @param {Function} obj.onWebsocketError - called when get error via the connection */
    setReceiver(obj) { this.#receiver = obj; }
 
    /** @summary Cleanup and close connection. */

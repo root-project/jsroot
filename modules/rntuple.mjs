@@ -1644,7 +1644,7 @@ class TDrawSelectorTuple extends TDrawSelector {
  * @param {Array} [args.elist=undefined] - array of entries id to process, all by default
  * @param {boolean} [args.staged] - staged processing, first apply cut to select entries and then perform drawing for selected entries
  * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
- * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
+ * @param {Function} [args.progress=undefined] - function called during histogram accumulation with obj argument
  * @return {Promise} with produced object */
 
 async function rntupleDraw(rntuple, args) {

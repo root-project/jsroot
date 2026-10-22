@@ -944,7 +944,7 @@ class HierarchyPainter extends BasePainter {
    }
 
    /** @summary Iterate over all items in hierarchy
-     * @param {function} func - function called for every item
+     * @param {Function} func - function called for every item
      * @param {object} [top] - top item to start from
      * @private */
    forEachItem(func, top) {

@@ -2900,7 +2900,7 @@ async function treeProcess(tree, selector, args) {
   * @param {Boolean} [args.dump_entries] - if array of entries should be return which match cut condition
   * @param {Boolean} [args.staged] - staged processing, first apply cut to select entries and then perform drawing for selected entries
   * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
-  * @param {function} [args.progress=undefined] - function called during histogram accumulation with obj argument
+  * @param {Function} [args.progress=undefined] - function called during histogram accumulation with obj argument
   * @return {Promise} with produced object */
 async function treeDraw(tree, args) {
    if (isStr(args))

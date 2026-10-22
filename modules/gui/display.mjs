@@ -57,14 +57,14 @@ class MDIDisplay extends BasePainter {
    }
 
    /** @summary method dedicated to iterate over existing panels
-     * @param {function} userfunc is called with arguments (frame)
+     * @param {Function} userfunc is called with arguments (frame)
      * @param {boolean} only_visible let select only visible frames */
    forEachFrame(userfunc, only_visible) {
       console.warn(`forEachFrame not implemented in MDIDisplay ${typeof userfunc} ${only_visible}`);
    }
 
    /** @summary method dedicated to iterate over existing panels
-     * @param {function} userfunc is called with arguments (painter, frame)
+     * @param {Function} userfunc is called with arguments (painter, frame)
      * @param {boolean} only_visible let select only visible frames */
    forEachPainter(userfunc, only_visible) {
       this.forEachFrame(frame => {

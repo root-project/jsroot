@@ -171,10 +171,10 @@ const drawFuncs = { lst: [
 /** @summary Register draw function for the class
   * @param {object} args - arguments
   * @param {string|regexp} args.name - class name or regexp pattern or '*'
-  * @param {function} [args.func] - draw function
+  * @param {Function} [args.func] - draw function
   * @param {string} [args.sameas] - let behave same as specified class
-  * @param {function} [args.draw] - async function to load draw function
-  * @param {function} [args.class] - async function to load painter class with static draw function
+  * @param {Function} [args.draw] - async function to load draw function
+  * @param {Function} [args.class] - async function to load painter class with static draw function
   * @param {boolean} [args.direct] - if true, function is just Redraw() method of ObjectPainter
   * @param {string} [args.opt] - list of supported draw options (separated with semicolon) like 'col;scat;'
   * @param {string} [args.icon] - icon name shown for the class in hierarchy browser

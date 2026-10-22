@@ -10,7 +10,7 @@ import { getRootColors } from '../base/colors.mjs';
   * if no argument specified, any shown messages will be removed
   * @param {string} msg - message to display
   * @param {number} [tmout] - optional timeout in milliseconds, after message will disappear
-  * @param {function} [click_handle] - optional handle to process click events
+  * @param {Function} [click_handle] - optional handle to process click events
   * @private */
 function showProgress(msg, tmout, click_handle) {
    if (isBatchMode() || (typeof document === 'undefined'))

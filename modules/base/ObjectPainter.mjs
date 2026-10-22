@@ -1259,7 +1259,7 @@ class ObjectPainter extends BasePainter {
      * @param {number} [arg.rotate] - rotation angle
      * @param {number} [arg.font_size] - fixed font size
      * @param {object} [arg.draw_g] - element where to place text, if not specified central draw_g container is used
-     * @param {function} [arg.post_process] - optional function called when specified text is drawn
+     * @param {Function} [arg.post_process] - optional function called when specified text is drawn
      * @protected */
    drawText(arg) {
       if (!arg.text)
@@ -1389,7 +1389,7 @@ class ObjectPainter extends BasePainter {
 
    /** @summary Finish text drawing
      * @desc Should be called to complete all text drawing operations
-     * @param {function} [draw_g] - <g> element for text drawing, default is getG()
+     * @param {Function} [draw_g] - <g> element for text drawing, default is getG()
      * @return {Promise} when text drawing completed
      * @protected */
    async finishTextDrawing(draw_g, try_optimize) {
@@ -1410,7 +1410,7 @@ class ObjectPainter extends BasePainter {
      * Arguments fillmenu_func are (menu,kind)
      * First is menu object, second is object sub-element like axis 'x' or 'y'
      * Function should return promise with menu when items are filled
-     * @param {function} fillmenu_func - function to fill custom context menu for object */
+     * @param {Function} fillmenu_func - function to fill custom context menu for object */
    configureUserContextMenu(fillmenu_func) {
       this.#user_context_menu = isFunc(fillmenu_func) ? fillmenu_func : undefined;
    }
@@ -1545,7 +1545,7 @@ class ObjectPainter extends BasePainter {
    /** @summary Configure user-defined tooltip handler
      * @desc Hook for the users to get tooltip information when mouse cursor moves over then object
      * Handler function will be called every time when new data is selected
-     * @param {function} handler - function called when tooltip is produced
+     * @param {Function} handler - function called when tooltip is produced
      * @param {number} [tmout = 100] - delay in ms before tooltip delivered */
    configureUserTooltipHandler(handler, tmout = 100) {
       if (!handler || !isFunc(handler)) {
@@ -1561,7 +1561,7 @@ class ObjectPainter extends BasePainter {
       * @desc Function will be called every time when frame click was performed
       * As argument, tooltip object with selected bins will be provided
       * If handler function returns true, default handling of click will be disabled
-      * @param {function} handler - function called when mouse click is done */
+      * @param {Function} handler - function called when mouse click is done */
    configureUserClickHandler(handler) {
       const fp = this.getFramePainter();
       if (isFunc(fp?.configureUserClickHandler))
@@ -1572,7 +1572,7 @@ class ObjectPainter extends BasePainter {
      * @desc Function will be called every time when double click was called
      * As argument, tooltip object with selected bins will be provided
      * If handler function returns true, default handling of dblclick (unzoom) will be disabled
-     * @param {function} handler - function called when mouse double click is done */
+     * @param {Function} handler - function called when mouse double click is done */
    configureUserDblclickHandler(handler) {
       const fp = this.getFramePainter();
       if (isFunc(fp?.configureUserDblclickHandler))

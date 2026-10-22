@@ -418,7 +418,7 @@ class RPadPainter extends RObjectPainter {
    }
 
    /** @summary Call function for each painter in pad
-     * @param {function} userfunc - function to call
+     * @param {Function} userfunc - function to call
      * @param {string} kind - 'all' for all objects (default), 'pads' only pads and sub-pads, 'objects' only for object in current pad
      * @private */
    forEachPainterInPad(userfunc, kind) {
