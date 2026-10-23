@@ -2970,7 +2970,6 @@ class TFile {
       this.fSeekInfo = 0;
       this.fNbytesInfo = 0;
       this.fTagOffset = 0;
-      this.fStreamers = 0;
       this.fStreamerInfos = null;
       this.fFileName = '';
       this.fTimeout = settings.FilesTimeout ?? 0;
@@ -2985,10 +2984,9 @@ class TFile {
          this.fAcceptRanges = false;
       }
 
-      if (this.fURL.at(-1) === '^') {
+      // DEPRECATED just for compatibility with old function, remove in version 8
+      if (this.fURL.at(-1) === '^')
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
-         this.fSkipHeadRequest = true;
-      }
 
       if (this.fURL.at(-1) === '-') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
@@ -3020,7 +3018,7 @@ class TFile {
     * @desc Allows to specify fallback server if main server fails
     * @param {object} remap - looks like { 'https://original.server/': 'https://fallback.server/' } */
    assignRemap(remap) {
-      if (!remap && !isObject(remap))
+      if (!isObject(remap))
          return;
 
       for (const key in remap) {
@@ -3032,7 +3030,7 @@ class TFile {
       }
    }
 
-   /** @summary Assign BufferArray with file contentOpen file
+   /** @summary Assign BufferArray with file content
      * @private */
    assignFileContent(bufArray) {
       this.fFileContent = new TBuffer(new DataView(bufArray));
