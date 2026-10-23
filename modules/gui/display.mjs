@@ -1214,7 +1214,7 @@ class BatchDisplay extends MDIDisplay {
 
       const frame =
          this.jsdom_body.append('div')
-             .style('visible', 'hidden')
+             .style('visibility', 'hidden')
              .attr('width', this.width).attr('height', this.height)
              .style('width', this.width + 'px').style('height', this.height + 'px')
              .attr('id', 'jsroot_batch_' + this.frames.length)
