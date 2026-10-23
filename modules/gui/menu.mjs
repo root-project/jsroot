@@ -607,15 +607,15 @@ class JSRootMenu {
      * like TAttFill, TAttLine, TAttText
      * There is special handling for the frame where attributes handled by the pad
      * @private */
-   addAttributesMenu(painter, preffix) {
+   addAttributesMenu(painter, prefix) {
       const is_frame = painter === painter.getFramePainter(),
             pp = is_frame ? painter.getPadPainter() : null,
-            redraw_arg = !preffix && !is_frame ? 'attribute' : true;
-      if (!preffix)
-         preffix = '';
+            redraw_arg = !prefix && !is_frame ? 'attribute' : true;
+      if (!prefix)
+         prefix = '';
 
       if (painter.lineatt?.used) {
-         this.sub(`${preffix}Line att`);
+         this.sub(`${prefix}Line att`);
          this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width, arg => {
             painter.lineatt.change(undefined, arg);
             changeObjectMember(painter, 'fLineWidth', arg);
@@ -655,7 +655,7 @@ class JSRootMenu {
       }
 
       if (painter.fillatt?.used) {
-         this.sub(`${preffix}Fill att`);
+         this.sub(`${prefix}Fill att`);
          this.addColorMenu('color', painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillColor', arg, true);
@@ -672,7 +672,7 @@ class JSRootMenu {
       }
 
       if (painter.markeratt?.used) {
-         this.sub(`${preffix}Marker att`);
+         this.sub(`${prefix}Marker att`);
          this.addColorMenu('color', painter.markeratt.color, arg => {
             changeObjectMember(painter, 'fMarkerColor', arg, true);
             painter.markeratt.change(arg);
@@ -699,7 +699,7 @@ class JSRootMenu {
       }
 
       if (painter.textatt?.used) {
-         this.sub(`${preffix}Text att`);
+         this.sub(`${prefix}Text att`);
 
          this.addFontMenu('font', painter.textatt.font, arg => {
             changeObjectMember(painter, 'fTextFont', arg);
@@ -1070,7 +1070,7 @@ class JSRootMenu {
       this.separator();
 
       this.add('Save settings', () => {
-         const promise = readSettings(true) ? Promise.resolve(true) : this.confirm('Save settings', 'Pressing OK one agreess that JSROOT will store settings in browser local storage');
+         const promise = readSettings(true) ? Promise.resolve(true) : this.confirm('Save settings', 'Pressing OK one agrees that JSROOT will store settings in browser local storage');
          promise.then(res => {
             if (res) {
                saveSettings();
@@ -1725,7 +1725,7 @@ class StandaloneMenu extends JSRootMenu {
   * @param {string} [menuname] - optional menu name
   * @example
   * import { createMenu } from 'https://root.cern/js/latest/modules/gui/menu.mjs';
-  * let menu = await createMenu());
+  * let menu = await createMenu();
   * menu.add('First', () => console.log('Click first'));
   * let flag = true;
   * menu.addchk(flag, 'Checked', arg => console.log(`Now flag is ${arg}`));
