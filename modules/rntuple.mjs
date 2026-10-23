@@ -450,7 +450,7 @@ class RNTupleDescriptorBuilder {
             index: i
          };
          column.isDeferred = function() {
-            return (this.flags & RNTupleDescriptorBuilder.kFlagDeferredColumn) !== 0;
+            return (this.flags & kFlagDeferredColumn) !== 0;
          };
          column.isSuppressed = function() {
             return this.firstElementIndex !== null && this.firstElementIndex < 0;
