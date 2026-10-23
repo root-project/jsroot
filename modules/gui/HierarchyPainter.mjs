@@ -1123,8 +1123,11 @@ class HierarchyPainter extends BasePainter {
      * @param {object} [elem] - HTML element for command execution
      * @return {Promise} with command result */
    async executeCommand(itemname, elem, ...userargs) {
-      const hitem = this.findItem(itemname),
-            url = this.getOnlineItemUrl(hitem) + '/cmd.json',
+      const hitem = this.findItem(itemname);
+      if (!hitem)
+         return false;
+
+      const url = this.getOnlineItemUrl(hitem) + '/cmd.json',
             d3node = d3_select(elem),
             cmdargs = [];
 
@@ -2809,7 +2812,7 @@ class HierarchyPainter extends BasePainter {
          if (!this.brlayout.browser_kind)
             return this.createBrowser('float', true).then(() => find_next());
          if (!this.brlayout.browser_visible)
-            this.brlayout.toggleBrowserVisisbility();
+            this.brlayout.toggleBrowserVisibility();
       }
 
       // use recursion

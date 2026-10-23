@@ -1453,7 +1453,7 @@ class BrowserLayout {
       if (!keep_status)
          this.createStatusLine(0, 'delete');
 
-      this.toggleBrowserVisisbility(true);
+      this.toggleBrowserVisibility(true);
 
       if (keep_status) {
          // try to delete only content, not status
@@ -1490,7 +1490,7 @@ class BrowserLayout {
    toggleKind(browser_kind) {
       if (this.browser_visible !== 'changing') {
          if (browser_kind === this.browser_kind)
-            this.toggleBrowserVisisbility();
+            this.toggleBrowserVisibility();
          else
             this.toggleBrowserKind(browser_kind);
       }
@@ -1672,7 +1672,7 @@ class BrowserLayout {
    }
 
    /** @summary Toggle browser visibility */
-   toggleBrowserVisisbility(fast_close) {
+   toggleBrowserVisibility(fast_close) {
       if (!this.gui_div || isStr(this.browser_visible))
          return;
 
