@@ -82,6 +82,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'linev/jsroot-test'
+          ref: '${{ github.ref }}'
           path: 'jsroot-test'
 
       - name: Show jsroot status
