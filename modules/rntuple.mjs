@@ -150,7 +150,7 @@ class RBufferReader {
 
 /** @summary Rearrange bytes from split format to normal format (row-wise) for decoding
  * @private */
-function recontructUnsplitBuffer(view, coltype) {
+function reconstructUnsplitBuffer(view, coltype) {
    // Determine byte size based on column type
    let byteSize;
    switch (coltype) {
@@ -191,7 +191,7 @@ function recontructUnsplitBuffer(view, coltype) {
    return outView;
 }
 
-/** @summary Decode a 32 bit intex buffer
+/** @summary Decode a 32 bit index buffer
  * @private */
 function decodeIndex32(view) {
    for (let o = 0, prev = 0; o < view.byteLength; o += 4) {
@@ -201,7 +201,7 @@ function decodeIndex32(view) {
    }
 }
 
-/** @summary Decode a 64 bit intex buffer
+/** @summary Decode a 64 bit index buffer
  * @private */
 function decodeIndex64(view, shift) {
    for (let o = 0, prev = 0n; o < view.byteLength; o += (8 + shift)) {
@@ -704,7 +704,7 @@ async function readHeaderFooter(tuple) {
       if (!header_blob || !footer_blob)
          throw new Error('Failure when uncompress header and footer blobs');
 
-      tuple.builder = new RNTupleDescriptorBuilder;
+      tuple.builder = new RNTupleDescriptorBuilder();
       tuple.builder.deserializeHeader(header_blob);
       tuple.builder.deserializeFooter(footer_blob);
 
@@ -1060,7 +1060,7 @@ class ReaderItem {
          throw new Error(`Invalid blob type for column ${this.id}: ${Object.prototype.toString.call(rawblob)}`);
 
       const originalColtype = this.column.coltype,
-            view = recontructUnsplitBuffer(rawblob, originalColtype);
+            view = reconstructUnsplitBuffer(rawblob, originalColtype);
 
       // Handle split index types
       switch (originalColtype) {
@@ -1676,7 +1676,7 @@ async function tupleHierarchy(tuple_node, tuple) {
             _name: field.fieldName,
             _typename: 'ROOT::RNTupleField', // pseudo class name, used in draw.mjs
             _kind: 'ROOT::RNTupleField',
-            _title: `Filed of type ${field.typeName}`,
+            _title: `Field of type ${field.typeName}`,
             $tuple: tuple, // reference on tuple, need for drawing
             $field: field
          };
