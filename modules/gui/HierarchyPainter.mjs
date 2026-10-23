@@ -593,8 +593,8 @@ function objectHierarchy(top, obj, args = undefined) {
 }
 
 /** @summary Create hierarchy elements for TTask object
-  * @desc function can be used for different derived classes
-  * we show not only child tasks, but all complex data members
+  * @desc function can be used for different derived classes.
+  * We show not only child tasks, but all complex data members
   * @private */
 function taskHierarchy(item, obj) {
    if (!obj?.fTasks)
@@ -3273,7 +3273,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (!itemname && item && this.#cached_draw_object && !req) {
-         // special handling for online draw when cashed
+         // special handling for online draw when cached
          const obj = this.#cached_draw_object;
          this.#cached_draw_object = undefined;
          return obj;
