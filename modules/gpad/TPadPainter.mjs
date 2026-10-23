@@ -2417,6 +2417,8 @@ class TPadPainter extends ObjectPainter {
             return value;
          if (value <= 0)
             return err;
+         if (log === 3)
+            return Math.log(value);
          value = Math.log10(value);
          if (log > 1)
             value /= Math.log10(log);
