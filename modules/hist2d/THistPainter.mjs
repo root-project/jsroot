@@ -2630,11 +2630,11 @@ class THistPainter extends ObjectPainter {
                   need_redraw = true;
                   fp.fY2NDC = pal.fY1NDC - 0.01;
                   if (fp.fY1NDC > fp.fY2NDC - 0.1)
-                     fp.fY1NDC = Math.max(0, fp.fXYNDC - 0.1);
+                     fp.fY1NDC = Math.max(0, fp.fY2NDC - 0.1);
                } else if ((pal.fY2NDC < 0.5) && (fp.fY1NDC < pal.fY2NDC)) {
                   need_redraw = true;
                   fp.fY1NDC = pal.fY2NDC + 0.05;
-                  if (fp.fXYNDC < fp.fY1NDC + 0.1)
+                  if (fp.fY2NDC < fp.fY1NDC + 0.1)
                      fp.fY2NDC = Math.min(1, fp.fY1NDC + 0.1);
                }
                if (need_redraw && pad) {
