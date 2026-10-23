@@ -94,7 +94,7 @@ class THistDrawOptions {
 
    /** @summary Decode histogram draw options */
    decode(opt, hdim, histo, pp, pad, painter) {
-      this.orginal = opt; // will be overwritten by storeDrawOpt call
+      this.original = opt; // will be overwritten by storeDrawOpt call
 
       this.cutg_name = '';
       if (isStr(opt) && (hdim === 2)) {
@@ -2513,7 +2513,7 @@ class THistPainter extends ObjectPainter {
          else
             Object.assign(pal, { fX1NDC: gStyle.fPadLeftMargin, fX2NDC: 1 - gStyle.fPadRightMargin, fY1NDC: 1.005 - gStyle.fPadTopMargin, fY2NDC: 1.045 - gStyle.fPadTopMargin });
 
-         Object.assign(pal.fAxis, { fChopt: '+', fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11 });
+         Object.assign(pal.fAxis, { fChopt: '+', fLineStyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11 });
 
          if (this.getDimension() === 2) {
             const zaxis = this.getHisto().fZaxis;
