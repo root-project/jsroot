@@ -776,7 +776,7 @@ class TH1Painter extends THistPainter {
          for (i = left; i <= right; ++i) {
             x = xaxis.GetBinLowEdge(i + 1);
 
-            if (this.logx && (x <= 0))
+            if (funcs.logx && (x <= 0))
                continue;
 
             grx = Math.round(funcs.grx(x));
