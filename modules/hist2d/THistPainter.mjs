@@ -1745,7 +1745,6 @@ class THistPainter extends ObjectPainter {
       } else
          statpainter = pp.findPainterFor(stat);
 
-
       if (arg === kOnlyCheck)
          return statpainter?.Enabled || false;
 
@@ -1770,7 +1769,7 @@ class THistPainter extends ObjectPainter {
          statpainter.redraw();
          has_stats = statpainter.Enabled;
       } else {
-         // return promise which will be used to process
+         // return promise
          has_stats = TPavePainter.draw(pp, stat);
       }
 
@@ -2745,7 +2744,7 @@ class THistPainter extends ObjectPainter {
                height: funcs?.getFrameHeight() ?? 400
             };
 
-      if (args.use3d && !funcs.size_x3d || !funcs.size_y3d)
+      if (args.use3d && (!funcs.size_x3d || !funcs.size_y3d))
          args.use3d = false;
 
       if (args.cutg) {
