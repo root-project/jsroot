@@ -2156,6 +2156,12 @@ async function treeProcess(tree, selector, args) {
                      obj[this.name] = res;
                   }
                };
+               // object written by custom streamer of the class, it has version and bytecount
+               if (branch.fType === -1) {
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.classStreamer({}, this.typename);
+                  };
+               }
             }
          }
 
