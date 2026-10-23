@@ -82,7 +82,7 @@ class TRatioPlotPainter extends ObjectPainter {
 
       up_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
          return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax).then(res => {
-            this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax, 'ignory');
+            this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax, 'ignorey');
             return this._ratio_low_fp.o_zoom(up_fp.scale_xmin, up_fp.scale_xmax).then(() => res);
          });
       };
