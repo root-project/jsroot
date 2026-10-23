@@ -352,7 +352,7 @@ class TGraphPainter extends ObjectPainter {
     * @protected */
    _getBins() { return this.#bins; }
 
-   /** @summary Create bins for TF1 drawing */
+   /** @summary Create bins for TGraph drawing */
    createBins() {
       const gr = this.getGraph(),
             o = this.getOptions();
@@ -1772,7 +1772,6 @@ class TGraphPainter extends ObjectPainter {
 
       stats.AddText(func.fName);
 
-      // while TF1 was found, one can be sure that stats is existing
       this.getGraph().fFunctions.Add(stats);
 
       return stats;
