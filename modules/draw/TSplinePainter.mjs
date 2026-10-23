@@ -227,7 +227,7 @@ class TSplinePainter extends ObjectPainter {
          }
 
          for (let n = 0; n < npx; ++n) {
-            let x = xmin + (xmax - xmin) / npx * (n - 1);
+            let x = xmin + (xmax - xmin) / (npx - 1) * n;
             if (funcs.logx)
                x = Math.exp(x);
 
