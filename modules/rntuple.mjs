@@ -752,7 +752,7 @@ async function readHeaderFooter(tuple) {
 }
 
 
-/** @class Base class to read columns/fields from RNtuple
+/** @class Base class to read columns/fields from RNTuple
  * @private */
 
 class ReaderItem {
@@ -1348,9 +1348,9 @@ class PairReaderItem extends ReaderItem {
 }
 
 
-/** @summary Process selector for the RNtuple
+/** @summary Process selector for the RNTuple
   * @desc function similar to the {@link treeProcess}
-  * @param {object} rntuple - instance of RNtuple class
+  * @param {object} rntuple - instance of RNTuple class
   * @param {object} selector - instance of {@link TSelector} class
   * @param {object} [args] - different arguments
   * @param {number} [args.firstentry] - first entry to process, 0 when not specified
@@ -1545,7 +1545,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
 
    return readHeaderFooter(rntuple).then(builder => {
       if (!builder)
-         throw new Error('Not able to read header for the RNtuple');
+         throw new Error('Not able to read header for the RNTuple');
 
       for (let i = 0; i < selector.numBranches(); ++i) {
          const br = selector.getBranch(i),
@@ -1570,7 +1570,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       builder.clusterSummaries.forEach(summary => { handle.lastentry += summary.numEntries; });
 
       if (handle.firstentry >= handle.lastentry)
-         throw new Error('Not able to find entries in the RNtuple');
+         throw new Error('Not able to find entries in the RNTuple');
 
       // select range of entries to process
       handle.process_min = handle.firstentry;
@@ -1603,7 +1603,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       }
 
       if (handle.current_cluster < 0)
-         throw new Error(`Not able to find cluster for entry ${handle.process_min} in the RNtuple`);
+         throw new Error(`Not able to find cluster for entry ${handle.process_min} in the RNTuple`);
 
       handle.current_entry = handle.process_min;
 

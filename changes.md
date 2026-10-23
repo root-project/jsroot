@@ -39,11 +39,11 @@
 2. Fix - JSON production for TWebCanvas
 3. Fix - check evaluated value of TF1
 4. Fix - corrupted page layout in SWAN after calling %rootbrowse
-5. Fix - RNtuple decodeZigzag64 for SplitInt64 columns #410 (@undefined-panda)
+5. Fix - RNTuple decodeZigzag64 for SplitInt64 columns #410 (@undefined-panda)
 
 
 ## Changes in 7.11.0
-1. Implement new data types in `RNtuple`
+1. Implement new data types in `RNTuple`
    - reduced float types kFloat16, kReal32Trunc, kReal32Quant
    - `std::vector`
    - `std::map`, `std::unordered_map`, `std::multimap`, `std::unordered_multimap` with `std::pair`
@@ -81,8 +81,8 @@
 ## Changes in 7.10.2
 1. Fix - correctly process `TLeafB` arrays in tree draw #384
 2. Fix - better detect default ranges in `TGraph` histogram
-3. Fix - convert BigInt before `RNtuple` drawing
-4. Fix - pages and clusters processing in `RNtuple` #390
+3. Fix - convert BigInt before `RNTuple` drawing
+4. Fix - pages and clusters processing in `RNTuple` #390
 5. Fix - extra row for legend header, proper horizontal align https://github.com/root-project/root/issues/21173
 
 
@@ -92,7 +92,7 @@
 
 
 ## Changes in 7.10.0
-1. `RNtuple` support, thanks to Kriti Mahajan https://github.com/Krmjn09
+1. `RNTuple` support, thanks to Kriti Mahajan https://github.com/Krmjn09
 2. Implement `RTreeMapPainter` to display `RNTuple` structure, thanks to Patryk Pilichowski https://github.com/magnustymoteus
 3. Implement `build3d` function for building three.js objects for `TH1/2/3`, `TLatex` `TGeo`, `TGraph2D` classes #368
 4. Draw `TAnnotation3D` in real 3D with handling scene rotation
