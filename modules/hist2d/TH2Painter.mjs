@@ -261,7 +261,8 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
    }
 }
 
-/** @summary Handle 3D triangles with color levels */
+/** @summary Handle 3D triangles with color levels
+ * @private */
 
 class Triangles3DHandler {
 
