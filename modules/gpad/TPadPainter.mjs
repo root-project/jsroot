@@ -1609,6 +1609,7 @@ class TPadPainter extends ObjectPainter {
 
       menu.separator();
 
+      // keep typo in function name "actiavteMenuBar" while assigned from ROOT
       if (isFunc(this.hasMenuBar) && isFunc(this.actiavteMenuBar))
          menu.addchk(this.hasMenuBar(), 'Menu bar', flag => this.actiavteMenuBar(flag));
 
