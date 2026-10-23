@@ -281,7 +281,7 @@ class JSRootMenu {
       if (values.findIndex(match) < 0) {
          miss_current = true;
          values.push(size_value);
-         values = values.sort((a, b) => a > b);
+         values = values.sort((a, b) => a - b);
       }
 
       this.sub(name, () => this.input('Enter value of ' + name, conv(size_value, true), (step >= 1) ? 'int' : 'float').then(set_func), title);
