@@ -261,7 +261,7 @@ class ArrayIterator {
 /** @summary return TStreamerElement associated with the branch - if any
   * @desc unfortunately, branch.fID is not number of element in streamer info
   * @private */
-function findBrachStreamerElement(branch, file) {
+function findBranchStreamerElement(branch, file) {
    if (!branch || !file || (branch._typename !== clTBranchElement) || (branch.fID < 0) || (branch.fStreamerType < 0))
       return null;
 
@@ -324,7 +324,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
    if (with_clones && branch.fClonesName && ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)))
       return branch.fClonesName;
 
-   const s_elem = findBrachStreamerElement(branch, tree.$file);
+   const s_elem = findBranchStreamerElement(branch, tree.$file);
    if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === kBaseClass))
       return s_elem.fName;
 
@@ -451,23 +451,6 @@ function findBranch(tree, name) {
    return (!res || res.rest) ? null : res.branch;
 }
 
-
-/** summary Returns number of branches in the TTree
-  * desc Checks also sub-branches in the branches
-  * return {number} number of branches
-  * private
-function getNumBranches(tree) {
-   function count(obj) {
-      if (!obj?.fBranches)
-         return 0;
-      let nchld = 0;
-      obj.fBranches.arr.forEach(sub => { nchld += count(sub); });
-      return obj.fBranches.arr.length + nchld;
-   }
-
-   return count(tree);
-}
-*/
 
 /**
  * @summary object with single variable in TTree::Draw expression
@@ -1894,6 +1877,7 @@ async function treeProcess(tree, selector, args) {
          read_entry: -1,  // last entry which is already read
          staged_entry: -1, // entry which is staged for reading
          first_readentry: -1, // first entry to read
+         first_entry: 0, // first entry in basket, returned by getBasketEntry
          staged_basket: 0,  // last basket staged for reading
          eindx: 0, // index of last checked entry when selecting baskets
          selected_baskets: [],   // array of selected baskets, used when specific events are selected
@@ -1973,7 +1957,7 @@ async function treeProcess(tree, selector, args) {
          if (!BranchCount2 && (branch.fBranchCount.fStreamerType === kSTL) &&
             ((branch.fStreamerType === kStreamLoop) || (branch.fStreamerType === kOffsetL + kStreamLoop))) {
             // special case when count member from kStreamLoop not assigned as fBranchCount2
-            const elemd = findBrachStreamerElement(branch, handle.file),
+            const elemd = findBranchStreamerElement(branch, handle.file),
                   arrd = branch.fBranchCount.fBranches.arr;
 
             if (elemd?.fCountName && arrd) {
@@ -2038,7 +2022,7 @@ async function treeProcess(tree, selector, args) {
                continue;
             }
 
-            const elem2 = findBrachStreamerElement(br, handle.file);
+            const elem2 = findBranchStreamerElement(br, handle.file);
             if (elem2?.fTypeName === kBaseClass) {
                // if branch is data of base class, map it to original target
                if (br.fTotBytes && !addBranchForReading(br, target_object, target_name, read_mode))
@@ -2166,7 +2150,7 @@ async function treeProcess(tree, selector, args) {
          // only STL containers here
          // if (!elem.fSTLtype) elem = null;
       } else if (is_brelem && (nb_leaves <= 1)) {
-         elem = findBrachStreamerElement(branch, handle.file);
+         elem = findBranchStreamerElement(branch, handle.file);
 
          // this is basic type - can try to solve problem differently
          if (!elem && branch.fStreamerType && (branch.fStreamerType < 20))
@@ -2996,7 +2980,7 @@ function treeIOTest(tree, args) {
 
       selector.Terminate = function(res) {
          if (!isStr(res))
-            res = (!res || this.fails) ? 'FAIL' : 'ok';
+            res = (!res || this.fail) ? 'FAIL' : 'ok';
 
          names[nbr] = res + ' ' + names[nbr];
       };
