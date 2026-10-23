@@ -6,7 +6,7 @@ import { ensureTCanvas } from '../gpad/TCanvasPainter.mjs';
 import { addMoveHandler } from '../gui/utils.mjs';
 import { assignContextMenu, kNoReorder } from '../gui/menu.mjs';
 import { getHPainter } from '../gui/display.mjs';
-import { proivdeEvalPar } from '../base/func.mjs';
+import { provideEvalPar } from '../base/func.mjs';
 
 
 /** @summary Drawing TGaxis
@@ -166,7 +166,7 @@ class TGaxisPainter extends TAxisPainter {
       return promise.then(f => {
          this.axis_func = f;
          if (f)
-            proivdeEvalPar(f);
+            provideEvalPar(f);
       });
    }
 

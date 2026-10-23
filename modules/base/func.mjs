@@ -4,7 +4,7 @@ import * as jsroot_math from './math.mjs';
 /** @summary Assign `evalPar` function for TF1 object
   * @private */
 
-function proivdeEvalPar(obj, check_save) {
+function provideEvalPar(obj, check_save) {
    obj.$math = jsroot_math;
 
    let _func = obj.fTitle, isformula = false, pprefix = '[';
@@ -150,7 +150,7 @@ function getTF1Value(func, x, skip_eval = undefined) {
 
    if (!skip_eval && !func.evalPar) {
       try {
-         if (!proivdeEvalPar(func))
+         if (!provideEvalPar(func))
             iserr = true;
       } catch {
          iserr = true;
@@ -170,4 +170,4 @@ function getTF1Value(func, x, skip_eval = undefined) {
    return (np < 2) || (func.fSave[np + 1] === func.fSave[np + 2]) ? 0 : _getTF1Save(func, x);
 }
 
-export { proivdeEvalPar, getTF1Value, _getTF1Save };
+export { provideEvalPar, getTF1Value, _getTF1Save };
