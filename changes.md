@@ -6,6 +6,7 @@
 1. Improve `TGraph` update
 1. When draw `TH2`/`TF2` with "surf same" draw option, only lines are drawn
 1. Implement new "POLF" and "POLN" draw options for polar coordinates for `TH2`
+1. Implement tooltips handling for `TScatter`
 1. Adjust automatic colors handling in `THStack` and `TMultiGraph`
 1. Let copy and paste histogram title, `TLatex` text and `TPave` label via context menu
 1. Use "JSROOT" label for main pad button, hide it after 5 seconds from the drawing

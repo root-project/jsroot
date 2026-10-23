@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '22/10/2026',
+version_date = '23/10/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -329,7 +329,7 @@ settings = {
    /** @summary how many items shown on one level of hierarchy */
    HierarchyLimit: 250,
    /** @summary default display kind for the hierarchy painter */
-   DislpayKind: 'simple',
+   DisplayKind: 'simple',
    /** @summary default left area width in browser layout */
    BrowserWidth: 250,
    /** @summary custom format for all X values, when not specified {@link gStyle.fStatFormat} is used */
@@ -82696,7 +82696,7 @@ class JSRootMenu {
       if (values.findIndex(match) < 0) {
          miss_current = true;
          values.push(size_value);
-         values = values.sort((a, b) => a > b);
+         values = values.sort((a, b) => a - b);
       }
 
       this.sub(name, () => this.input('Enter value of ' + name, conv(size_value, true), (step >= 1) ? 'int' : 'float').then(set_func), title);
@@ -83022,15 +83022,15 @@ class JSRootMenu {
      * like TAttFill, TAttLine, TAttText
      * There is special handling for the frame where attributes handled by the pad
      * @private */
-   addAttributesMenu(painter, preffix) {
+   addAttributesMenu(painter, prefix) {
       const is_frame = painter === painter.getFramePainter(),
             pp = is_frame ? painter.getPadPainter() : null,
-            redraw_arg = !preffix && !is_frame ? 'attribute' : true;
-      if (!preffix)
-         preffix = '';
+            redraw_arg = !prefix && !is_frame ? 'attribute' : true;
+      if (!prefix)
+         prefix = '';
 
       if (painter.lineatt?.used) {
-         this.sub(`${preffix}Line att`);
+         this.sub(`${prefix}Line att`);
          this.addSizeMenu('width', 1, 10, 1, painter.lineatt.width, arg => {
             painter.lineatt.change(undefined, arg);
             changeObjectMember(painter, 'fLineWidth', arg);
@@ -83070,7 +83070,7 @@ class JSRootMenu {
       }
 
       if (painter.fillatt?.used) {
-         this.sub(`${preffix}Fill att`);
+         this.sub(`${prefix}Fill att`);
          this.addColorMenu('color', painter.fillatt.colorindx, arg => {
             painter.fillatt.change(arg, undefined, painter.getCanvSvg());
             changeObjectMember(painter, 'fFillColor', arg, true);
@@ -83087,7 +83087,7 @@ class JSRootMenu {
       }
 
       if (painter.markeratt?.used) {
-         this.sub(`${preffix}Marker att`);
+         this.sub(`${prefix}Marker att`);
          this.addColorMenu('color', painter.markeratt.color, arg => {
             changeObjectMember(painter, 'fMarkerColor', arg, true);
             painter.markeratt.change(arg);
@@ -83114,7 +83114,7 @@ class JSRootMenu {
       }
 
       if (painter.textatt?.used) {
-         this.sub(`${preffix}Text att`);
+         this.sub(`${prefix}Text att`);
 
          this.addFontMenu('font', painter.textatt.font, arg => {
             changeObjectMember(painter, 'fTextFont', arg);
@@ -83485,7 +83485,7 @@ class JSRootMenu {
       this.separator();
 
       this.add('Save settings', () => {
-         const promise = readSettings(true) ? Promise.resolve(true) : this.confirm('Save settings', 'Pressing OK one agreess that JSROOT will store settings in browser local storage');
+         const promise = readSettings(true) ? Promise.resolve(true) : this.confirm('Save settings', 'Pressing OK one agrees that JSROOT will store settings in browser local storage');
          promise.then(res => {
             if (res) {
                saveSettings();
@@ -84140,7 +84140,7 @@ class StandaloneMenu extends JSRootMenu {
   * @param {string} [menuname] - optional menu name
   * @example
   * import { createMenu } from 'https://root.cern/js/latest/modules/gui/menu.mjs';
-  * let menu = await createMenu());
+  * let menu = await createMenu();
   * menu.add('First', () => console.log('Click first'));
   * let flag = true;
   * menu.addchk(flag, 'Checked', arg => console.log(`Now flag is ${arg}`));
@@ -86196,10 +86196,10 @@ class TooltipHandler extends ObjectPainter {
             scale = pp?.getPadScale() ?? 1,
             textheight = (pnt?.touch ? 15 : 11) * scale,
             font = new FontHandler(160, textheight),
-            disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
+            disable_tooltips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 
       if (pnt) {
-         pnt.disabled = disable_tootlips; // indicate that highlighting is not required
+         pnt.disabled = disable_tooltips; // indicate that highlighting is not required
          pnt.painters = true; // get also painter
       }
 
@@ -86311,7 +86311,7 @@ class TooltipHandler extends ObjectPainter {
       this.showObjectStatus(name, title, info, coordinates);
 
       // end of closing tooltips
-      if (!pnt || disable_tootlips || !hints.length || (maxlen === 0) || (show_only_best && !best_hint)) {
+      if (!pnt || disable_tooltips || !hints.length || (maxlen === 0) || (show_only_best && !best_hint)) {
          hintsg.remove();
          return;
       }
@@ -86359,7 +86359,7 @@ class TooltipHandler extends ObjectPainter {
             viewmode = 'right';
             posx = frame_rect.width - 60;
          } else
-            posx = hintsg.property('startx');
+            posx = hintsg.property('startx') ?? 20;
       }
 
       if (viewmode !== hintsg.property('viewmode')) {
@@ -86411,7 +86411,7 @@ class TooltipHandler extends ObjectPainter {
             if ((gapminx === -1111) && (gapmaxx === -1111))
                gapminx = gapmaxx = hint.x;
             gapminx = Math.min(gapminx, hint.x);
-            gapmaxx = Math.min(gapmaxx, hint.x);
+            gapmaxx = Math.max(gapmaxx, hint.x);
          }
 
          group.attr('x', posx)
@@ -86715,7 +86715,8 @@ class FrameInteractive extends TooltipHandler {
       if (zoom.dleft || zoom.dright) {
          if (!settings.Zooming)
             return false;
-         // in 3d mode with orbit control ignore simple arrows
+         // in 3d mode with orbit control ignore simple arrows,
+         // intentionally no compare for indexOf while only Ctrl is allowed
          if (this.mode3d && key.indexOf('Ctrl'))
             return false;
          this.analyzeMouseWheelEvent(null, zoom, 0.5);
@@ -90306,7 +90307,7 @@ class BatchDisplay extends MDIDisplay {
 
       const frame =
          this.jsdom_body.append('div')
-             .style('visible', 'hidden')
+             .style('visibility', 'hidden')
              .attr('width', this.width).attr('height', this.height)
              .style('width', this.width + 'px').style('height', this.height + 'px')
              .attr('id', 'jsroot_batch_' + this.frames.length)
@@ -90545,7 +90546,7 @@ class BrowserLayout {
       if (!keep_status)
          this.createStatusLine(0, 'delete');
 
-      this.toggleBrowserVisisbility(true);
+      this.toggleBrowserVisibility(true);
 
       if (keep_status) {
          // try to delete only content, not status
@@ -90582,7 +90583,7 @@ class BrowserLayout {
    toggleKind(browser_kind) {
       if (this.browser_visible !== 'changing') {
          if (browser_kind === this.browser_kind)
-            this.toggleBrowserVisisbility();
+            this.toggleBrowserVisibility();
          else
             this.toggleBrowserKind(browser_kind);
       }
@@ -90764,7 +90765,7 @@ class BrowserLayout {
    }
 
    /** @summary Toggle browser visibility */
-   toggleBrowserVisisbility(fast_close) {
+   toggleBrowserVisibility(fast_close) {
       if (!this.gui_div || isStr(this.browser_visible))
          return;
 
@@ -92583,6 +92584,7 @@ class TPadPainter extends ObjectPainter {
 
       menu.separator();
 
+      // keep typo in function name "actiavteMenuBar" while assigned from ROOT
       if (isFunc(this.hasMenuBar) && isFunc(this.actiavteMenuBar))
          menu.addchk(this.hasMenuBar(), 'Menu bar', flag => this.actiavteMenuBar(flag));
 
@@ -93391,6 +93393,8 @@ class TPadPainter extends ObjectPainter {
             return value;
          if (value <= 0)
             return err;
+         if (log === 3)
+            return Math.log(value);
          value = Math.log10(value);
          if (log > 1)
             value /= Math.log10(log);
@@ -95258,7 +95262,7 @@ class TPavePainter extends ObjectPainter {
                      if (pt.fY1NDC > pt.fY2NDC)
                         pt.fY2NDC = Math.min(0.995, pt.fY1NDC + stath + extrah);
                      if (pt.fX1NDC > pt.fX2NDC)
-                        pt.fY2NDC = Math.min(0.995, pt.fX1NDC + statw);
+                        pt.fX2NDC = Math.min(0.995, pt.fX1NDC + statw);
                   }
                }
             }
@@ -96344,7 +96348,7 @@ class TPavePainter extends ObjectPainter {
             remain = remain.slice(0, p) + remain.slice(p + nn.length);
          }
       });
-      menu.addSelectMenu('positon', posarr, value || 'nb', arg => {
+      menu.addSelectMenu('position', posarr, value || 'nb', arg => {
          arg += remain;
          this.setPaveDrawOption(arg);
          this.interactiveRedraw(true, `exec:${set_opt}("${arg}")`);
@@ -96463,7 +96467,7 @@ class TPavePainter extends ObjectPainter {
          menu.endsub();
 
          menu.sub('SetOptFit', () => {
-            menu.input('Enter OptStat', pave.fOptFit, 'int').then(fmt => {
+            menu.input('Enter OptFit', pave.fOptFit, 'int').then(fmt => {
                pave.fOptFit = fmt;
                this.interactiveRedraw(true, `exec:SetOptFit(${fmt})`);
             });
@@ -96580,17 +96584,17 @@ class TPavePainter extends ObjectPainter {
       return this.matchObjectType(clTPaveStats);
    }
 
-   /** @summary Returns true when stat box is drawn */
+   /** @summary Returns true when pave text is drawn */
    isPaveText() {
       return this.matchObjectType(clTPaveText);
    }
 
-   /** @summary Returns true when stat box is drawn */
+   /** @summary Returns true when paves text is drawn */
    isPavesText() {
       return this.matchObjectType(clTPavesText);
    }
 
-   /** @summary Returns true when stat box is drawn */
+   /** @summary Returns true when palette is drawn */
    isPalette() {
       return this.matchObjectType(clTPaletteAxis);
    }
@@ -97031,7 +97035,7 @@ class THistDrawOptions {
 
    /** @summary Decode histogram draw options */
    decode(opt, hdim, histo, pp, pad, painter) {
-      this.orginal = opt; // will be overwritten by storeDrawOpt call
+      this.original = opt; // will be overwritten by storeDrawOpt call
 
       this.cutg_name = '';
       if (isStr(opt) && (hdim === 2)) {
@@ -98682,7 +98686,6 @@ class THistPainter extends ObjectPainter {
       } else
          statpainter = pp.findPainterFor(stat);
 
-
       if (arg === kOnlyCheck)
          return statpainter?.Enabled || false;
 
@@ -98707,7 +98710,7 @@ class THistPainter extends ObjectPainter {
          statpainter.redraw();
          has_stats = statpainter.Enabled;
       } else {
-         // return promise which will be used to process
+         // return promise
          has_stats = TPavePainter.draw(pp, stat);
       }
 
@@ -99450,7 +99453,7 @@ class THistPainter extends ObjectPainter {
          else
             Object.assign(pal, { fX1NDC: gStyle.fPadLeftMargin, fX2NDC: 1 - gStyle.fPadRightMargin, fY1NDC: 1.005 - gStyle.fPadTopMargin, fY2NDC: 1.045 - gStyle.fPadTopMargin });
 
-         Object.assign(pal.fAxis, { fChopt: '+', fLineSyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11 });
+         Object.assign(pal.fAxis, { fChopt: '+', fLineStyle: 1, fLineWidth: 1, fTextAngle: 0, fTextAlign: 11 });
 
          if (this.getDimension() === 2) {
             const zaxis = this.getHisto().fZaxis;
@@ -99567,11 +99570,11 @@ class THistPainter extends ObjectPainter {
                   need_redraw = true;
                   fp.fY2NDC = pal.fY1NDC - 0.01;
                   if (fp.fY1NDC > fp.fY2NDC - 0.1)
-                     fp.fY1NDC = Math.max(0, fp.fXYNDC - 0.1);
+                     fp.fY1NDC = Math.max(0, fp.fY2NDC - 0.1);
                } else if ((pal.fY2NDC < 0.5) && (fp.fY1NDC < pal.fY2NDC)) {
                   need_redraw = true;
                   fp.fY1NDC = pal.fY2NDC + 0.05;
-                  if (fp.fXYNDC < fp.fY1NDC + 0.1)
+                  if (fp.fY2NDC < fp.fY1NDC + 0.1)
                      fp.fY2NDC = Math.min(1, fp.fY1NDC + 0.1);
                }
                if (need_redraw && pad) {
@@ -99682,7 +99685,7 @@ class THistPainter extends ObjectPainter {
                height: funcs?.getFrameHeight() ?? 400
             };
 
-      if (args.use3d && !funcs.size_x3d || !funcs.size_y3d)
+      if (args.use3d && (!funcs.size_x3d || !funcs.size_y3d))
          args.use3d = false;
 
       if (args.cutg) {
@@ -99861,7 +99864,7 @@ class THistPainter extends ObjectPainter {
             res = { low: err, up: err },
             kind = this.getOptions().Poisson || histo.fBinStatErrOpt;
 
-      if (!kind || (histo.fSumw2.fN && histo.fTsumw !== histo.fTsumw2) || (content < 0))
+      if (!kind || (histo.fSumw2?.length && histo.fTsumw !== histo.fTsumw2) || (content < 0))
          return res;
 
       const alpha = (kind === kPoisson2) ? 0.05 : 1 - 0.682689492,
@@ -99913,7 +99916,7 @@ class THistPainter extends ObjectPainter {
       }).then(() => {
          return painter.drawHistTitle();
       }).then(() => {
-         if (!painter.Mode3D && painter.options.AutoZoom)
+         if (!painter.options.Mode3D && painter.options.AutoZoom)
             return painter.autoZoom();
       }).then(() => {
          if (painter.options.Project && !painter.mode3d && isFunc(painter.toggleProjection))
@@ -100177,7 +100180,8 @@ function buildHist2dContour(histo, handle, levels, palette, contour_func) {
    }
 }
 
-/** @summary Handle 3D triangles with color levels */
+/** @summary Handle 3D triangles with color levels
+ * @private */
 
 class Triangles3DHandler {
 
@@ -101251,7 +101255,7 @@ let TH2Painter$2 = class TH2Painter extends THistPainter {
       if ((print_under > 0) || (print_over > 0)) {
          const get = i => data.matrix[i].toFixed(0);
 
-         stat.addText(`${get(6)} | ${get(7)} | ${get(7)}`);
+         stat.addText(`${get(6)} | ${get(7)} | ${get(8)}`);
          stat.addText(`${get(3)} | ${get(4)} | ${get(5)}`);
          stat.addText(`${get(0)} | ${get(1)} | ${get(2)}`);
       }
@@ -106176,7 +106180,7 @@ function drawBinsSurf3D(painter, is_v7 = false) {
 /** @summary Assign `evalPar` function for TF1 object
   * @private */
 
-function proivdeEvalPar(obj, check_save) {
+function provideEvalPar(obj, check_save) {
    obj.$math = jsroot_math;
 
    let _func = obj.fTitle, isformula = false, pprefix = '[';
@@ -106322,7 +106326,7 @@ function getTF1Value(func, x, skip_eval = undefined) {
 
    if (!skip_eval && !func.evalPar) {
       try {
-         if (!proivdeEvalPar(func))
+         if (!provideEvalPar(func))
             iserr = true;
       } catch {
          iserr = true;
@@ -106443,11 +106447,11 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          }
       }
 
-      // account overflow/underflow bins
-      if (is_profile)
-         hsum += histo.fBinEntries[0] + histo.fBinEntries[this.nbinsx + 1];
-      else
-         hsum += histo.getBinContent(0) + histo.getBinContent(this.nbinsx + 1);
+      // account underflow and overflow bin, check if already was included
+      if (imin >= 0)
+         hsum += is_profile ? histo.fBinEntries[0] : histo.getBinContent(0);
+      if (imax <= this.nbinsx)
+         hsum += is_profile ? histo.fBinEntries[this.nbinsx + 1] : histo.getBinContent(this.nbinsx + 1);
 
       this.stat_entries = hsum;
 
@@ -107113,7 +107117,7 @@ let TH1Painter$2 = class TH1Painter extends THistPainter {
          for (i = left; i <= right; ++i) {
             x = xaxis.GetBinLowEdge(i + 1);
 
-            if (this.logx && (x <= 0))
+            if (funcs.logx && (x <= 0))
                continue;
 
             grx = Math.round(funcs.grx(x));
@@ -108045,7 +108049,7 @@ function drawTH2PolyLego(painter) {
             z1: this.draw_z0,
             z2: this.draw_z1,
             bin: this.bins_index,
-            value: bin.fContent,
+            value: tbin.fContent,
             color: this.tip_color,
             lines: p.getPolyBinTooltips(this.bins_index)
          };
@@ -108331,10 +108335,10 @@ class TH3Painter extends THistPainter {
                   np += w;
                   sumx3 += w * Math.pow(xx - res.meanx, 3);
                   sumy3 += w * Math.pow(yy - res.meany, 3);
-                  sumz3 += w * Math.pow(zz - res.meany, 3);
+                  sumz3 += w * Math.pow(zz - res.meanz, 3);
                   sumx4 += w * Math.pow(xx - res.meanx, 4);
                   sumy4 += w * Math.pow(yy - res.meany, 4);
-                  sumz4 += w * Math.pow(yy - res.meany, 4);
+                  sumz4 += w * Math.pow(zz - res.meanz, 4);
                }
             }
          }
@@ -108664,7 +108668,7 @@ class TH3Painter extends THistPainter {
       const cntr = use_colors ? this.getContour() : null,
             palette = use_colors ? this.getHistPalette() : null,
             bins_matrixes = [], bins_colors = [], bins_ids = [], negative_matrixes = [], bin_opacities = [],
-            transfer = (this.transferFunc && proivdeEvalPar(this.transferFunc, true)) ? this.transferFunc : null,
+            transfer = (this.transferFunc && provideEvalPar(this.transferFunc, true)) ? this.transferFunc : null,
             get_bin_weight = content => {
                if ((exclude_content >= 0) && (content < exclude_content))
                   return 0;
@@ -109359,7 +109363,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
     * @protected */
    _getBins() { return this.#bins; }
 
-   /** @summary Create bins for TF1 drawing */
+   /** @summary Create bins for TGraph drawing */
    createBins() {
       const gr = this.getGraph(),
             o = this.getOptions();
@@ -110779,7 +110783,6 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
 
       stats.AddText(func.fName);
 
-      // while TF1 was found, one can be sure that stats is existing
       this.getGraph().fFunctions.Add(stats);
 
       return stats;
@@ -128164,7 +128167,6 @@ class TFile {
       this.fSeekInfo = 0;
       this.fNbytesInfo = 0;
       this.fTagOffset = 0;
-      this.fStreamers = 0;
       this.fStreamerInfos = null;
       this.fFileName = '';
       this.fTimeout = settings.FilesTimeout ?? 0;
@@ -128179,10 +128181,9 @@ class TFile {
          this.fAcceptRanges = false;
       }
 
-      if (this.fURL.at(-1) === '^') {
+      // DEPRECATED just for compatibility with old function, remove in version 8
+      if (this.fURL.at(-1) === '^')
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
-         this.fSkipHeadRequest = true;
-      }
 
       if (this.fURL.at(-1) === '-') {
          this.fURL = this.fURL.slice(0, this.fURL.length - 1);
@@ -128214,7 +128215,7 @@ class TFile {
     * @desc Allows to specify fallback server if main server fails
     * @param {object} remap - looks like { 'https://original.server/': 'https://fallback.server/' } */
    assignRemap(remap) {
-      if (!remap && !isObject(remap))
+      if (!isObject(remap))
          return;
 
       for (const key in remap) {
@@ -128226,7 +128227,7 @@ class TFile {
       }
    }
 
-   /** @summary Assign BufferArray with file contentOpen file
+   /** @summary Assign BufferArray with file content
      * @private */
    assignFileContent(bufArray) {
       this.fFileContent = new TBuffer(new DataView(bufArray));
@@ -129617,7 +129618,7 @@ class ArrayIterator {
 /** @summary return TStreamerElement associated with the branch - if any
   * @desc unfortunately, branch.fID is not number of element in streamer info
   * @private */
-function findBrachStreamerElement(branch, file) {
+function findBranchStreamerElement(branch, file) {
    if (!branch || !file || (branch._typename !== clTBranchElement) || (branch.fID < 0) || (branch.fStreamerType < 0))
       return null;
 
@@ -129680,7 +129681,7 @@ function getBranchObjectClass(branch, tree, with_clones = false, with_leafs = fa
    if (with_clones && branch.fClonesName && ((branch.fType === kClonesNode) || (branch.fType === kSTLNode)))
       return branch.fClonesName;
 
-   const s_elem = findBrachStreamerElement(branch, tree.$file);
+   const s_elem = findBranchStreamerElement(branch, tree.$file);
    if ((branch.fType === kBaseClassNode) && s_elem && (s_elem.fTypeName === kBaseClass))
       return s_elem.fName;
 
@@ -129807,23 +129808,6 @@ function findBranch(tree, name) {
    return (!res || res.rest) ? null : res.branch;
 }
 
-
-/** summary Returns number of branches in the TTree
-  * desc Checks also sub-branches in the branches
-  * return {number} number of branches
-  * private
-function getNumBranches(tree) {
-   function count(obj) {
-      if (!obj?.fBranches)
-         return 0;
-      let nchld = 0;
-      obj.fBranches.arr.forEach(sub => { nchld += count(sub); });
-      return obj.fBranches.arr.length + nchld;
-   }
-
-   return count(tree);
-}
-*/
 
 /**
  * @summary object with single variable in TTree::Draw expression
@@ -131249,6 +131233,7 @@ async function treeProcess(tree, selector, args) {
          read_entry: -1,  // last entry which is already read
          staged_entry: -1, // entry which is staged for reading
          first_readentry: -1, // first entry to read
+         first_entry: 0, // first entry in basket, returned by getBasketEntry
          staged_basket: 0,  // last basket staged for reading
          eindx: 0, // index of last checked entry when selecting baskets
          selected_baskets: [],   // array of selected baskets, used when specific events are selected
@@ -131328,7 +131313,7 @@ async function treeProcess(tree, selector, args) {
          if (!BranchCount2 && (branch.fBranchCount.fStreamerType === kSTL) &&
             ((branch.fStreamerType === kStreamLoop) || (branch.fStreamerType === kOffsetL + kStreamLoop))) {
             // special case when count member from kStreamLoop not assigned as fBranchCount2
-            const elemd = findBrachStreamerElement(branch, handle.file),
+            const elemd = findBranchStreamerElement(branch, handle.file),
                   arrd = branch.fBranchCount.fBranches.arr;
 
             if (elemd?.fCountName && arrd) {
@@ -131393,7 +131378,7 @@ async function treeProcess(tree, selector, args) {
                continue;
             }
 
-            const elem2 = findBrachStreamerElement(br, handle.file);
+            const elem2 = findBranchStreamerElement(br, handle.file);
             if (elem2?.fTypeName === kBaseClass) {
                // if branch is data of base class, map it to original target
                if (br.fTotBytes && !addBranchForReading(br, target_object, target_name, read_mode))
@@ -131521,7 +131506,7 @@ async function treeProcess(tree, selector, args) {
          // only STL containers here
          // if (!elem.fSTLtype) elem = null;
       } else if (is_brelem && (nb_leaves <= 1)) {
-         elem = findBrachStreamerElement(branch, handle.file);
+         elem = findBranchStreamerElement(branch, handle.file);
 
          // this is basic type - can try to solve problem differently
          if (!elem && branch.fStreamerType && (branch.fStreamerType < 20))
@@ -132351,7 +132336,7 @@ function treeIOTest(tree, args) {
 
       selector.Terminate = function(res) {
          if (!isStr(res))
-            res = (!res || this.fails) ? 'FAIL' : 'ok';
+            res = (!res || this.fail) ? 'FAIL' : 'ok';
 
          names[nbr] = res + ' ' + names[nbr];
       };
@@ -168631,8 +168616,8 @@ function objectHierarchy(top, obj, args = undefined) {
 }
 
 /** @summary Create hierarchy elements for TTask object
-  * @desc function can be used for different derived classes
-  * we show not only child tasks, but all complex data members
+  * @desc function can be used for different derived classes.
+  * We show not only child tasks, but all complex data members
   * @private */
 function taskHierarchy(item, obj) {
    if (!obj?.fTasks)
@@ -169161,8 +169146,11 @@ class HierarchyPainter extends BasePainter {
      * @param {object} [elem] - HTML element for command execution
      * @return {Promise} with command result */
    async executeCommand(itemname, elem, ...userargs) {
-      const hitem = this.findItem(itemname),
-            url = this.getOnlineItemUrl(hitem) + '/cmd.json',
+      const hitem = this.findItem(itemname);
+      if (!hitem)
+         return false;
+
+      const url = this.getOnlineItemUrl(hitem) + '/cmd.json',
             d3node = select(elem),
             cmdargs = [];
 
@@ -170845,7 +170833,7 @@ class HierarchyPainter extends BasePainter {
          if (!this.brlayout.browser_kind)
             return this.createBrowser('float', true).then(() => find_next());
          if (!this.brlayout.browser_visible)
-            this.brlayout.toggleBrowserVisisbility();
+            this.brlayout.toggleBrowserVisibility();
       }
 
       // use recursion
@@ -171306,7 +171294,7 @@ class HierarchyPainter extends BasePainter {
       }
 
       if (!itemname && item && this.#cached_draw_object && !req) {
-         // special handling for online draw when cashed
+         // special handling for online draw when cached
          const obj = this.#cached_draw_object;
          this.#cached_draw_object = undefined;
          return obj;
@@ -171883,8 +171871,8 @@ class HierarchyPainter extends BasePainter {
       if (!this.disp_kind) {
          if (isStr(layout) && layout)
             this.disp_kind = layout;
-         else if (settings.DislpayKind && settings.DislpayKind !== 'simple')
-            this.disp_kind = settings.DislpayKind;
+         else if (settings.DisplayKind && settings.DisplayKind !== 'simple')
+            this.disp_kind = settings.DisplayKind;
          else {
             const _kinds = ['simple', 'simple', 'vert2', 'vert21', 'vert22', 'vert32',
                             'vert222', 'vert322', 'vert332', 'vert333'];
@@ -172206,7 +172194,7 @@ class HierarchyPainter extends BasePainter {
          layout.on('change', ev => {
             const kind = ev.target.value || 'flex';
             this.setDisplay(kind, this.gui_div + '_drawing');
-            settings.DislpayKind = kind;
+            settings.DisplayKind = kind;
          });
       }
 
@@ -174588,7 +174576,7 @@ class TGraphTimePainter extends ObjectPainter {
       } else {
          let sleeptime = Math.max(gr.fSleepTime, 10);
 
-         if (++this.#step > gr.fSteps.arr.length) {
+         if (++this.#step >= gr.fSteps.arr.length) {
             if (o.repeat) {
                this.#step = 0; // start again
                sleeptime = Math.max(5000, 5 * sleeptime); // increase sleep time
@@ -175731,7 +175719,8 @@ class TGraphDelaunay {
 
 } // class TGraphDelaunay
 
-/** @summary Function handles tooltips in the mesh */
+/** @summary Function handles tooltips in the mesh
+ * @private */
 function _graph2DTooltip(intersect) {
    let indx = Math.floor(intersect.index / this.nvertex);
    if ((indx < 0) || (indx >= this.index.length))
@@ -177240,13 +177229,13 @@ class TF1Painter extends TH1Painter$2 {
          if (!tf1.evalPar) {
             try {
                if (this.isTF12()) {
-                  if (proivdeEvalPar(tf1.fF2)) {
+                  if (provideEvalPar(tf1.fF2)) {
                      tf1.evalPar = function(x) {
                         return this.fCase ? this.fF2.evalPar(x, this.fXY) : this.fF2.evalPar(this.fXY, x);
                      };
                   } else
                      iserror = true;
-               } else if (!proivdeEvalPar(tf1))
+               } else if (!provideEvalPar(tf1))
                   iserror = true;
             } catch {
                iserror = true;
@@ -177840,6 +177829,55 @@ class TScatterPainter extends TGraphPainter$1 {
       this.#color_palette = undefined;
    }
 
+   /** @summary Fill tooltip lines */
+   getTooltips(bin) {
+      const lines = super.getTooltips(bin),
+            scatter = this.getObject();
+
+      if (scatter.fColor && scatter.fColor[bin.indx] !== undefined)
+         lines.push('col = ' + floatToString(scatter.fColor[bin.indx], '6.4g'));
+      if (scatter.fSize && scatter.fSize[bin.indx] !== undefined)
+         lines.push('size = ' + floatToString(scatter.fSize[bin.indx], '6.4g'));
+
+      return lines;
+   }
+
+   /** @summary Extract tooltop for scatter */
+   extractTooltip(pnt) {
+      if (!pnt)
+         return null;
+      const fp = this.get_fp(),
+            funcs = fp.getGrFuncs(),
+            bins = this._getBins();
+      let findbin = null, best_dist2 = 400;
+      for (let i = 0; i < bins.length; ++i) {
+         const bin = bins[i],
+               grx = funcs.grx(bin.x),
+               gry = funcs.gry(bin.y),
+               dist2 = (grx - pnt.x) ** 2 + (gry - pnt.y) ** 2;
+         if (dist2 < best_dist2) {
+            best_dist2 = dist2;
+            findbin = bin;
+         }
+      }
+      if (findbin === null)
+         return null;
+
+      const scatter = this.getGraph();
+      return {
+         bin: findbin.indx,
+         name: scatter.fName, title: scatter.fTitle,
+         x: funcs.grx(findbin.x),
+         gry1: funcs.gry(findbin.y),
+         gry2: funcs.gry(findbin.y),
+         radius: findbin.r,
+         color: 'blue',
+         lines: this.getTooltips(findbin),
+         usepath: true
+      };
+   }
+
+
    /** @summary Actual drawing of TScatter */
    async drawGraph() {
       const fp = this.get_fp(),
@@ -177914,6 +177952,8 @@ class TScatterPainter extends TGraphPainter$1 {
          g.append('svg:path')
           .attr('d', handle.create(grx, gry))
           .call(handle.func);
+
+         pnt.r = handle.getFullSize() / 2;
       }
 
       return this;
@@ -178146,9 +178186,9 @@ class TRatioPlotPainter extends ObjectPainter {
       up_fp._ratio_low_fp = low_fp;
       up_fp._ratio_painter = this;
 
-      up_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
-         return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax).then(res => {
-            this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax, 'ignory');
+      up_fp.zoom = function(xmin, xmax, ymin, ymax, zmin, zmax, interactive) {
+         return this.o_zoom(xmin, xmax, ymin, ymax, zmin, zmax, interactive).then(res => {
+            this._ratio_painter.setGridsRange(up_fp.scale_xmin, up_fp.scale_xmax, 'ignorey');
             return this._ratio_low_fp.o_zoom(up_fp.scale_xmin, up_fp.scale_xmax).then(() => res);
          });
       };
@@ -179042,7 +179082,7 @@ class TF2Painter extends TH2Painter {
       if (!this.#use_saved_points) {
          let iserror = false;
 
-         if (!func.evalPar && !proivdeEvalPar(func))
+         if (!func.evalPar && !provideEvalPar(func))
             iserror = true;
 
          ensureBins(npx, npy);
@@ -179337,7 +179377,7 @@ class TF3Painter extends TH2Painter {
    /** @summary Redraw TF2
      * @private */
    redraw(reason) {
-      if (!this.#use_saved_points && (reason === 'logx' || reason === 'logy' || reason === 'logy' || reason === 'zoom')) {
+      if (!this.#use_saved_points && (reason === 'logx' || reason === 'logy' || reason === 'logz' || reason === 'zoom')) {
          this.createTF3Histogram(this.#func, this.getHisto());
          this.scanContent();
       }
@@ -179410,7 +179450,7 @@ class TF3Painter extends TH2Painter {
       if (!this.#use_saved_points) {
          let iserror = false;
 
-         if (!func.evalPar && !proivdeEvalPar(func))
+         if (!func.evalPar && !provideEvalPar(func))
             iserror = true;
 
          ensureBins(npx, npy);
@@ -179703,7 +179743,7 @@ class TSplinePainter extends ObjectPainter {
          knot = spline.fPoly[indx];
          yy = this.eval(knot, xx);
 
-         if ((indx < spline.fN - 1) && (Math.abs(spline.fPoly[indx + 1].fX - xx) < Math.abs(xx - knot.fX)))
+         if ((indx < spline.fNp - 1) && (Math.abs(spline.fPoly[indx + 1].fX - xx) < Math.abs(xx - knot.fX)))
             knot = spline.fPoly[++indx];
 
          if (Math.abs(funcs.grx(knot.fX) - pnt.x) < 0.5 * this.#knot_size) {
@@ -179798,7 +179838,7 @@ class TSplinePainter extends ObjectPainter {
          }
 
          for (let n = 0; n < npx; ++n) {
-            let x = xmin + (xmax - xmin) / npx * (n - 1);
+            let x = xmin + (xmax - xmin) / (npx - 1) * n;
             if (funcs.logx)
                x = Math.exp(x);
 
@@ -180775,7 +180815,7 @@ class TGaxisPainter extends TAxisPainter {
    }
 
    /** @summary Check if there is function for TGaxis can be found */
-   async checkFuncion() {
+   async checkFunction() {
       const gaxis = this.getObject();
       if (!gaxis.fFunctionName) {
          this.axis_func = null;
@@ -180797,7 +180837,7 @@ class TGaxisPainter extends TAxisPainter {
       return promise.then(f => {
          this.axis_func = f;
          if (f)
-            proivdeEvalPar(f);
+            provideEvalPar(f);
       });
    }
 
@@ -180856,7 +180896,7 @@ class TGaxisPainter extends TAxisPainter {
       return ensureTCanvas(painter, false).then(() => {
          if (opt)
             painter.convertTo(opt);
-         return painter.checkFuncion();
+         return painter.checkFunction();
       }).then(() => painter.redraw());
    }
 
@@ -181627,7 +181667,7 @@ class RBufferReader {
 
 /** @summary Rearrange bytes from split format to normal format (row-wise) for decoding
  * @private */
-function recontructUnsplitBuffer(view, coltype) {
+function reconstructUnsplitBuffer(view, coltype) {
    // Determine byte size based on column type
    let byteSize;
    switch (coltype) {
@@ -181668,7 +181708,7 @@ function recontructUnsplitBuffer(view, coltype) {
    return outView;
 }
 
-/** @summary Decode a 32 bit intex buffer
+/** @summary Decode a 32 bit index buffer
  * @private */
 function decodeIndex32(view) {
    for (let o = 0, prev = 0; o < view.byteLength; o += 4) {
@@ -181678,7 +181718,7 @@ function decodeIndex32(view) {
    }
 }
 
-/** @summary Decode a 64 bit intex buffer
+/** @summary Decode a 64 bit index buffer
  * @private */
 function decodeIndex64(view, shift) {
    for (let o = 0, prev = 0n; o < view.byteLength; o += (8 + shift)) {
@@ -181927,7 +181967,7 @@ class RNTupleDescriptorBuilder {
             index: i
          };
          column.isDeferred = function() {
-            return (this.flags & RNTupleDescriptorBuilder.kFlagDeferredColumn) !== 0;
+            return (this.flags & kFlagDeferredColumn) !== 0;
          };
          column.isSuppressed = function() {
             return this.firstElementIndex !== null && this.firstElementIndex < 0;
@@ -182181,7 +182221,7 @@ async function readHeaderFooter(tuple) {
       if (!header_blob || !footer_blob)
          throw new Error('Failure when uncompress header and footer blobs');
 
-      tuple.builder = new RNTupleDescriptorBuilder;
+      tuple.builder = new RNTupleDescriptorBuilder();
       tuple.builder.deserializeHeader(header_blob);
       tuple.builder.deserializeFooter(footer_blob);
 
@@ -182229,7 +182269,7 @@ async function readHeaderFooter(tuple) {
 }
 
 
-/** @class Base class to read columns/fields from RNtuple
+/** @class Base class to read columns/fields from RNTuple
  * @private */
 
 class ReaderItem {
@@ -182537,7 +182577,7 @@ class ReaderItem {
          throw new Error(`Invalid blob type for column ${this.id}: ${Object.prototype.toString.call(rawblob)}`);
 
       const originalColtype = this.column.coltype,
-            view = recontructUnsplitBuffer(rawblob, originalColtype);
+            view = reconstructUnsplitBuffer(rawblob, originalColtype);
 
       // Handle split index types
       switch (originalColtype) {
@@ -182825,9 +182865,9 @@ class PairReaderItem extends ReaderItem {
 }
 
 
-/** @summary Process selector for the RNtuple
+/** @summary Process selector for the RNTuple
   * @desc function similar to the {@link treeProcess}
-  * @param {object} rntuple - instance of RNtuple class
+  * @param {object} rntuple - instance of RNTuple class
   * @param {object} selector - instance of {@link TSelector} class
   * @param {object} [args] - different arguments
   * @param {number} [args.firstentry] - first entry to process, 0 when not specified
@@ -183020,7 +183060,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
 
    return readHeaderFooter(rntuple).then(builder => {
       if (!builder)
-         throw new Error('Not able to read header for the RNtuple');
+         throw new Error('Not able to read header for the RNTuple');
 
       for (let i = 0; i < selector.numBranches(); ++i) {
          const br = selector.getBranch(i),
@@ -183045,7 +183085,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       builder.clusterSummaries.forEach(summary => { handle.lastentry += summary.numEntries; });
 
       if (handle.firstentry >= handle.lastentry)
-         throw new Error('Not able to find entries in the RNtuple');
+         throw new Error('Not able to find entries in the RNTuple');
 
       // select range of entries to process
       handle.process_min = handle.firstentry;
@@ -183078,7 +183118,7 @@ async function rntupleProcess(rntuple, selector, args = {}) {
       }
 
       if (handle.current_cluster < 0)
-         throw new Error(`Not able to find cluster for entry ${handle.process_min} in the RNtuple`);
+         throw new Error(`Not able to find cluster for entry ${handle.process_min} in the RNTuple`);
 
       handle.current_entry = handle.process_min;
 
@@ -183151,7 +183191,7 @@ async function tupleHierarchy(tuple_node, tuple) {
             _name: field.fieldName,
             _typename: 'ROOT::RNTupleField', // pseudo class name, used in draw.mjs
             _kind: 'ROOT::RNTupleField',
-            _title: `Filed of type ${field.typeName}`,
+            _title: `Field of type ${field.typeName}`,
             $tuple: tuple, // reference on tuple, need for drawing
             $field: field
          };
@@ -189340,6 +189380,24 @@ class RPavePainter extends RObjectPainter {
      * @desc assigned depending on pave class */
    async drawContent() { return this; }
 
+   async drawPaveContent() {
+      return this.drawContent().then(() => {
+         if (!this.isBatchMode()) {
+            // TODO: provide pave context menu as in v6
+            if (settings.ContextMenu && this.paveContextMenu)
+               this.getG().on('contextmenu', evnt => this.paveContextMenu(evnt));
+
+            addDragHandler(this, {
+               x: this.pave_x, y: this.pave_y, width: this.pave_width, height: this.pave_height,
+               minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d)
+            });
+         }
+
+         return this;
+      });
+   }
+
+
    /** @summary Draw pave */
    async drawPave() {
       const rect = this.getPadPainter().getPadRect(),
@@ -189365,27 +189423,26 @@ class RPavePainter extends RObjectPainter {
       this.createv7AttFill();
 
       const fr = this.onFrame ? fp.getFrameRect() : rect;
-      let pave_x = 0, pave_y = 0;
       switch (this.corner) {
          case ECorner.kTopLeft:
-            pave_x = fr.x + offsetx;
-            pave_y = fr.y + offsety;
+            this.pave_x = fr.x + offsetx;
+            this.pave_y = fr.y + offsety;
             break;
          case ECorner.kBottomLeft:
-            pave_x = fr.x + offsetx;
-            pave_y = fr.y + fr.height - offsety - pave_height;
+            this.pave_x = fr.x + offsetx;
+            this.pave_y = fr.y + fr.height - offsety - pave_height;
             break;
          case ECorner.kBottomRight:
-            pave_x = fr.x + fr.width - offsetx - pave_width;
-            pave_y = fr.y + fr.height - offsety - pave_height;
+            this.pave_x = fr.x + fr.width - offsetx - pave_width;
+            this.pave_y = fr.y + fr.height - offsety - pave_height;
             break;
          case ECorner.kTopRight:
          default:
-            pave_x = fr.x + fr.width - offsetx - pave_width;
-            pave_y = fr.y + offsety;
+            this.pave_x = fr.x + fr.width - offsetx - pave_width;
+            this.pave_y = fr.y + offsety;
       }
 
-      makeTranslate(g, pave_x, pave_y);
+      makeTranslate(g, this.pave_x, this.pave_y);
 
       g.append('svg:rect')
        .attr('x', 0)
@@ -189398,53 +189455,39 @@ class RPavePainter extends RObjectPainter {
       this.pave_width = pave_width;
       this.pave_height = pave_height;
 
-      // here should be fill and draw of text
-
-      return this.drawContent().then(() => {
-         if (!this.isBatchMode()) {
-            // TODO: provide pave context menu as in v6
-            if (settings.ContextMenu && this.paveContextMenu)
-               g.on('contextmenu', evnt => this.paveContextMenu(evnt));
-
-            addDragHandler(this, {
-               x: pave_x, y: pave_y, width: pave_width, height: pave_height,
-               minwidth: 20, minheight: 20, redraw: d => this.sizeChanged(d)
-            });
-         }
-
-         return this;
-      });
+      // draw content and append interactivity
+      return this.drawPaveContent();
    }
 
    /** @summary Process interactive moving of the stats box */
    sizeChanged(drag) {
       this.pave_width = drag.width;
       this.pave_height = drag.height;
+      this.pave_x = drag.x;
+      this.pave_y = drag.y;
 
-      const pave_x = drag.x,
-            pave_y = drag.y,
-            rect = this.getPadPainter().getPadRect(),
+      const rect = this.getPadPainter().getPadRect(),
             fr = this.onFrame ? this.getFramePainter().getFrameRect() : rect,
             changes = {};
       let offsetx, offsety;
 
       switch (this.corner) {
          case ECorner.kTopLeft:
-            offsetx = pave_x - fr.x;
-            offsety = pave_y - fr.y;
+            offsetx = this.pave_x - fr.x;
+            offsety = this.pave_y - fr.y;
             break;
          case ECorner.kBottomLeft:
-            offsetx = pave_x - fr.x;
-            offsety = fr.y + fr.height - pave_y - this.pave_height;
+            offsetx = this.pave_x - fr.x;
+            offsety = fr.y + fr.height - this.pave_y - this.pave_height;
             break;
          case ECorner.kBottomRight:
-            offsetx = fr.x + fr.width - pave_x - this.pave_width;
-            offsety = fr.y + fr.height - pave_y - this.pave_height;
+            offsetx = fr.x + fr.width - this.pave_x - this.pave_width;
+            offsety = fr.y + fr.height - this.pave_y - this.pave_height;
             break;
          case ECorner.kTopRight:
          default:
-            offsetx = fr.x + fr.width - pave_x - this.pave_width;
-            offsety = pave_y - fr.y;
+            offsetx = fr.x + fr.width - this.pave_x - this.pave_width;
+            offsety = this.pave_y - fr.y;
       }
 
       this.v7AttrChange(changes, 'offsetX', offsetx / rect.width);
@@ -189453,11 +189496,13 @@ class RPavePainter extends RObjectPainter {
       this.v7AttrChange(changes, 'height', this.pave_height / rect.height);
       this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
-      this.getG().selectChild('rect')
-                 .attr('width', this.pave_width)
-                 .attr('height', this.pave_height);
+      const g = this.getG(),
+            main = g.selectChild('rect');
+      main.attr('width', this.pave_width)
+          .attr('height', this.pave_height);
+      g.selectAll('*').filter(function() { return this !== main.node(); }).remove();
 
-      this.drawContent();
+      return this.drawPaveContent();
    }
 
    /** @summary Redraw RPave object */
