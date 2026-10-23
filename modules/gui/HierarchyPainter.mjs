@@ -3850,8 +3850,8 @@ class HierarchyPainter extends BasePainter {
       if (!this.disp_kind) {
          if (isStr(layout) && layout)
             this.disp_kind = layout;
-         else if (settings.DislpayKind && settings.DislpayKind !== 'simple')
-            this.disp_kind = settings.DislpayKind;
+         else if (settings.DisplayKind && settings.DisplayKind !== 'simple')
+            this.disp_kind = settings.DisplayKind;
          else {
             const _kinds = ['simple', 'simple', 'vert2', 'vert21', 'vert22', 'vert32',
                             'vert222', 'vert322', 'vert332', 'vert333'];
@@ -4173,7 +4173,7 @@ class HierarchyPainter extends BasePainter {
          layout.on('change', ev => {
             const kind = ev.target.value || 'flex';
             this.setDisplay(kind, this.gui_div + '_drawing');
-            settings.DislpayKind = kind;
+            settings.DisplayKind = kind;
          });
       }
 
