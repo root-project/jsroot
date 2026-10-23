@@ -425,10 +425,10 @@ class TooltipHandler extends ObjectPainter {
             scale = pp?.getPadScale() ?? 1,
             textheight = (pnt?.touch ? 15 : 11) * scale,
             font = new FontHandler(160, textheight),
-            disable_tootlips = !this.isTooltipAllowed() || !this.tooltip_enabled;
+            disable_tooltips = !this.isTooltipAllowed() || !this.tooltip_enabled;
 
       if (pnt) {
-         pnt.disabled = disable_tootlips; // indicate that highlighting is not required
+         pnt.disabled = disable_tooltips; // indicate that highlighting is not required
          pnt.painters = true; // get also painter
       }
 
@@ -540,7 +540,7 @@ class TooltipHandler extends ObjectPainter {
       this.showObjectStatus(name, title, info, coordinates);
 
       // end of closing tooltips
-      if (!pnt || disable_tootlips || !hints.length || (maxlen === 0) || (show_only_best && !best_hint)) {
+      if (!pnt || disable_tooltips || !hints.length || (maxlen === 0) || (show_only_best && !best_hint)) {
          hintsg.remove();
          return;
       }
@@ -588,7 +588,7 @@ class TooltipHandler extends ObjectPainter {
             viewmode = 'right';
             posx = frame_rect.width - 60;
          } else
-            posx = hintsg.property('startx');
+            posx = hintsg.property('startx') ?? 20;
       }
 
       if (viewmode !== hintsg.property('viewmode')) {
@@ -944,7 +944,8 @@ class FrameInteractive extends TooltipHandler {
       if (zoom.dleft || zoom.dright) {
          if (!settings.Zooming)
             return false;
-         // in 3d mode with orbit control ignore simple arrows
+         // in 3d mode with orbit control ignore simple arrows,
+         // intentionally no compare for indexOf while only Ctrl is allowed
          if (this.mode3d && key.indexOf('Ctrl'))
             return false;
          this.analyzeMouseWheelEvent(null, zoom, 0.5);
