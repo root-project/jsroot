@@ -144,7 +144,7 @@ class TGaxisPainter extends TAxisPainter {
    }
 
    /** @summary Check if there is function for TGaxis can be found */
-   async checkFuncion() {
+   async checkFunction() {
       const gaxis = this.getObject();
       if (!gaxis.fFunctionName) {
          this.axis_func = null;
@@ -225,7 +225,7 @@ class TGaxisPainter extends TAxisPainter {
       return ensureTCanvas(painter, false).then(() => {
          if (opt)
             painter.convertTo(opt);
-         return painter.checkFuncion();
+         return painter.checkFunction();
       }).then(() => painter.redraw());
    }
 
