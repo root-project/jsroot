@@ -976,7 +976,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.enableDamping = false;
    control.dampingFactor = 1.0;
    control.enableZoom = true;
-   control.enableKeys = settings.HandleKeys;
+   if (settings.HandleKeys && !isNodeJs() && (typeof window !== 'undefined'))
+      control.listenToKeyEvents(window);
 
    if (lookat) {
       control.target.copy(lookat);
