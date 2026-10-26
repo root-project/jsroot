@@ -1,4 +1,4 @@
-import { settings, create, BIT } from '../core.mjs';
+import { settings, create, BIT, clTGraphPolargram } from '../core.mjs';
 import { scaleLinear, pointer as d3_pointer } from '../d3.mjs';
 import { DrawOptions, buildSvgCurve, makeTranslate } from '../base/BasePainter.mjs';
 import { ObjectPainter, getElementMainPainter } from '../base/ObjectPainter.mjs';
@@ -616,7 +616,7 @@ class TGraphPolarPainter extends ObjectPainter {
    createPolargram(gr) {
       const o = this.getOptions();
       if (!gr.fPolargram) {
-         gr.fPolargram = create('TGraphPolargram');
+         gr.fPolargram = create(clTGraphPolargram);
          if (o.radian)
             gr.fPolargram.fRadian = true;
          else if (o.degree)
