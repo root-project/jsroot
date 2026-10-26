@@ -836,6 +836,7 @@ class TooltipFor3D {
   * @private */
 function createOrbitControl(painter, camera, scene, renderer, lookat) {
    const enable_zoom = settings.Zooming && settings.ZoomMouse,
+         enable_wheel = settings.Zooming && settings.ZoomWheel,
          enable_select = isFunc(painter.processMouseClick);
 
    let control = null;
@@ -963,7 +964,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    // assign own handler before creating OrbitControl
 
-   if (settings.Zooming && settings.ZoomWheel)
+   if (enable_wheel)
       renderer.domElement.addEventListener('wheel', control_mousewheel);
 
    if (enable_zoom || enable_select) {
@@ -1003,9 +1004,10 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.mouse_ctxt = { x: 0, y: 0, on: false };
    control.enable_zoom = enable_zoom;
    control.enable_select = enable_select;
+   control.enable_wheel = enable_wheel;
 
    control.cleanup = function() {
-      if (settings.Zooming && settings.ZoomWheel)
+      if (this.enable_wheel)
          this.domElement.removeEventListener('wheel', control_mousewheel);
       if (this.enable_zoom || this.enable_select) {
          this.domElement.removeEventListener('pointerdown', control_mousedown);
