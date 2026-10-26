@@ -11,7 +11,7 @@
 1. Let copy and paste histogram title, `TLatex` text and `TPave` label via context menu
 1. Use "JSROOT" label for main pad button, hide it after 5 seconds from the drawing
 1. Let preserve `BigInt` values when calling `rntupleProcess()` function #418 (@undefined-panda)
-1. Let use primitive "player" for RNTuple to let edit draw expressions
+1. Let use primitive "player" for `RNTuple` to let edit draw expressions
 1. Use `8.6g`/`10.8g` format for float/double historgam content-to-text conversion in tooltips
 1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings #409 (@prawnsgupta)
 1. Upgrade three.js r183 -> r186 #424
