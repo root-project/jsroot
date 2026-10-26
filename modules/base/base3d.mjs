@@ -88,7 +88,7 @@ function getMaterialArgs(color, args) {
 
    if (isStr(color) && (((color[0] === '#') && (color.length === 9)) || (color.indexOf('rgba') >= 0))) {
       const col = d3_color(color);
-      args.color = new THREE.Color(col.r, col.g, col.b);
+      args.color = new THREE.Color(col.r / 255, col.g / 255, col.b / 255);
       args.opacity = col.opacity ?? 1;
       args.transparent = args.opacity < 1;
    } else
