@@ -837,6 +837,7 @@ class TooltipFor3D {
 function createOrbitControl(painter, camera, scene, renderer, lookat) {
    const enable_zoom = settings.Zooming && settings.ZoomMouse,
          enable_wheel = settings.Zooming && settings.ZoomWheel,
+         enable_keys = settings.HandleKeys && !isNodeJs() && (typeof window !== 'undefined'),
          enable_select = isFunc(painter.processMouseClick);
 
    let control = null;
@@ -977,7 +978,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.enableDamping = false;
    control.dampingFactor = 1.0;
    control.enableZoom = true;
-   if (settings.HandleKeys && !isNodeJs() && (typeof window !== 'undefined'))
+   if (enable_keys)
       control.listenToKeyEvents(window);
 
    if (lookat) {
@@ -1005,6 +1006,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.enable_zoom = enable_zoom;
    control.enable_select = enable_select;
    control.enable_wheel = enable_wheel;
+   control.enable_keys = enable_keys;
 
    control.cleanup = function() {
       if (this.enable_wheel)
@@ -1013,6 +1015,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
          this.domElement.removeEventListener('pointerdown', control_mousedown);
          this.domElement.removeEventListener('pointerup', control_mouseup);
       }
+      if (this.enable_keys)
+         this.stopListenToKeyEvents();
 
       this.domElement.removeEventListener('click', this.lstn_click);
       this.domElement.removeEventListener('dblclick', this.lstn_dblclick);
