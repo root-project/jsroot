@@ -43,7 +43,7 @@ class ObjectPainter extends BasePainter {
    #options_store;   // stored draw options used to check changes
    #user_tooltip_handler; // configured user tooltip handler
    #user_tooltip_timeout; // timeout configured with tooltip handler
-   #user_toottip_handle; // timeout handle processing user tooltip
+   #user_tooltip_timerid; // setTimemout id for processing user tooltip
    #user_context_menu; // function for user context menu
    #special_draw_area; // current special draw area like projection
    #root_colors;     // custom colors list
@@ -1594,17 +1594,17 @@ class ObjectPainter extends BasePainter {
       if (this.#user_tooltip_timeout <= 0)
          return this.#user_tooltip_handler(data);
 
-      if (this.#user_toottip_handle) {
-         clearTimeout(this.#user_toottip_handle);
-         this.#user_toottip_handle = undefined;
+      if (this.#user_tooltip_timerid) {
+         clearTimeout(this.#user_tooltip_timerid);
+         this.#user_tooltip_timerid = undefined;
       }
 
       if (!data)
          return this.#user_tooltip_handler(data);
 
       // only after timeout user function will be called
-      this.#user_toottip_handle = setTimeout(() => {
-         this.#user_toottip_handle = undefined;
+      this.#user_tooltip_timerid = setTimeout(() => {
+         this.#user_tooltip_timerid = undefined;
          if (this.#user_tooltip_handler)
             this.#user_tooltip_handler(data);
       }, this.#user_tooltip_timeout);
