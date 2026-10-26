@@ -1,5 +1,11 @@
 # JSROOT changelog
 
+## Changes in 7.11.4
+1. Fix - bug in `TH2` overflow counts display in stat box
+2. Fix - reading of objects with custom streamer stored in `TTree` branch #432 (@Prafyl)
+3. Fix - `TH3` stats calculation
+4. Fix - large angle display in `TPieSlice`
+
 
 ## Changes in 7.11.3
 1. Fix - reading of negative 64-bit integers #422 (thanks to @Prafyl)
