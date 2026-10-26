@@ -7,7 +7,7 @@ import { assignContextMenu } from '../gui/menu.mjs';
 
 
 /**
- * @summary Painter for TBox class
+ * @summary Painter for TPiePainter class
  * @private
  */
 
