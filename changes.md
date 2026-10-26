@@ -5,6 +5,7 @@
 2. Fix - reading of objects with custom streamer stored in `TTree` branch #432 (@Prafyl)
 3. Fix - `TH3` stats calculation
 4. Fix - large angle display in `TPieSlice`
+5. Fix - interactive change of `TGraph` exclusion side and width
 
 
 ## Changes in 7.11.3
