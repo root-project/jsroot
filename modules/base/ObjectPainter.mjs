@@ -498,12 +498,10 @@ class ObjectPainter extends BasePainter {
      * @protected */
    getCanvSvg() { return this.selectDom().select('.root_canvas'); }
 
-   /** @summary Method selects current pad name
-     * @param {string} [_new_name] - when specified, new current pad name will be configured
-     * @return {string} previous selected pad or actual pad when new_name not specified
+   /** @summary Method did selects current pad name, now does nothing
      * @private
      * @deprecated to be removed in v8 */
-   selectCurrentPad(_new_name) {
+   selectCurrentPad() {
       console.warn('selectCurrentPad is deprecated, will be removed in v8');
       return '';
    }
