@@ -168,7 +168,7 @@ function getTF1Value(func, x, skip_eval = undefined) {
       }
    }
 
-   const np = func.fSave.length - 3;
+   const np = (func.fSave?.length ?? 0) - 3;
    return (np < 2) || (func.fSave[np + 1] === func.fSave[np + 2]) ? 0 : _getTF1Save(func, x);
 }
 
