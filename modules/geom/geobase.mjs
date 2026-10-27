@@ -1747,7 +1747,7 @@ function getNodeMatrix(kind, node) {
             typ = finder._typename;
       if (finder.fBits & kPatternReflected)
          geoWarn(`Unsupported reflected pattern ${typ}`);
-      if (typ.indexOf('TGeoPattern'))
+      if (typ.indexOf('TGeoPattern') !== 0)
          geoWarn(`Abnormal pattern type ${typ}`);
       const part = typ.slice(11);
       matrix = new THREE.Matrix4();
@@ -4034,7 +4034,7 @@ function cleanupShape(shape) {
   * @param {object} toplevel - top element
   * @param {object} origin - camera position used to provide sorting
   * @param {string} method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
-function produceRenderOrder(toplevel, origin, method, clones) {
+function produceRenderOrder(toplevel, origin, method /* , clones */) {
    const raycast = new THREE.Raycaster();
 
    function setdefaults(top) {
@@ -4147,9 +4147,6 @@ function produceRenderOrder(toplevel, origin, method, clones) {
                }
 
                intersects = unique;
-
-               if ((intersects.indexOf(mesh) < 0) && (ntry > 0))
-                  console.log(`MISS ${clones?.resolveStack(mesh.stack)?.name}`);
 
                if ((intersects.indexOf(mesh) >= 0) || (ntry > 0))
                   break;
