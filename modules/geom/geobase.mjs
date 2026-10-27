@@ -3547,6 +3547,7 @@ class ClonedNodes {
 
                instance.entries.forEach(entry => {
                   const info = this.resolveStack(entry.stack, true);
+                  // FIXME: probably here must be > 0
                   if (info.matrix.determinant() > -0.9) {
                      arr1.push(info.matrix);
                      stacks1.push(entry.stack);
