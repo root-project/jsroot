@@ -1481,7 +1481,7 @@ class BrowserLayout {
       const main = this.browser(),
             elem = !main.empty() ? main.select('.jsroot_browser_title') : null;
       if (elem)
-         elem.text(title).style('cursor', this.browser_kind === 'flex' ? 'move' : null);
+         elem.text(title).style('cursor', this.browser_kind === 'float' ? 'move' : null);
       return elem;
    }
 
