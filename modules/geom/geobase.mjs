@@ -3735,7 +3735,7 @@ class ClonedNodes {
             else
                camVol = 0;
 
-            camFact = maxVol / ((camVol > 0) ? (camVol > 0) : minVol);
+            camFact = maxVol / (camVol > 0 ? camVol : minVol);
          }
       }
 
