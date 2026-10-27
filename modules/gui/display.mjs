@@ -344,7 +344,7 @@ class GridDisplay extends MDIDisplay {
             group.node = elem.node();
 
          if (handle.vertical)
-            elem.style('float', 'bottom').style('height', group.size.toFixed(2) + '%').style('width', '100%');
+            elem.style('height', group.size.toFixed(2) + '%').style('width', '100%');
          else
             elem.style('float', 'left').style('width', group.size.toFixed(2) + '%').style('height', '100%');
 
