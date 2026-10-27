@@ -2208,9 +2208,9 @@ function provideObjectInfo(obj) {
          info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`);
          break;
       case clTGeoTrd2:
-         info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
+         info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy2)}`); // no break
       case clTGeoTrd1:
-         info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`);
+         info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx2)}`);
          break;
       case clTGeoSphere:
          info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
