@@ -930,7 +930,6 @@ class TGeoPainter extends ObjectPainter {
             separ = opt.length;
          res.script_name = opt.slice(macro + 6, separ);
          opt = opt.slice(0, macro) + opt.slice(separ + 1);
-         console.log(`script ${res.script_name} rest ${opt}`);
       }
 
       while (true) {
@@ -3621,7 +3620,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Handle drop operation
-     * @desc opt parameter can include function name like opt$func_name
+     * @desc opt parameter can include function name like 'func_name$opt'
      * Such function should be possible to find via {@link findFunction}
      * Function has to return Promise with objects to draw on geometry
      * By default function with name 'extract_geo_tracks' is checked
