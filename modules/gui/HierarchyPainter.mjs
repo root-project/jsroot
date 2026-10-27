@@ -10,7 +10,8 @@ import { prJSON, BasePainter, getElementRect, _loadJSDOM, getTDatime, convertDat
 import { getElementMainPainter, getElementCanvPainter, cleanup, ObjectPainter } from '../base/ObjectPainter.mjs';
 import { createMenu } from './menu.mjs';
 import { getDrawSettings, getDrawHandle, canDrawHandle, addDrawFunc, draw, redraw } from '../draw.mjs';
-import { BatchDisplay, GridDisplay, TabsDisplay, FlexibleDisplay, BrowserLayout, getHPainter, setHPainter } from './display.mjs';
+import { BatchDisplay, GridDisplay, TabsDisplay, FlexibleDisplay, BrowserLayout,
+         getHPainter, setHPainter, kBrFix, kBrFloat } from './display.mjs';
 import { showProgress, ToolbarIcons, registerForResize, injectStyle, saveFile } from './utils.mjs';
 
 
@@ -2810,7 +2811,7 @@ class HierarchyPainter extends BasePainter {
 
       if (force && this.brlayout) {
          if (!this.brlayout.browser_kind)
-            return this.createBrowser('float', true).then(() => find_next());
+            return this.createBrowser(kBrFloat, true).then(() => find_next());
          if (!this.brlayout.browser_visible)
             this.brlayout.toggleBrowserVisibility();
       }
@@ -3815,15 +3816,15 @@ class HierarchyPainter extends BasePainter {
          monitor = parseInt(monitor);
 
       if (getOption('float') !== null) {
-         browser_kind = 'float';
+         browser_kind = kBrFloat;
          browser_configured = true;
       } else if (getOption('fix') !== null) {
-         browser_kind = 'fix';
+         browser_kind = kBrFix;
          browser_configured = true;
       }
 
       if (!browser_configured && (browser.screenWidth <= 640))
-         browser_kind = 'float';
+         browser_kind = kBrFloat;
 
       this.no_select ??= getOption('noselect');
       this.top_info ??= getOption('info');
@@ -3876,7 +3877,7 @@ class HierarchyPainter extends BasePainter {
          this.no_select = true;
 
       if (!browser_kind)
-         browser_kind = 'fix';
+         browser_kind = kBrFix;
       else if (browser_kind === 'no')
          browser_kind = '';
       else if (browser_kind === 'off') {
@@ -4011,11 +4012,11 @@ class HierarchyPainter extends BasePainter {
          return;
 
       ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos browser', 'browser')
-                  .style('margin', '3px').on('click', () => this.createBrowser('fix', true));
+                  .style('margin', '3px').on('click', () => this.createBrowser(kBrFix, true));
 
       if (!this.float_browser_disabled) {
          ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float browser', 'browser')
-                     .style('margin', '3px').on('click', () => this.createBrowser('float', true));
+                     .style('margin', '3px').on('click', () => this.createBrowser(kBrFloat, true));
       }
 
       if (!this.status_disabled) {
@@ -4065,8 +4066,8 @@ class HierarchyPainter extends BasePainter {
       if (main.empty())
          return false;
 
-      if ((browser_kind === 'float') && this.float_browser_disabled)
-         browser_kind = 'fix';
+      if ((browser_kind === kBrFloat) && this.float_browser_disabled)
+         browser_kind = kBrFix;
 
       if (!main.select('.jsroot_browser_area').empty()) {
          // this is case when browser created,
@@ -4126,7 +4127,7 @@ class HierarchyPainter extends BasePainter {
             menu.show();
          });
       }).on('dblclick', () => {
-         this.createBrowser(this.brlayout?.browser_kind === 'float' ? 'fix' : 'float', true);
+         this.createBrowser(this.brlayout?.browser_kind === kBrFloat ? kBrFix : kBrFloat, true);
       });
 
       if (!this.is_online && !this.no_select) {
@@ -4184,7 +4185,7 @@ class HierarchyPainter extends BasePainter {
          this.initializeBrowser();
       }
 
-      return this.brlayout.toggleBrowserKind(browser_kind || 'fix');
+      return this.brlayout.toggleBrowserKind(browser_kind || kBrFix);
    }
 
    /** @summary Initialize browser elements */
