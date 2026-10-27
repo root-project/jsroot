@@ -491,6 +491,7 @@ class TGeoPainter extends ObjectPainter {
          vislevel: undefined,
          maxnodes: undefined,
          dflt_colors: false,
+         notoolbar: false, // used in ROOT geom viewer
 
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
          depthTest: true,
