@@ -2853,7 +2853,7 @@ class ClonedNodes {
 
    /** @summary Assign only visibility flags, extracted with getVisibleFlags */
    setVisibleFlags(flags) {
-      if (!this.nodes || !flags || !flags.length !== this.nodes.length)
+      if (!this.nodes || !flags || (flags.length !== this.nodes.length))
          return 0;
 
       let res = 0;
