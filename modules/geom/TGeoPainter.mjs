@@ -3093,7 +3093,6 @@ class TGeoPainter extends ObjectPainter {
       const dataUrl = this.#renderer.domElement.toDataURL('image/png');
       if (filename === 'asis')
          return dataUrl;
-      dataUrl.replace('image/png', 'image/octet-stream');
       const doc = getDocument(),
             link = doc.createElement('a');
       if (isStr(link.download)) {
