@@ -961,8 +961,8 @@ function createTubeBuffer(shape, faces_limit) {
 
    const creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(numfaces),
          calcZ = (shape._typename !== clTGeoCtub) ? null : (x, y, z) => {
-            const arr = (z < 0) ? shape.fNlow : shape.fNhigh;
-            return ((z < 0) ? -shape.fDz : shape.fDz) - (x * arr[0] + y * arr[1]) / arr[2];
+            const arr = z < 0 ? shape.fNlow : shape.fNhigh;
+            return (z < 0 ? -shape.fDz : shape.fDz) - (x * arr[0] + y * arr[1]) / arr[2];
          };
 
    // create outer/inner tube
@@ -974,7 +974,7 @@ function createTubeBuffer(shape, faces_limit) {
       let nxy = 1, nz = 0;
 
       if (R[0] !== R[1]) {
-         const angle = Math.atan2((R[1] - R[0]), 2 * shape.fDZ);
+         const angle = Math.atan2((R[1] - R[0]), 2 * shape.fDz);
          nxy = Math.cos(angle);
          nz = Math.sin(angle);
       }
@@ -988,10 +988,10 @@ function createTubeBuffer(shape, faces_limit) {
 
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
-            R[0] * _cos[seg + d1], R[0] * _sin[seg + d1], shape.fDZ,
-            R[1] * _cos[seg + d1], R[1] * _sin[seg + d1], -shape.fDZ,
-            R[1] * _cos[seg + d2], R[1] * _sin[seg + d2], -shape.fDZ,
-            R[0] * _cos[seg + d2], R[0] * _sin[seg + d2], shape.fDZ,
+            R[0] * _cos[seg + d1], R[0] * _sin[seg + d1], shape.fDz,
+            R[1] * _cos[seg + d1], R[1] * _sin[seg + d1], -shape.fDz,
+            R[1] * _cos[seg + d2], R[1] * _sin[seg + d2], -shape.fDz,
+            R[0] * _cos[seg + d2], R[0] * _sin[seg + d2], shape.fDz,
             reduce);
 
          if (calcZ)
@@ -1015,10 +1015,10 @@ function createTubeBuffer(shape, faces_limit) {
          creator.startPolygon(side === 0);
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
-            innerR[side] * _cos[seg + d1], innerR[side] * _sin[seg + d1], sign * shape.fDZ,
-            outerR[side] * _cos[seg + d1], outerR[side] * _sin[seg + d1], sign * shape.fDZ,
-            outerR[side] * _cos[seg + d2], outerR[side] * _sin[seg + d2], sign * shape.fDZ,
-            innerR[side] * _cos[seg + d2], innerR[side] * _sin[seg + d2], sign * shape.fDZ,
+            innerR[side] * _cos[seg + d1], innerR[side] * _sin[seg + d1], sign * shape.fDz,
+            outerR[side] * _cos[seg + d1], outerR[side] * _sin[seg + d1], sign * shape.fDz,
+            outerR[side] * _cos[seg + d2], outerR[side] * _sin[seg + d2], sign * shape.fDz,
+            innerR[side] * _cos[seg + d2], innerR[side] * _sin[seg + d2], sign * shape.fDz,
             reduce);
          if (calcZ) {
             creator.recalcZ(calcZ);
@@ -1032,19 +1032,19 @@ function createTubeBuffer(shape, faces_limit) {
 
    // create cut surfaces
    if (thetaLength < 360) {
-      creator.addFace4(innerR[1] * _cos[0], innerR[1] * _sin[0], -shape.fDZ,
-                       outerR[1] * _cos[0], outerR[1] * _sin[0], -shape.fDZ,
-                       outerR[0] * _cos[0], outerR[0] * _sin[0], shape.fDZ,
-                       innerR[0] * _cos[0], innerR[0] * _sin[0], shape.fDZ,
+      creator.addFace4(innerR[1] * _cos[0], innerR[1] * _sin[0], -shape.fDz,
+                       outerR[1] * _cos[0], outerR[1] * _sin[0], -shape.fDz,
+                       outerR[0] * _cos[0], outerR[0] * _sin[0], shape.fDz,
+                       innerR[0] * _cos[0], innerR[0] * _sin[0], shape.fDz,
                        (outerR[0] === innerR[0]) ? 2 : ((innerR[1] === outerR[1]) ? 1 : 0));
       if (calcZ)
          creator.recalcZ(calcZ);
       creator.calcNormal();
 
-      creator.addFace4(innerR[0] * _cos[radiusSegments], innerR[0] * _sin[radiusSegments], shape.fDZ,
-                       outerR[0] * _cos[radiusSegments], outerR[0] * _sin[radiusSegments], shape.fDZ,
-                       outerR[1] * _cos[radiusSegments], outerR[1] * _sin[radiusSegments], -shape.fDZ,
-                       innerR[1] * _cos[radiusSegments], innerR[1] * _sin[radiusSegments], -shape.fDZ,
+      creator.addFace4(innerR[0] * _cos[radiusSegments], innerR[0] * _sin[radiusSegments], shape.fDz,
+                       outerR[0] * _cos[radiusSegments], outerR[0] * _sin[radiusSegments], shape.fDz,
+                       outerR[1] * _cos[radiusSegments], outerR[1] * _sin[radiusSegments], -shape.fDz,
+                       innerR[1] * _cos[radiusSegments], innerR[1] * _sin[radiusSegments], -shape.fDz,
                        (outerR[0] === innerR[0]) ? 1 : ((innerR[1] === outerR[1]) ? 2 : 0));
 
       if (calcZ)
