@@ -6,6 +6,7 @@
 3. Fix - `TH3` stats calculation
 4. Fix - large angle display in `TPieSlice`
 5. Fix - interactive change of `TGraph` exclusion side and width
+6. Fix - multiple typos in tooltips and stats (AI assisted)
 
 
 ## Changes in 7.11.3
