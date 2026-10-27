@@ -4132,11 +4132,11 @@ class HierarchyPainter extends BasePainter {
 
       if (!this.is_online && !this.no_select) {
          this.readSelectedFile = function() {
-            const filename = main.select('.gui_urlToLoad').property('value').trim();
-            if (!filename)
+            const filename = main.select('.gui_urlToLoad').property('value').trim(),
+                  lf = isStr(filename) ? filename.toLowerCase() : '';
+            if (!lf)
                return;
-
-            if (filename.toLowerCase().lastIndexOf('.json') === filename.length - 5)
+            if ((lf.lastIndexOf('.json') === lf.length - 5) || (lf.lastIndexOf('.json.gz') === lf.length - 8))
                this.openJsonFile(filename);
             else
                this.openRootFile(filename);
