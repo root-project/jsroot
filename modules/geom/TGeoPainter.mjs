@@ -512,7 +512,6 @@ class TGeoPainter extends ObjectPainter {
          depthMethodItems: [
             { name: 'Default', value: 'dflt' },
             { name: 'Raytraicing', value: 'ray' },
-            { name: 'Boundary box', value: 'box' },
             { name: 'Mesh size', value: 'size' },
             { name: 'Central point', value: 'pnt' }
          ],
