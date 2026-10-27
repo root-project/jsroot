@@ -1016,8 +1016,8 @@ class HierarchyPainter extends BasePainter {
                }
 
                // if first child online, check its elements
-               if ((top._kind === kTopFolder) && (top._childs[0]._online !== undefined)) {
-                  for (let i = 0; i < top._childs[0]._childs.length; ++i) {
+               if ((top._kind === kTopFolder) && (top._childs[0]?._online !== undefined)) {
+                  for (let i = 0; i < top._childs[0]._childs?.length; ++i) {
                      if (top._childs[0]._childs[i]._name === localname)
                         return process_child(top._childs[0]._childs[i], true);
                   }
@@ -2672,7 +2672,7 @@ class HierarchyPainter extends BasePainter {
 
          // Than create empty frames for each item
          for (let i = 0; i < items.length; ++i) {
-            if (options[i].indexOf('update:')) {
+            if (options[i].indexOf('update:') !== 0) {
                mdi.createFrame(frame_names[i]);
                doms[i] = 'frame:' + frame_names[i];
             }
