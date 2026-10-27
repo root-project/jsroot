@@ -22,8 +22,15 @@
 1. Fix - correctly handle empty clusters in ntuple #420 (@undefined-panda)
 1. Fix - reading of RNTuple std::bitset with 32 to 48 bits #430 (@sebxt)
 1. Fix - decoding large LZMA buffers #431 (@Prafyl)
+
+
+## Changes in 7.11.4
 1. Fix - bug in `TH2` overflow counts display in stat box
-1. Fix - reading of objects with custom streamer stored in `TTree` branch #432 (@Prafyl)
+2. Fix - reading of objects with custom streamer stored in `TTree` branch #432 (@Prafyl)
+3. Fix - `TH3` stats calculation
+4. Fix - large angle display in `TPieSlice`
+5. Fix - interactive change of `TGraph` exclusion side and width
+6. Fix - multiple typos in tooltips and stats (AI assisted)
 
 
 ## Changes in 7.11.3
