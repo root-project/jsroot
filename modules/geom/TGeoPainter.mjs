@@ -1615,7 +1615,7 @@ class TGeoPainter extends ObjectPainter {
             this.ctrl.vislevel = this.#clones?.getVisLevel() ?? 3;
          if (!this.ctrl.maxfaces)
             this.ctrl.maxfaces = 200000 * this.ctrl.more;
-         this.ctrl.more = 1;
+         this.ctrl.more = 1; // prevent autoincrease every next time drawing is started
 
          selection.add(this.ctrl, 'vislevel', 1, 99, 1)
                      .name('Visibility level')
