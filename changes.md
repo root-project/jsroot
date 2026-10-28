@@ -18,6 +18,7 @@
 1. Upgrade openui5 1.135.0 -> 1.152.0
 1. Upgrade svg2pdf.js 2.6.0 -> 2.8.1
 1. Upgrade jsPDF 3.0.3 -> 4.2.1
+1. Upgrade lil-gui 0.20.0 -> 0.21.0
 1. Fix - read all cluster groups from ntuple #415 (@undefined-panda)
 1. Fix - correctly handle empty clusters in ntuple #420 (@undefined-panda)
 1. Fix - reading of RNTuple std::bitset with 32 to 48 bits #430 (@sebxt)
