@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.11.99
+// https://root.cern/js/ v7.12.0
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -10,11 +10,11 @@ var _documentCurrentScript = typeof document !== 'undefined' ? document.currentS
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = 'dev',
+const version_id = '7.12.0',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '23/10/2026',
+version_date = '28/10/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -9934,7 +9934,7 @@ class FontHandler {
    addCustomFontToSvg(svg) {
       if (!this.base64 || !this.name)
          return;
-      const clname = 'custom_font_' + this.name, fmt = 'ttf';
+      const clname = 'custom_font_' + this.name.replace(/[^a-zA-Z0-9]/g, '_'), fmt = 'ttf';
       let defs = svg.selectChild('.canvas_defs');
       if (defs.empty())
          defs = svg.insert('svg:defs', ':first-child').attr('class', 'canvas_defs');
@@ -11541,7 +11541,7 @@ function repairMathJaxSvgSize(painter, mj_node, svg, arg) {
 
    if (valign && (valign.length > 18) && valign.indexOf('vertical-align:') === 0) {
       const p = valign.indexOf('ex;');
-      valign = ((p > 0) && (p === valign.length - 3)) ? transform(valign.slice(16, valign.length - 1)) : null;
+      valign = ((p > 0) && (p === valign.length - 3)) ? transform(valign.slice(15, valign.length - 1)) : null;
    } else
       valign = null;
 
@@ -11822,6 +11822,9 @@ class TAttMarkerHandler {
             s34 = (size * 3 / 4).toFixed(this.ndig);
 
       switch (shape) {
+         case 0: // empty
+            this.marker = '';
+            break;
          case 1: // dot
             this.marker = 'h1';
             break;
@@ -11938,7 +11941,7 @@ class TAttMarkerHandler {
    getFillColor() { return this.fill ? this.color : 'none'; }
 
    /** @summary returns true if marker attributes will produce empty (invisible) output */
-   empty() { return (this.color === 'none') || (!this.fill && !this.stroke); }
+   empty() { return (this.color === 'none') || (!this.fill && !this.stroke) || !this.marker; }
 
    /** @summary Apply marker styles to created element */
    apply(selection) {
@@ -12607,7 +12610,7 @@ class TAttLineHandler {
          if (Math.abs(this.width) > 99) {
             // exclusion graph
             this.excl_side = (this.width < 0) ? -1 : 1;
-            this.excl_width = Math.floor(this.width / 100) * 5;
+            this.excl_width = Math.floor(Math.abs(this.width) / 100) * 5;
             this.width = Math.abs(this.width % 100); // line width
          }
       }
@@ -12623,7 +12626,7 @@ class TAttLineHandler {
          this.excl_width = width;
       if (side !== undefined) {
          this.excl_side = side;
-         if ((this.excl_width === 0) && this.excl_side)
+         if (side && !this.excl_width)
             this.excl_width = 20;
       }
       this.changed = true;
@@ -12883,7 +12886,7 @@ class ObjectPainter extends BasePainter {
    #options_store;   // stored draw options used to check changes
    #user_tooltip_handler; // configured user tooltip handler
    #user_tooltip_timeout; // timeout configured with tooltip handler
-   #user_toottip_handle; // timeout handle processing user tooltip
+   #user_tooltip_timerid; // setTimemout id for processing user tooltip
    #user_context_menu; // function for user context menu
    #special_draw_area; // current special draw area like projection
    #root_colors;     // custom colors list
@@ -13338,12 +13341,10 @@ class ObjectPainter extends BasePainter {
      * @protected */
    getCanvSvg() { return this.selectDom().select('.root_canvas'); }
 
-   /** @summary Method selects current pad name
-     * @param {string} [_new_name] - when specified, new current pad name will be configured
-     * @return {string} previous selected pad or actual pad when new_name not specified
+   /** @summary Method did selects current pad name, now does nothing
      * @private
      * @deprecated to be removed in v8 */
-   selectCurrentPad(_new_name) {
+   selectCurrentPad() {
       console.warn('selectCurrentPad is deprecated, will be removed in v8');
       return '';
    }
@@ -14436,17 +14437,17 @@ class ObjectPainter extends BasePainter {
       if (this.#user_tooltip_timeout <= 0)
          return this.#user_tooltip_handler(data);
 
-      if (this.#user_toottip_handle) {
-         clearTimeout(this.#user_toottip_handle);
-         this.#user_toottip_handle = undefined;
+      if (this.#user_tooltip_timerid) {
+         clearTimeout(this.#user_tooltip_timerid);
+         this.#user_tooltip_timerid = undefined;
       }
 
       if (!data)
          return this.#user_tooltip_handler(data);
 
       // only after timeout user function will be called
-      this.#user_toottip_handle = setTimeout(() => {
-         this.#user_toottip_handle = undefined;
+      this.#user_tooltip_timerid = setTimeout(() => {
+         this.#user_tooltip_timerid = undefined;
          if (this.#user_tooltip_handler)
             this.#user_tooltip_handler(data);
       }, this.#user_tooltip_timeout);
@@ -77644,7 +77645,7 @@ function getMaterialArgs(color$1, args) {
 
    if (isStr(color$1) && (((color$1[0] === '#') && (color$1.length === 9)) || (color$1.indexOf('rgba') >= 0))) {
       const col = color(color$1);
-      args.color = new THREE.Color(col.r, col.g, col.b);
+      args.color = new THREE.Color(col.r / 255, col.g / 255, col.b / 255);
       args.opacity = col.opacity ?? 1;
       args.transparent = args.opacity < 1;
    } else
@@ -78385,6 +78386,8 @@ class TooltipFor3D {
   * @private */
 function createOrbitControl(painter, camera, scene, renderer, lookat) {
    const enable_zoom = settings.Zooming && settings.ZoomMouse,
+         enable_wheel = settings.Zooming && settings.ZoomWheel,
+         enable_keys = settings.HandleKeys && !isNodeJs() && (typeof window !== 'undefined'),
          enable_select = isFunc(painter.processMouseClick);
 
    let control = null;
@@ -78512,7 +78515,7 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
 
    // assign own handler before creating OrbitControl
 
-   if (settings.Zooming && settings.ZoomWheel)
+   if (enable_wheel)
       renderer.domElement.addEventListener('wheel', control_mousewheel);
 
    if (enable_zoom || enable_select) {
@@ -78525,7 +78528,8 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.enableDamping = false;
    control.dampingFactor = 1.0;
    control.enableZoom = true;
-   control.enableKeys = settings.HandleKeys;
+   if (enable_keys)
+      control.listenToKeyEvents(window);
 
    if (lookat) {
       control.target.copy(lookat);
@@ -78551,14 +78555,18 @@ function createOrbitControl(painter, camera, scene, renderer, lookat) {
    control.mouse_ctxt = { x: 0, y: 0, on: false };
    control.enable_zoom = enable_zoom;
    control.enable_select = enable_select;
+   control.enable_wheel = enable_wheel;
+   control.enable_keys = enable_keys;
 
    control.cleanup = function() {
-      if (settings.Zooming && settings.ZoomWheel)
+      if (this.enable_wheel)
          this.domElement.removeEventListener('wheel', control_mousewheel);
       if (this.enable_zoom || this.enable_select) {
          this.domElement.removeEventListener('pointerdown', control_mousedown);
          this.domElement.removeEventListener('pointerup', control_mouseup);
       }
+      if (this.enable_keys)
+         this.stopListenToKeyEvents();
 
       this.domElement.removeEventListener('click', this.lstn_click);
       this.domElement.removeEventListener('dblclick', this.lstn_dblclick);
@@ -83312,7 +83320,7 @@ class JSRootMenu {
       this.addchk(settings.DragAndDrop, 'Drag and drop', flag => { settings.DragAndDrop = flag; });
       this.addchk(settings.DragGraphs, 'Drag graph points', flag => { settings.DragGraphs = flag; });
       this.addSelectMenu('Progress box', ['off', 'on', 'modal'], isStr(settings.ProgressBox) ? settings.ProgressBox : (settings.ProgressBox ? 'on' : 'off'), value => {
-         settings.ProgressBox = (value === 'off') ? false : (value === ' on' ? true : value);
+         settings.ProgressBox = (value === 'off') ? false : (value === 'on' ? true : value);
       });
       this.endsub();
 
@@ -89099,6 +89107,8 @@ class TFramePainter extends FrameInteractive {
 
 } // class TFramePainter
 
+const kBrFloat = 'float', kBrFix = 'fix';
+
 /** @summary Current hierarchy painter
   * @desc Instance of {@link HierarchyPainter} object
   * @private */
@@ -89435,7 +89445,7 @@ class GridDisplay extends MDIDisplay {
             group.node = elem.node();
 
          if (handle.vertical)
-            elem.style('float', 'bottom').style('height', group.size.toFixed(2) + '%').style('width', '100%');
+            elem.style('height', group.size.toFixed(2) + '%').style('width', '100%');
          else
             elem.style('float', 'left').style('width', group.size.toFixed(2) + '%').style('height', '100%');
 
@@ -90574,7 +90584,7 @@ class BrowserLayout {
       const main = this.browser(),
             elem = !main.empty() ? main.select('.jsroot_browser_title') : null;
       if (elem)
-         elem.text(title).style('cursor', this.browser_kind === 'flex' ? 'move' : null);
+         elem.text(title).style('cursor', this.browser_kind === kBrFloat ? 'move' : null);
       return elem;
    }
 
@@ -90821,7 +90831,7 @@ class BrowserLayout {
          drawing.transition().style('left', tgt_drawing).duration(_duration).on('end', this.checkResize.bind(this));
       }
 
-      if (this.status_layout && (this.browser_kind === 'fix')) {
+      if (this.status_layout && (this.browser_kind === kBrFix)) {
          main.select('.jsroot_h_separator').transition().style('left', tgt_drawing).duration(_duration);
          main.select('.jsroot_status_area').transition().style('left', tgt_drawing).duration(_duration);
       }
@@ -90829,7 +90839,7 @@ class BrowserLayout {
 
    /** @summary Adjust browser size */
    adjustBrowserSize(onlycheckmax) {
-      if (!this.gui_div || (this.browser_kind !== 'float'))
+      if (!this.gui_div || (this.browser_kind !== kBrFloat))
          return;
 
       const main = this.browser();
@@ -90883,20 +90893,20 @@ class BrowserLayout {
       if (!kind) {
          if (!this.browser_kind)
             return null;
-         kind = (this.browser_kind === 'float') ? 'fix' : 'float';
+         kind = (this.browser_kind === kBrFloat) ? kBrFix : kBrFloat;
       }
 
       const main = this.browser(),
             area = main.select('.jsroot_browser_area');
 
-      if (this.browser_kind === 'float') {
+      if (this.browser_kind === kBrFloat) {
          area.style('bottom', '0px')
              .style('top', '0px')
              .style('width', '')
              .style('height', '')
              .classed('jsroot_float_browser', false)
              .style('border', null);
-      } else if (this.browser_kind === 'fix') {
+      } else if (this.browser_kind === kBrFix) {
          main.select('.jsroot_v_separator').remove();
          area.style('left', '0px');
          this.drawing().style('left', '0px'); // reset size
@@ -90908,10 +90918,10 @@ class BrowserLayout {
       this.browser_kind = kind;
       this.browser_visible = true;
 
-      main.select('.jsroot_browser_resize').style('display', (kind === 'float') ? null : 'none');
-      main.select('.jsroot_browser_title').style('cursor', (kind === 'float') ? 'move' : null);
+      main.select('.jsroot_browser_resize').style('display', kind === kBrFloat ? null : 'none');
+      main.select('.jsroot_browser_title').style('cursor', kind === kBrFloat ? 'move' : null);
 
-      if (kind === 'float') {
+      if (kind === kBrFloat) {
          area.style('bottom', '40px')
              .classed('jsroot_float_browser', true)
              .style('border', 'solid 3px white');
@@ -93516,7 +93526,7 @@ class TPadPainter extends ObjectPainter {
          let url = exports.source_dir;
          if (url.indexOf('http://localhost') === 0) {
             url = 'https://root.cern/js/';
-            url += version_id ;
+            url += /^\d+\.\d+\.\d+$/.test(version_id) ? version_id : 'latest';
          }
          return '<!DOCTYPE html>\n' +
                 '<html lang="en">\n' +
@@ -106222,11 +106232,13 @@ function provideEvalPar(obj, check_save) {
                 .replace(/\b(TMath::ACos)\b/g, 'Math.acos')
                 .replace(/\b(TMath::Atan)\b/g, 'Math.atan')
                 .replace(/\b(TMath::ATan2)\b/g, 'Math.atan2')
+                .replace(/\b(TMath::Sqrt)\b/g, 'Math.sqrt')
                 .replace(/\b(sin|SIN|TMath::Sin)\b/g, 'Math.sin')
                 .replace(/\b(cos|COS|TMath::Cos)\b/g, 'Math.cos')
                 .replace(/\b(tan|TAN|TMath::Tan)\b/g, 'Math.tan')
                 .replace(/\b(exp|EXP|TMath::Exp)\b/g, 'Math.exp')
                 .replace(/\b(log|LOG|TMath::Log)\b/g, 'Math.log')
+                .replace(/\b(TMath::Log2)\b/g, 'Math.log2')
                 .replace(/\b(log10|LOG10|TMath::Log10)\b/g, 'Math.log10')
                 .replace(/\b(pow|POW|TMath::Power)\b/g, 'Math.pow')
                 .replace(/\b(pi|PI)\b/g, 'Math.PI')
@@ -106342,7 +106354,7 @@ function getTF1Value(func, x, skip_eval = undefined) {
       }
    }
 
-   const np = func.fSave.length - 3;
+   const np = (func.fSave?.length ?? 0) - 3;
    return (np < 2) || (func.fSave[np + 1] === func.fSave[np + 2]) ? 0 : _getTF1Save(func, x);
 }
 
@@ -109685,7 +109697,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       const line_events_handling = !this.isBatchMode() && (options.Line || options.Errors) ? 'none' : null;
 
       if (main_block && lineatt.excl_side) {
-         excl_width = lineatt.excl_width;
+         excl_width = lineatt.excl_width * lineatt.excl_side;
          if ((lineatt.width > 0) && !options.Line && !options.Curve)
             options.Line = 1;
       }
@@ -113177,8 +113189,8 @@ function createTubeBuffer(shape, faces_limit) {
 
    const creator = faces_limit ? new PolygonsCreator() : new GeometryCreator(numfaces),
          calcZ = (shape._typename !== clTGeoCtub) ? null : (x, y, z) => {
-            const arr = (z < 0) ? shape.fNlow : shape.fNhigh;
-            return ((z < 0) ? -shape.fDz : shape.fDz) - (x * arr[0] + y * arr[1]) / arr[2];
+            const arr = z < 0 ? shape.fNlow : shape.fNhigh;
+            return (z < 0 ? -shape.fDz : shape.fDz) - (x * arr[0] + y * arr[1]) / arr[2];
          };
 
    // create outer/inner tube
@@ -113190,7 +113202,7 @@ function createTubeBuffer(shape, faces_limit) {
       let nxy = 1, nz = 0;
 
       if (R[0] !== R[1]) {
-         const angle = Math.atan2((R[1] - R[0]), 2 * shape.fDZ);
+         const angle = Math.atan2((R[1] - R[0]), 2 * shape.fDz);
          nxy = Math.cos(angle);
          nz = Math.sin(angle);
       }
@@ -113204,10 +113216,10 @@ function createTubeBuffer(shape, faces_limit) {
 
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
-            R[0] * _cos[seg + d1], R[0] * _sin[seg + d1], shape.fDZ,
-            R[1] * _cos[seg + d1], R[1] * _sin[seg + d1], -shape.fDZ,
-            R[1] * _cos[seg + d2], R[1] * _sin[seg + d2], -shape.fDZ,
-            R[0] * _cos[seg + d2], R[0] * _sin[seg + d2], shape.fDZ,
+            R[0] * _cos[seg + d1], R[0] * _sin[seg + d1], shape.fDz,
+            R[1] * _cos[seg + d1], R[1] * _sin[seg + d1], -shape.fDz,
+            R[1] * _cos[seg + d2], R[1] * _sin[seg + d2], -shape.fDz,
+            R[0] * _cos[seg + d2], R[0] * _sin[seg + d2], shape.fDz,
             reduce);
 
          if (calcZ)
@@ -113231,10 +113243,10 @@ function createTubeBuffer(shape, faces_limit) {
          creator.startPolygon(side === 0);
       for (let seg = 0; seg < radiusSegments; ++seg) {
          creator.addFace4(
-            innerR[side] * _cos[seg + d1], innerR[side] * _sin[seg + d1], sign * shape.fDZ,
-            outerR[side] * _cos[seg + d1], outerR[side] * _sin[seg + d1], sign * shape.fDZ,
-            outerR[side] * _cos[seg + d2], outerR[side] * _sin[seg + d2], sign * shape.fDZ,
-            innerR[side] * _cos[seg + d2], innerR[side] * _sin[seg + d2], sign * shape.fDZ,
+            innerR[side] * _cos[seg + d1], innerR[side] * _sin[seg + d1], sign * shape.fDz,
+            outerR[side] * _cos[seg + d1], outerR[side] * _sin[seg + d1], sign * shape.fDz,
+            outerR[side] * _cos[seg + d2], outerR[side] * _sin[seg + d2], sign * shape.fDz,
+            innerR[side] * _cos[seg + d2], innerR[side] * _sin[seg + d2], sign * shape.fDz,
             reduce);
          if (calcZ) {
             creator.recalcZ(calcZ);
@@ -113248,19 +113260,19 @@ function createTubeBuffer(shape, faces_limit) {
 
    // create cut surfaces
    if (thetaLength < 360) {
-      creator.addFace4(innerR[1] * _cos[0], innerR[1] * _sin[0], -shape.fDZ,
-                       outerR[1] * _cos[0], outerR[1] * _sin[0], -shape.fDZ,
-                       outerR[0] * _cos[0], outerR[0] * _sin[0], shape.fDZ,
-                       innerR[0] * _cos[0], innerR[0] * _sin[0], shape.fDZ,
+      creator.addFace4(innerR[1] * _cos[0], innerR[1] * _sin[0], -shape.fDz,
+                       outerR[1] * _cos[0], outerR[1] * _sin[0], -shape.fDz,
+                       outerR[0] * _cos[0], outerR[0] * _sin[0], shape.fDz,
+                       innerR[0] * _cos[0], innerR[0] * _sin[0], shape.fDz,
                        (outerR[0] === innerR[0]) ? 2 : ((innerR[1] === outerR[1]) ? 1 : 0));
       if (calcZ)
          creator.recalcZ(calcZ);
       creator.calcNormal();
 
-      creator.addFace4(innerR[0] * _cos[radiusSegments], innerR[0] * _sin[radiusSegments], shape.fDZ,
-                       outerR[0] * _cos[radiusSegments], outerR[0] * _sin[radiusSegments], shape.fDZ,
-                       outerR[1] * _cos[radiusSegments], outerR[1] * _sin[radiusSegments], -shape.fDZ,
-                       innerR[1] * _cos[radiusSegments], innerR[1] * _sin[radiusSegments], -shape.fDZ,
+      creator.addFace4(innerR[0] * _cos[radiusSegments], innerR[0] * _sin[radiusSegments], shape.fDz,
+                       outerR[0] * _cos[radiusSegments], outerR[0] * _sin[radiusSegments], shape.fDz,
+                       outerR[1] * _cos[radiusSegments], outerR[1] * _sin[radiusSegments], -shape.fDz,
+                       innerR[1] * _cos[radiusSegments], innerR[1] * _sin[radiusSegments], -shape.fDz,
                        (outerR[0] === innerR[0]) ? 1 : ((innerR[1] === outerR[1]) ? 2 : 0));
 
       if (calcZ)
@@ -113963,7 +113975,7 @@ function getNodeMatrix(kind, node) {
             typ = finder._typename;
       if (finder.fBits & kPatternReflected)
          geoWarn(`Unsupported reflected pattern ${typ}`);
-      if (typ.indexOf('TGeoPattern'))
+      if (typ.indexOf('TGeoPattern') !== 0)
          geoWarn(`Abnormal pattern type ${typ}`);
       const part = typ.slice(11);
       matrix = new THREE.Matrix4();
@@ -114408,9 +114420,9 @@ function provideObjectInfo(obj) {
          info.push(`Alpha=${shape.fAlpha} Phi=${shape.fPhi} Theta=${shape.fTheta}`);
          break;
       case clTGeoTrd2:
-         info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy1)}`); // no break
+         info.push(`Dy1=${conv(shape.fDy1)} Dy2=${conv(shape.fDy2)}`); // no break
       case clTGeoTrd1:
-         info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx1)}`);
+         info.push(`Dx1=${conv(shape.fDx1)} Dx2=${conv(shape.fDx2)}`);
          break;
       case clTGeoSphere:
          info.push(`Rmin=${conv(shape.fRmin)} Rmax=${conv(shape.fRmax)}`,
@@ -114565,7 +114577,7 @@ function createMaterial(cfg, args0) {
       args.color = 'red';
    args.side = THREE.FrontSide;
    args.transparent = args.opacity < 1;
-   args.depthWrite = args.opactity === 1;
+   args.depthWrite = args.opacity === 1;
 
    let material;
 
@@ -115051,7 +115063,7 @@ class ClonedNodes {
 
    /** @summary Assign only visibility flags, extracted with getVisibleFlags */
    setVisibleFlags(flags) {
-      if (!this.nodes || !flags || !flags.length !== this.nodes.length)
+      if (!this.nodes || (flags?.length !== this.nodes.length))
          return 0;
 
       let res = 0;
@@ -115744,6 +115756,7 @@ class ClonedNodes {
 
                instance.entries.forEach(entry => {
                   const info = this.resolveStack(entry.stack, true);
+                  // FIXME: probably here must be > 0
                   if (info.matrix.determinant() > -0.9) {
                      arr1.push(info.matrix);
                      stacks1.push(entry.stack);
@@ -115932,7 +115945,7 @@ class ClonedNodes {
             else
                camVol = 0;
 
-            camFact = maxVol / ((camVol > 0) ? (camVol > 0) : minVol);
+            camFact = maxVol / (camVol > 0 ? camVol : minVol);
          }
       }
 
@@ -116230,7 +116243,7 @@ function cleanupShape(shape) {
   * @param {object} toplevel - top element
   * @param {object} origin - camera position used to provide sorting
   * @param {string} method - name of sorting method like 'pnt', 'ray', 'size', 'dflt'  */
-function produceRenderOrder(toplevel, origin, method, clones) {
+function produceRenderOrder(toplevel, origin, method /* , clones */) {
    const raycast = new THREE.Raycaster();
 
    function setdefaults(top) {
@@ -116344,9 +116357,6 @@ function produceRenderOrder(toplevel, origin, method, clones) {
 
                intersects = unique;
 
-               if ((intersects.indexOf(mesh) < 0) && (ntry > 0))
-                  console.log(`MISS ${clones?.resolveStack(mesh.stack)?.name}`);
-
                if ((intersects.indexOf(mesh) >= 0) || (ntry > 0))
                   break;
 
@@ -116451,7 +116461,7 @@ function getShapeIcon(shape) {
 /**
  * lil-gui
  * https://lil-gui.georgealways.com
- * @version 0.20.0
+ * @version 0.21.0
  * @author George Michael Brower
  * @license MIT
  */
@@ -116506,7 +116516,7 @@ class Controller {
 		 * @type {HTMLElement}
 		 */
 		this.domElement = document.createElement( elementType );
-		this.domElement.classList.add( 'controller' );
+		this.domElement.classList.add( 'lil-controller' );
 		this.domElement.classList.add( className );
 
 		/**
@@ -116514,7 +116524,7 @@ class Controller {
 		 * @type {HTMLElement}
 		 */
 		this.$name = document.createElement( 'div' );
-		this.$name.classList.add( 'name' );
+		this.$name.classList.add( 'lil-name' );
 
 		Controller.nextNameID = Controller.nextNameID || 0;
 		this.$name.id = `lil-gui-name-${++Controller.nextNameID}`;
@@ -116524,7 +116534,7 @@ class Controller {
 		 * @type {HTMLElement}
 		 */
 		this.$widget = document.createElement( 'div' );
-		this.$widget.classList.add( 'widget' );
+		this.$widget.classList.add( 'lil-widget' );
 
 		/**
 		 * The DOM element that receives the disabled attribute when using disable().
@@ -116688,7 +116698,7 @@ class Controller {
 
 		this._disabled = disabled;
 
-		this.domElement.classList.toggle( 'disabled', disabled );
+		this.domElement.classList.toggle( 'lil-disabled', disabled );
 		this.$disable.toggleAttribute( 'disabled', disabled );
 
 		return this;
@@ -116902,7 +116912,7 @@ class BooleanController extends Controller {
 
 	constructor( parent, object, property ) {
 
-		super( parent, object, property, 'boolean', 'label' );
+		super( parent, object, property, 'lil-boolean', 'label' );
 
 		this.$input = document.createElement( 'input' );
 		this.$input.setAttribute( 'type', 'checkbox' );
@@ -116972,11 +116982,7 @@ const INT = {
 
 const ARRAY = {
 	isPrimitive: false,
-
-	// The arrow function is here to appease tree shakers like esbuild or webpack.
-	// See https://esbuild.github.io/api/#tree-shaking
-	match: v => Array.isArray( v ),
-
+	match: v => Array.isArray( v ) || ArrayBuffer.isView( v ),
 	fromHexString( string, target, rgbScale = 1 ) {
 
 		const int = INT.fromHexString( string );
@@ -116990,9 +116996,9 @@ const ARRAY = {
 
 		rgbScale = 255 / rgbScale;
 
-		const int = ( r * rgbScale ) << 16 ^
-			( g * rgbScale ) << 8 ^
-			( b * rgbScale ) << 0;
+		const int = r * rgbScale << 16 ^
+			 g * rgbScale << 8 ^
+			 b * rgbScale << 0;
 
 		return INT.toHexString( int );
 
@@ -117015,9 +117021,9 @@ const OBJECT = {
 
 		rgbScale = 255 / rgbScale;
 
-		const int = ( r * rgbScale ) << 16 ^
-			( g * rgbScale ) << 8 ^
-			( b * rgbScale ) << 0;
+		const int = r * rgbScale << 16 ^
+			 g * rgbScale << 8 ^
+			 b * rgbScale << 0;
 
 		return INT.toHexString( int );
 
@@ -117034,7 +117040,7 @@ class ColorController extends Controller {
 
 	constructor( parent, object, property, rgbScale ) {
 
-		super( parent, object, property, 'color' );
+		super( parent, object, property, 'lil-color' );
 
 		this.$input = document.createElement( 'input' );
 		this.$input.setAttribute( 'type', 'color' );
@@ -117047,7 +117053,7 @@ class ColorController extends Controller {
 		this.$text.setAttribute( 'aria-labelledby', this.$name.id );
 
 		this.$display = document.createElement( 'div' );
-		this.$display.classList.add( 'display' );
+		this.$display.classList.add( 'lil-display' );
 
 		this.$display.appendChild( this.$input );
 		this.$widget.appendChild( this.$display );
@@ -117138,7 +117144,7 @@ class FunctionController extends Controller {
 
 	constructor( parent, object, property ) {
 
-		super( parent, object, property, 'function' );
+		super( parent, object, property, 'lil-function' );
 
 		// Buttons are the only case where widget contains name
 		this.$button = document.createElement( 'button' );
@@ -117164,7 +117170,7 @@ class NumberController extends Controller {
 
 	constructor( parent, object, property, min, max, step ) {
 
-		super( parent, object, property, 'number' );
+		super( parent, object, property, 'lil-number' );
 
 		this._initInput();
 
@@ -117407,15 +117413,15 @@ class NumberController extends Controller {
 		// ---------------------------------------------------------------------
 
 		this.$slider = document.createElement( 'div' );
-		this.$slider.classList.add( 'slider' );
+		this.$slider.classList.add( 'lil-slider' );
 
 		this.$fill = document.createElement( 'div' );
-		this.$fill.classList.add( 'fill' );
+		this.$fill.classList.add( 'lil-fill' );
 
 		this.$slider.appendChild( this.$fill );
 		this.$widget.insertBefore( this.$slider, this.$input );
 
-		this.domElement.classList.add( 'hasSlider' );
+		this.domElement.classList.add( 'lil-has-slider' );
 
 		// Map clientX to value
 		// ---------------------------------------------------------------------
@@ -117561,10 +117567,10 @@ class NumberController extends Controller {
 
 	_setDraggingStyle( active, axis = 'horizontal' ) {
 		if ( this.$slider ) {
-			this.$slider.classList.toggle( 'active', active );
+			this.$slider.classList.toggle( 'lil-active', active );
 		}
-		document.body.classList.toggle( 'lil-gui-dragging', active );
-		document.body.classList.toggle( `lil-gui-${axis}`, active );
+		document.body.classList.toggle( 'lil-dragging', active );
+		document.body.classList.toggle( `lil-${axis}`, active );
 	}
 
 	_getImplicitStep() {
@@ -117681,13 +117687,13 @@ class OptionController extends Controller {
 
 	constructor( parent, object, property, options ) {
 
-		super( parent, object, property, 'option' );
+		super( parent, object, property, 'lil-option' );
 
 		this.$select = document.createElement( 'select' );
 		this.$select.setAttribute( 'aria-labelledby', this.$name.id );
 
 		this.$display = document.createElement( 'div' );
-		this.$display.classList.add( 'display' );
+		this.$display.classList.add( 'lil-display' );
 
 		this.$select.addEventListener( 'change', () => {
 			this.setValue( this._values[ this.$select.selectedIndex ] );
@@ -117695,11 +117701,11 @@ class OptionController extends Controller {
 		} );
 
 		this.$select.addEventListener( 'focus', () => {
-			this.$display.classList.add( 'focus' );
+			this.$display.classList.add( 'lil-focus' );
 		} );
 
 		this.$select.addEventListener( 'blur', () => {
-			this.$display.classList.remove( 'focus' );
+			this.$display.classList.remove( 'lil-focus' );
 		} );
 
 		this.$widget.appendChild( this.$select );
@@ -117744,7 +117750,7 @@ class StringController extends Controller {
 
 	constructor( parent, object, property ) {
 
-		super( parent, object, property, 'string' );
+		super( parent, object, property, 'lil-string' );
 
 		this.$input = document.createElement( 'input' );
 		this.$input.setAttribute( 'type', 'text' );
@@ -117825,31 +117831,31 @@ var stylesheet = `.lil-gui {
   margin: 0;
   padding: 0;
 }
-.lil-gui.root {
+.lil-gui.lil-root {
   width: var(--width, 245px);
   display: flex;
   flex-direction: column;
   background: var(--background-color);
 }
-.lil-gui.root > .title {
+.lil-gui.lil-root > .lil-title {
   background: var(--title-background-color);
   color: var(--title-text-color);
 }
-.lil-gui.root > .children {
+.lil-gui.lil-root > .lil-children {
   overflow-x: hidden;
   overflow-y: auto;
 }
-.lil-gui.root > .children::-webkit-scrollbar {
+.lil-gui.lil-root > .lil-children::-webkit-scrollbar {
   width: var(--scrollbar-width);
   height: var(--scrollbar-width);
   background: var(--background-color);
 }
-.lil-gui.root > .children::-webkit-scrollbar-thumb {
+.lil-gui.lil-root > .lil-children::-webkit-scrollbar-thumb {
   border-radius: var(--scrollbar-width);
   background: var(--focus-color);
 }
 @media (pointer: coarse) {
-  .lil-gui.allow-touch-styles, .lil-gui.allow-touch-styles .lil-gui {
+  .lil-gui.lil-allow-touch-styles, .lil-gui.lil-allow-touch-styles .lil-gui {
     --widget-height: 28px;
     --padding: 6px;
     --spacing: 6px;
@@ -117861,7 +117867,7 @@ var stylesheet = `.lil-gui {
     --color-input-min-width: 65px;
   }
 }
-.lil-gui.force-touch-styles, .lil-gui.force-touch-styles .lil-gui {
+.lil-gui.lil-force-touch-styles, .lil-gui.lil-force-touch-styles .lil-gui {
   --widget-height: 28px;
   --padding: 6px;
   --spacing: 6px;
@@ -117872,7 +117878,7 @@ var stylesheet = `.lil-gui {
   --slider-input-min-width: 50px;
   --color-input-min-width: 65px;
 }
-.lil-gui.autoPlace {
+.lil-gui.lil-auto-place, .lil-gui.autoPlace {
   max-height: 100%;
   position: fixed;
   top: 0;
@@ -117880,46 +117886,46 @@ var stylesheet = `.lil-gui {
   z-index: 1001;
 }
 
-.lil-gui .controller {
+.lil-controller {
   display: flex;
   align-items: center;
   padding: 0 var(--padding);
   margin: var(--spacing) 0;
 }
-.lil-gui .controller.disabled {
+.lil-controller.lil-disabled {
   opacity: 0.5;
 }
-.lil-gui .controller.disabled, .lil-gui .controller.disabled * {
+.lil-controller.lil-disabled, .lil-controller.lil-disabled * {
   pointer-events: none !important;
 }
-.lil-gui .controller > .name {
+.lil-controller > .lil-name {
   min-width: var(--name-width);
   flex-shrink: 0;
   white-space: pre;
   padding-right: var(--spacing);
   line-height: var(--widget-height);
 }
-.lil-gui .controller .widget {
+.lil-controller .lil-widget {
   position: relative;
   display: flex;
   align-items: center;
   width: 100%;
   min-height: var(--widget-height);
 }
-.lil-gui .controller.string input {
+.lil-controller.lil-string input {
   color: var(--string-color);
 }
-.lil-gui .controller.boolean {
+.lil-controller.lil-boolean {
   cursor: pointer;
 }
-.lil-gui .controller.color .display {
+.lil-controller.lil-color .lil-display {
   width: 100%;
   height: var(--widget-height);
   border-radius: var(--widget-border-radius);
   position: relative;
 }
 @media (hover: hover) {
-  .lil-gui .controller.color .display:hover:before {
+  .lil-controller.lil-color .lil-display:hover:before {
     content: " ";
     display: block;
     position: absolute;
@@ -117931,26 +117937,26 @@ var stylesheet = `.lil-gui {
     left: 0;
   }
 }
-.lil-gui .controller.color input[type=color] {
+.lil-controller.lil-color input[type=color] {
   opacity: 0;
   width: 100%;
   height: 100%;
   cursor: pointer;
 }
-.lil-gui .controller.color input[type=text] {
+.lil-controller.lil-color input[type=text] {
   margin-left: var(--spacing);
   font-family: var(--font-family-mono);
   min-width: var(--color-input-min-width);
   width: var(--color-input-width);
   flex-shrink: 0;
 }
-.lil-gui .controller.option select {
+.lil-controller.lil-option select {
   opacity: 0;
   position: absolute;
   width: 100%;
   max-width: 100%;
 }
-.lil-gui .controller.option .display {
+.lil-controller.lil-option .lil-display {
   position: relative;
   pointer-events: none;
   border-radius: var(--widget-border-radius);
@@ -117964,14 +117970,14 @@ var stylesheet = `.lil-gui {
   background: var(--widget-color);
 }
 @media (hover: hover) {
-  .lil-gui .controller.option .display.focus {
+  .lil-controller.lil-option .lil-display.lil-focus {
     background: var(--focus-color);
   }
 }
-.lil-gui .controller.option .display.active {
+.lil-controller.lil-option .lil-display.lil-active {
   background: var(--focus-color);
 }
-.lil-gui .controller.option .display:after {
+.lil-controller.lil-option .lil-display:after {
   font-family: "lil-gui";
   content: "↕";
   position: absolute;
@@ -117980,25 +117986,25 @@ var stylesheet = `.lil-gui {
   bottom: 0;
   padding-right: 0.375em;
 }
-.lil-gui .controller.option .widget,
-.lil-gui .controller.option select {
+.lil-controller.lil-option .lil-widget,
+.lil-controller.lil-option select {
   cursor: pointer;
 }
 @media (hover: hover) {
-  .lil-gui .controller.option .widget:hover .display {
+  .lil-controller.lil-option .lil-widget:hover .lil-display {
     background: var(--hover-color);
   }
 }
-.lil-gui .controller.number input {
+.lil-controller.lil-number input {
   color: var(--number-color);
 }
-.lil-gui .controller.number.hasSlider input {
+.lil-controller.lil-number.lil-has-slider input {
   margin-left: var(--spacing);
   width: var(--slider-input-width);
   min-width: var(--slider-input-min-width);
   flex-shrink: 0;
 }
-.lil-gui .controller.number .slider {
+.lil-controller.lil-number .lil-slider {
   width: 100%;
   height: var(--widget-height);
   background: var(--widget-color);
@@ -118009,34 +118015,33 @@ var stylesheet = `.lil-gui {
   touch-action: pan-y;
 }
 @media (hover: hover) {
-  .lil-gui .controller.number .slider:hover {
+  .lil-controller.lil-number .lil-slider:hover {
     background: var(--hover-color);
   }
 }
-.lil-gui .controller.number .slider.active {
+.lil-controller.lil-number .lil-slider.lil-active {
   background: var(--focus-color);
 }
-.lil-gui .controller.number .slider.active .fill {
+.lil-controller.lil-number .lil-slider.lil-active .lil-fill {
   opacity: 0.95;
 }
-.lil-gui .controller.number .fill {
+.lil-controller.lil-number .lil-fill {
   height: 100%;
   border-right: var(--slider-knob-width) solid var(--number-color);
   box-sizing: content-box;
 }
 
-.lil-gui-dragging .lil-gui {
+.lil-dragging .lil-gui {
   --hover-color: var(--widget-color);
 }
-.lil-gui-dragging * {
+.lil-dragging * {
   cursor: ew-resize !important;
 }
-
-.lil-gui-dragging.lil-gui-vertical * {
+.lil-dragging.lil-vertical * {
   cursor: ns-resize !important;
 }
 
-.lil-gui .title {
+.lil-gui .lil-title {
   height: var(--title-height);
   font-weight: 600;
   padding: 0 var(--padding);
@@ -118045,46 +118050,46 @@ var stylesheet = `.lil-gui {
   background: none;
   text-decoration-skip: objects;
 }
-.lil-gui .title:before {
+.lil-gui .lil-title:before {
   font-family: "lil-gui";
   content: "▾";
   padding-right: 2px;
   display: inline-block;
 }
-.lil-gui .title:active {
+.lil-gui .lil-title:active {
   background: var(--title-background-color);
   opacity: 0.75;
 }
 @media (hover: hover) {
-  body:not(.lil-gui-dragging) .lil-gui .title:hover {
+  body:not(.lil-dragging) .lil-gui .lil-title:hover {
     background: var(--title-background-color);
     opacity: 0.85;
   }
-  .lil-gui .title:focus {
+  .lil-gui .lil-title:focus {
     text-decoration: underline var(--focus-color);
   }
 }
-.lil-gui.root > .title:focus {
+.lil-gui.lil-root > .lil-title:focus {
   text-decoration: none !important;
 }
-.lil-gui.closed > .title:before {
+.lil-gui.lil-closed > .lil-title:before {
   content: "▸";
 }
-.lil-gui.closed > .children {
+.lil-gui.lil-closed > .lil-children {
   transform: translateY(-7px);
   opacity: 0;
 }
-.lil-gui.closed:not(.transition) > .children {
+.lil-gui.lil-closed:not(.lil-transition) > .lil-children {
   display: none;
 }
-.lil-gui.transition > .children {
+.lil-gui.lil-transition > .lil-children {
   transition-duration: 300ms;
   transition-property: height, opacity, transform;
   transition-timing-function: cubic-bezier(0.2, 0.6, 0.35, 1);
   overflow: hidden;
   pointer-events: none;
 }
-.lil-gui .children:empty:before {
+.lil-gui .lil-children:empty:before {
   content: "Empty";
   padding: 0 var(--padding);
   margin: var(--spacing) 0;
@@ -118094,28 +118099,28 @@ var stylesheet = `.lil-gui {
   line-height: var(--widget-height);
   opacity: 0.5;
 }
-.lil-gui.root > .children > .lil-gui > .title {
+.lil-gui.lil-root > .lil-children > .lil-gui > .lil-title {
   border: 0 solid var(--widget-color);
   border-width: 1px 0;
   transition: border-color 300ms;
 }
-.lil-gui.root > .children > .lil-gui.closed > .title {
+.lil-gui.lil-root > .lil-children > .lil-gui.lil-closed > .lil-title {
   border-bottom-color: transparent;
 }
-.lil-gui + .controller {
+.lil-gui + .lil-controller {
   border-top: 1px solid var(--widget-color);
   margin-top: 0;
   padding-top: var(--spacing);
 }
-.lil-gui .lil-gui .lil-gui > .title {
+.lil-gui .lil-gui .lil-gui > .lil-title {
   border: none;
 }
-.lil-gui .lil-gui .lil-gui > .children {
+.lil-gui .lil-gui .lil-gui > .lil-children {
   border: none;
   margin-left: var(--folder-indent);
   border-left: 2px solid var(--widget-color);
 }
-.lil-gui .lil-gui .controller {
+.lil-gui .lil-gui .lil-controller {
   border: none;
 }
 
@@ -118181,27 +118186,27 @@ var stylesheet = `.lil-gui {
   width: 100%;
   border: none;
 }
-.lil-gui .controller button {
+.lil-gui .lil-controller button {
   height: var(--widget-height);
   text-transform: none;
   background: var(--widget-color);
   border-radius: var(--widget-border-radius);
 }
 @media (hover: hover) {
-  .lil-gui .controller button:hover {
+  .lil-gui .lil-controller button:hover {
     background: var(--hover-color);
   }
-  .lil-gui .controller button:focus {
+  .lil-gui .lil-controller button:focus {
     box-shadow: inset 0 0 0 1px var(--focus-color);
   }
 }
-.lil-gui .controller button:active {
+.lil-gui .lil-controller button:active {
   background: var(--focus-color);
 }
 
 @font-face {
   font-family: "lil-gui";
-  src: url("data:application/font-woff;charset=utf-8;base64,d09GRgABAAAAAAUsAAsAAAAACJwAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABHU1VCAAABCAAAAH4AAADAImwmYE9TLzIAAAGIAAAAPwAAAGBKqH5SY21hcAAAAcgAAAD0AAACrukyyJBnbHlmAAACvAAAAF8AAACEIZpWH2hlYWQAAAMcAAAAJwAAADZfcj2zaGhlYQAAA0QAAAAYAAAAJAC5AHhobXR4AAADXAAAABAAAABMAZAAAGxvY2EAAANsAAAAFAAAACgCEgIybWF4cAAAA4AAAAAeAAAAIAEfABJuYW1lAAADoAAAASIAAAIK9SUU/XBvc3QAAATEAAAAZgAAAJCTcMc2eJxVjbEOgjAURU+hFRBK1dGRL+ALnAiToyMLEzFpnPz/eAshwSa97517c/MwwJmeB9kwPl+0cf5+uGPZXsqPu4nvZabcSZldZ6kfyWnomFY/eScKqZNWupKJO6kXN3K9uCVoL7iInPr1X5baXs3tjuMqCtzEuagm/AAlzQgPAAB4nGNgYRBlnMDAysDAYM/gBiT5oLQBAwuDJAMDEwMrMwNWEJDmmsJwgCFeXZghBcjlZMgFCzOiKOIFAB71Bb8AeJy1kjFuwkAQRZ+DwRAwBtNQRUGKQ8OdKCAWUhAgKLhIuAsVSpWz5Bbkj3dEgYiUIszqWdpZe+Z7/wB1oCYmIoboiwiLT2WjKl/jscrHfGg/pKdMkyklC5Zs2LEfHYpjcRoPzme9MWWmk3dWbK9ObkWkikOetJ554fWyoEsmdSlt+uR0pCJR34b6t/TVg1SY3sYvdf8vuiKrpyaDXDISiegp17p7579Gp3p++y7HPAiY9pmTibljrr85qSidtlg4+l25GLCaS8e6rRxNBmsnERunKbaOObRz7N72ju5vdAjYpBXHgJylOAVsMseDAPEP8LYoUHicY2BiAAEfhiAGJgZWBgZ7RnFRdnVJELCQlBSRlATJMoLV2DK4glSYs6ubq5vbKrJLSbGrgEmovDuDJVhe3VzcXFwNLCOILB/C4IuQ1xTn5FPilBTj5FPmBAB4WwoqAHicY2BkYGAA4sk1sR/j+W2+MnAzpDBgAyEMQUCSg4EJxAEAwUgFHgB4nGNgZGBgSGFggJMhDIwMqEAYAByHATJ4nGNgAIIUNEwmAABl3AGReJxjYAACIQYlBiMGJ3wQAEcQBEV4nGNgZGBgEGZgY2BiAAEQyQWEDAz/wXwGAAsPATIAAHicXdBNSsNAHAXwl35iA0UQXYnMShfS9GPZA7T7LgIu03SSpkwzYTIt1BN4Ak/gKTyAeCxfw39jZkjymzcvAwmAW/wgwHUEGDb36+jQQ3GXGot79L24jxCP4gHzF/EIr4jEIe7wxhOC3g2TMYy4Q7+Lu/SHuEd/ivt4wJd4wPxbPEKMX3GI5+DJFGaSn4qNzk8mcbKSR6xdXdhSzaOZJGtdapd4vVPbi6rP+cL7TGXOHtXKll4bY1Xl7EGnPtp7Xy2n00zyKLVHfkHBa4IcJ2oD3cgggWvt/V/FbDrUlEUJhTn/0azVWbNTNr0Ens8de1tceK9xZmfB1CPjOmPH4kitmvOubcNpmVTN3oFJyjzCvnmrwhJTzqzVj9jiSX911FjeAAB4nG3HMRKCMBBA0f0giiKi4DU8k0V2GWbIZDOh4PoWWvq6J5V8If9NVNQcaDhyouXMhY4rPTcG7jwYmXhKq8Wz+p762aNaeYXom2n3m2dLTVgsrCgFJ7OTmIkYbwIbC6vIB7WmFfAAAA==") format("woff");
+  src: url("data:application/font-woff2;charset=utf-8;base64,d09GMgABAAAAAALkAAsAAAAABtQAAAKVAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHFQGYACDMgqBBIEbATYCJAMUCwwABCAFhAoHgQQbHAbIDiUFEYVARAAAYQTVWNmz9MxhEgodq49wYRUFKE8GWNiUBxI2LBRaVnc51U83Gmhs0Q7JXWMiz5eteLwrKwuxHO8VFxUX9UpZBs6pa5ABRwHA+t3UxUnH20EvVknRerzQgX6xC/GH6ZUvTcAjAv122dF28OTqCXrPuyaDER30YBA1xnkVutDDo4oCi71Ca7rrV9xS8dZHbPHefsuwIyCpmT7j+MnjAH5X3984UZoFFuJ0yiZ4XEJFxjagEBeqs+e1iyK8Xf/nOuwF+vVK0ur765+vf7txotUi0m3N0m/84RGSrBCNrh8Ee5GjODjF4gnWP+dJrH/Lk9k4oT6d+gr6g/wssA2j64JJGP6cmx554vUZnpZfn6ZfX2bMwPPrlANsB86/DiHjhl0OP+c87+gaJo/gY084s3HoYL/ZkWHTRfBXvvoHnnkHvngKun4KBE/ede7tvq3/vQOxDXB1/fdNz6XbPdcr0Vhpojj9dG+owuSKFsslCi1tgEjirjXdwMiov2EioadxmqTHUCIwo8NgQaeIasAi0fTYSPTbSmwbMOFduyh9wvBrESGY0MtgRjtgQR8Q1bRPohn2UoCRZf9wyYANMXFeJTysqAe0I4mrherOekFdKMrYvJjLvOIUM9SuwYB5DVZUwwVjJJOaUnZCmcEkIZZrKqNvRGRMvmFZsmhP4VMKCSXBhSqUBxgMS7h0cZvEd71AWkEhGWaeMFcNnpqyJkyXgYL7PQ1MoSq0wDAkRtJIijkZSmqYTiSImfLiSWXIZwhRh3Rug2X0kk1Dgj+Iu43u5p98ghopcpSo0Uyc8SnjlYX59WUeaMoDqmVD2TOWD9a4pCRAzf2ECgwGcrHjPOWY9bNxq/OL3I/QjwEAAAA=") format("woff2");
 }`;
 
 function _injectStyles( cssContent ) {
@@ -118230,7 +118235,7 @@ class GUI {
 	 * @param {boolean} [options.autoPlace=true]
 	 * Adds the GUI to `document.body` and fixes it to the top right of the page.
 	 *
-	 * @param {HTMLElement} [options.container]
+	 * @param {Node} [options.container]
 	 * Adds the GUI to this DOM element. Overrides `autoPlace`.
 	 *
 	 * @param {number} [options.width=245]
@@ -118318,7 +118323,7 @@ class GUI {
 		 * @type {HTMLElement}
 		 */
 		this.$title = document.createElement( 'button' );
-		this.$title.classList.add( 'title' );
+		this.$title.classList.add( 'lil-title' );
 		this.$title.setAttribute( 'aria-expanded', true );
 
 		this.$title.addEventListener( 'click', () => this.openAnimated( this._closed ) );
@@ -118331,7 +118336,7 @@ class GUI {
 		 * @type {HTMLElement}
 		 */
 		this.$children = document.createElement( 'div' );
-		this.$children.classList.add( 'children' );
+		this.$children.classList.add( 'lil-children' );
 
 		this.domElement.appendChild( this.$title );
 		this.domElement.appendChild( this.$children );
@@ -118350,10 +118355,10 @@ class GUI {
 
 		}
 
-		this.domElement.classList.add( 'root' );
+		this.domElement.classList.add( 'lil-root' );
 
 		if ( touchStyles ) {
-			this.domElement.classList.add( 'allow-touch-styles' );
+			this.domElement.classList.add( 'lil-allow-touch-styles' );
 		}
 
 		// Inject stylesheet if we haven't done that yet
@@ -118368,7 +118373,10 @@ class GUI {
 
 		} else if ( autoPlace ) {
 
-			this.domElement.classList.add( 'autoPlace' );
+			// https://github.com/georgealways/lil-gui/pull/154
+			// .autoPlace is deprecated in 0.21.0, but unlikely to conflict with user styles.
+			// keeping it for backwards compatibility.
+			this.domElement.classList.add( 'lil-auto-place', 'autoPlace' );
 			document.body.appendChild( this.domElement );
 
 		}
@@ -118583,7 +118591,7 @@ class GUI {
 		this._setClosed( !open );
 
 		this.$title.setAttribute( 'aria-expanded', !this._closed );
-		this.domElement.classList.toggle( 'closed', this._closed );
+		this.domElement.classList.toggle( 'lil-closed', this._closed );
 
 		return this;
 
@@ -118644,12 +118652,12 @@ class GUI {
 			const initialHeight = this.$children.clientHeight;
 			this.$children.style.height = initialHeight + 'px';
 
-			this.domElement.classList.add( 'transition' );
+			this.domElement.classList.add( 'lil-transition' );
 
 			const onTransitionEnd = e => {
 				if ( e.target !== this.$children ) return;
 				this.$children.style.height = '';
-				this.domElement.classList.remove( 'transition' );
+				this.domElement.classList.remove( 'lil-transition' );
 				this.$children.removeEventListener( 'transitionend', onTransitionEnd );
 			};
 
@@ -118658,7 +118666,7 @@ class GUI {
 			// todo: this is wrong if children's scrollHeight makes for a gui taller than maxHeight
 			const targetHeight = !open ? 0 : this.$children.scrollHeight;
 
-			this.domElement.classList.toggle( 'closed', !open );
+			this.domElement.classList.toggle( 'lil-closed', !open );
 
 			requestAnimationFrame( () => {
 				this.$children.style.height = targetHeight + 'px';
@@ -118732,6 +118740,7 @@ class GUI {
 				controller
 			} );
 		}
+
 	}
 
 	/**
@@ -118770,6 +118779,7 @@ class GUI {
 				controller
 			} );
 		}
+
 	}
 
 	/**
@@ -119309,6 +119319,7 @@ class TGeoPainter extends ObjectPainter {
          vislevel: undefined,
          maxnodes: undefined,
          dflt_colors: false,
+         notoolbar: false, // used in ROOT geom viewer
 
          info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
          depthTest: true,
@@ -119330,7 +119341,6 @@ class TGeoPainter extends ObjectPainter {
          depthMethodItems: [
             { name: 'Default', value: 'dflt' },
             { name: 'Raytraicing', value: 'ray' },
-            { name: 'Boundary box', value: 'box' },
             { name: 'Mesh size', value: 'size' },
             { name: 'Central point', value: 'pnt' }
          ],
@@ -119748,7 +119758,6 @@ class TGeoPainter extends ObjectPainter {
             separ = opt.length;
          res.script_name = opt.slice(macro + 6, separ);
          opt = opt.slice(0, macro) + opt.slice(separ + 1);
-         console.log(`script ${res.script_name} rest ${opt}`);
       }
 
       while (true) {
@@ -120435,7 +120444,7 @@ class TGeoPainter extends ObjectPainter {
             this.ctrl.vislevel = this.#clones?.getVisLevel() ?? 3;
          if (!this.ctrl.maxfaces)
             this.ctrl.maxfaces = 200000 * this.ctrl.more;
-         this.ctrl.more = 1;
+         this.ctrl.more = 1; // prevent autoincrease every next time drawing is started
 
          selection.add(this.ctrl, 'vislevel', 1, 99, 1)
                      .name('Visibility level')
@@ -121911,7 +121920,6 @@ class TGeoPainter extends ObjectPainter {
       const dataUrl = this.#renderer.domElement.toDataURL('image/png');
       if (filename === 'asis')
          return dataUrl;
-      dataUrl.replace('image/png', 'image/octet-stream');
       const doc = getDocument(),
             link = doc.createElement('a');
       if (isStr(link.download)) {
@@ -122440,7 +122448,7 @@ class TGeoPainter extends ObjectPainter {
    }
 
    /** @summary Handle drop operation
-     * @desc opt parameter can include function name like opt$func_name
+     * @desc opt parameter can include function name like 'func_name$opt'
      * Such function should be possible to find via {@link findFunction}
      * Function has to return Promise with objects to draw on geometry
      * By default function with name 'extract_geo_tracks' is checked
@@ -122894,9 +122902,9 @@ class TGeoPainter extends ObjectPainter {
    /** @summary Search for created shape for nodeid
     * @desc Used in ROOT geometry painter */
    findNodeShape(nodeid) {
-      if ((nodeid !== undefined) && !this.#draw_nodes) {
+      if ((nodeid !== undefined) && this.#draw_nodes) {
          for (let k = 0; k < this.#draw_nodes.length; ++k) {
-            const item = this.geo_painter._draw_nodes[k];
+            const item = this.#draw_nodes[k];
             if ((item.nodeid === nodeid) && item.server_shape)
                return item.server_shape;
          }
@@ -131486,6 +131494,15 @@ async function treeProcess(tree, selector, args) {
             if (!streamer) {
                elem = null;
                console.warn('not found streamer!');
+            } else if (branch.fType === -1) {
+               // object written by custom streamer of the class, it has version and bytecount
+               member = {
+                  name: target_name,
+                  typename: branch.fClassName,
+                  func(buf, obj) {
+                     obj[this.name] = buf.classStreamer({}, this.typename);
+                  }
+               };
             } else {
                member = {
                   name: target_name,
@@ -169038,8 +169055,8 @@ class HierarchyPainter extends BasePainter {
                }
 
                // if first child online, check its elements
-               if ((top._kind === kTopFolder) && (top._childs[0]._online !== undefined)) {
-                  for (let i = 0; i < top._childs[0]._childs.length; ++i) {
+               if ((top._kind === kTopFolder) && (top._childs[0]?._online !== undefined)) {
+                  for (let i = 0; i < top._childs[0]._childs?.length; ++i) {
                      if (top._childs[0]._childs[i]._name === localname)
                         return process_child(top._childs[0]._childs[i], true);
                   }
@@ -170692,7 +170709,7 @@ class HierarchyPainter extends BasePainter {
 
          // Than create empty frames for each item
          for (let i = 0; i < items.length; ++i) {
-            if (options[i].indexOf('update:')) {
+            if (options[i].indexOf('update:') !== 0) {
                mdi.createFrame(frame_names[i]);
                doms[i] = 'frame:' + frame_names[i];
             }
@@ -170831,7 +170848,7 @@ class HierarchyPainter extends BasePainter {
 
       if (force && this.brlayout) {
          if (!this.brlayout.browser_kind)
-            return this.createBrowser('float', true).then(() => find_next());
+            return this.createBrowser(kBrFloat, true).then(() => find_next());
          if (!this.brlayout.browser_visible)
             this.brlayout.toggleBrowserVisibility();
       }
@@ -171836,15 +171853,15 @@ class HierarchyPainter extends BasePainter {
          monitor = parseInt(monitor);
 
       if (getOption('float') !== null) {
-         browser_kind = 'float';
+         browser_kind = kBrFloat;
          browser_configured = true;
       } else if (getOption('fix') !== null) {
-         browser_kind = 'fix';
+         browser_kind = kBrFix;
          browser_configured = true;
       }
 
       if (!browser_configured && (browser.screenWidth <= 640))
-         browser_kind = 'float';
+         browser_kind = kBrFloat;
 
       this.no_select ??= getOption('noselect');
       this.top_info ??= getOption('info');
@@ -171897,7 +171914,7 @@ class HierarchyPainter extends BasePainter {
          this.no_select = true;
 
       if (!browser_kind)
-         browser_kind = 'fix';
+         browser_kind = kBrFix;
       else if (browser_kind === 'no')
          browser_kind = '';
       else if (browser_kind === 'off') {
@@ -172032,11 +172049,11 @@ class HierarchyPainter extends BasePainter {
          return;
 
       ToolbarIcons.createSVG(btns, ToolbarIcons.diamand, 15, 'toggle fix-pos browser', 'browser')
-                  .style('margin', '3px').on('click', () => this.createBrowser('fix', true));
+                  .style('margin', '3px').on('click', () => this.createBrowser(kBrFix, true));
 
       if (!this.float_browser_disabled) {
          ToolbarIcons.createSVG(btns, ToolbarIcons.circle, 15, 'toggle float browser', 'browser')
-                     .style('margin', '3px').on('click', () => this.createBrowser('float', true));
+                     .style('margin', '3px').on('click', () => this.createBrowser(kBrFloat, true));
       }
 
       if (!this.status_disabled) {
@@ -172086,8 +172103,8 @@ class HierarchyPainter extends BasePainter {
       if (main.empty())
          return false;
 
-      if ((browser_kind === 'float') && this.float_browser_disabled)
-         browser_kind = 'fix';
+      if ((browser_kind === kBrFloat) && this.float_browser_disabled)
+         browser_kind = kBrFix;
 
       if (!main.select('.jsroot_browser_area').empty()) {
          // this is case when browser created,
@@ -172147,16 +172164,16 @@ class HierarchyPainter extends BasePainter {
             menu.show();
          });
       }).on('dblclick', () => {
-         this.createBrowser(this.brlayout?.browser_kind === 'float' ? 'fix' : 'float', true);
+         this.createBrowser(this.brlayout?.browser_kind === kBrFloat ? kBrFix : kBrFloat, true);
       });
 
       if (!this.is_online && !this.no_select) {
          this.readSelectedFile = function() {
-            const filename = main.select('.gui_urlToLoad').property('value').trim();
-            if (!filename)
+            const filename = main.select('.gui_urlToLoad').property('value').trim(),
+                  lf = isStr(filename) ? filename.toLowerCase() : '';
+            if (!lf)
                return;
-
-            if (filename.toLowerCase().lastIndexOf('.json') === filename.length - 5)
+            if ((lf.lastIndexOf('.json') === lf.length - 5) || (lf.lastIndexOf('.json.gz') === lf.length - 8))
                this.openJsonFile(filename);
             else
                this.openRootFile(filename);
@@ -172205,7 +172222,7 @@ class HierarchyPainter extends BasePainter {
          this.initializeBrowser();
       }
 
-      return this.brlayout.toggleBrowserKind(browser_kind || 'fix');
+      return this.brlayout.toggleBrowserKind(browser_kind || kBrFix);
    }
 
    /** @summary Initialize browser elements */
@@ -176947,7 +176964,7 @@ class TGraphPolarPainter extends ObjectPainter {
    createPolargram(gr) {
       const o = this.getOptions();
       if (!gr.fPolargram) {
-         gr.fPolargram = create$1('TGraphPolargram');
+         gr.fPolargram = create$1(clTGraphPolargram);
          if (o.radian)
             gr.fPolargram.fRadian = true;
          else if (o.degree)
@@ -176959,9 +176976,12 @@ class TGraphPolarPainter extends ObjectPainter {
       let rmin = gr.fY[0] || 0, rmax = rmin;
       const has_err = gr.fEY?.length;
       for (let n = 0; n < gr.fNpoints; ++n) {
-         rmin = Math.min(rmin, gr.fY[n] - (has_err ? gr.fEY[n] : 0));
-         rmax = Math.max(rmax, gr.fY[n] + (has_err ? gr.fEY[n] : 0));
+         const err = has_err ? gr.fEY[n] : 0;
+         rmin = Math.min(rmin, gr.fY[n] - err);
+         rmax = Math.max(rmax, gr.fY[n] + err);
       }
+      if (rmin === rmax)
+         rmax += 1;
 
       gr.fPolargram.fRwrmin = rmin - (rmax - rmin) * 0.1;
       gr.fPolargram.fRwrmax = rmax + (rmax - rmin) * 0.1;
@@ -179951,7 +179971,7 @@ TSplinePainter: TSplinePainter
 });
 
 /**
- * @summary Painter for TBox class
+ * @summary Painter for TPiePainter class
  * @private
  */
 
@@ -180166,6 +180186,7 @@ class TPiePainter extends ObjectPainter {
          af -= entry.value / total * 2 * Math.PI;
          entry.a1 = af;
 
+         entry.large_arc = entry.value > total * 0.5 ? 1 : 0;
          entry.x1 = Math.round(rx * Math.cos(entry.a1));
          entry.y1 = Math.round(ry * Math.sin(entry.a1));
          entry.x2 = Math.round(rx * Math.cos(entry.a2));
@@ -180228,7 +180249,7 @@ class TPiePainter extends ObjectPainter {
                entry.pie_path += `a${rx},${ry},0,0,1,${xx2 - xx1},${yy2 - yy1}`;
             });
          } else
-            entry.pie_path = `a${rx},${ry},0,0,1,${entry.x2 - entry.x1},${entry.y2 - entry.y1}`;
+            entry.pie_path = `a${rx},${ry},0,${entry.large_arc},1,${entry.x2 - entry.x1},${entry.y2 - entry.y1}`;
       }
 
       // code to create 3d effect
@@ -181354,7 +181375,7 @@ class TASImagePainter extends ObjectPainter {
          if (!res?.url)
             return this;
 
-         const img = this.createG(fp)
+         const img = this.createG(Boolean(fp))
              .append('image')
              .attr('href', res.url)
              .attr('width', rect.width)
@@ -189830,6 +189851,8 @@ exports.kAxisFunc = kAxisFunc;
 exports.kAxisLabels = kAxisLabels;
 exports.kAxisNormal = kAxisNormal;
 exports.kAxisTime = kAxisTime;
+exports.kBrFix = kBrFix;
+exports.kBrFloat = kBrFloat;
 exports.kInspect = kInspect;
 exports.kNoReorder = kNoReorder;
 exports.kNoStats = kNoStats;

@@ -1,28 +1,28 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 7.12.0
 1. Add textendash and textemdash `TLatex` symbols #407 (@ferdymercury)
-1. Let store canvas as html file via context menu
-1. Improve `TGraph` update
-1. When draw `TH2`/`TF2` with "surf same" draw option, only lines are drawn
-1. Implement new "POLF" and "POLN" draw options for polar coordinates for `TH2`
-1. Implement tooltips handling for `TScatter`
-1. Adjust automatic colors handling in `THStack` and `TMultiGraph`
-1. Let copy and paste histogram title, `TLatex` text and `TPave` label via context menu
-1. Use "JSROOT" label for main pad button, hide it after 5 seconds from the drawing
-1. Let preserve `BigInt` values when calling `rntupleProcess()` function #418 (@undefined-panda)
-1. Let use primitive "player" for `RNTuple` to let edit draw expressions
-1. Use `8.6g`/`10.8g` format for float/double historgam content-to-text conversion in tooltips
-1. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings #409 (@prawnsgupta)
-1. Upgrade three.js r183 -> r186 #424
-1. Upgrade openui5 1.135.0 -> 1.152.0
-1. Upgrade svg2pdf.js 2.6.0 -> 2.8.1
-1. Upgrade jsPDF 3.0.3 -> 4.2.1
-1. Upgrade lil-gui 0.20.0 -> 0.21.0
-1. Fix - read all cluster groups from ntuple #415 (@undefined-panda)
-1. Fix - correctly handle empty clusters in ntuple #420 (@undefined-panda)
-1. Fix - reading of RNTuple std::bitset with 32 to 48 bits #430 (@sebxt)
-1. Fix - decoding large LZMA buffers #431 (@Prafyl)
+2. Let store canvas as HTML file via context menu
+3. Improve `TGraph` update
+4. When drawing `TH2`/`TF2` with "surf same" draw option, only lines are drawn
+5. Implement new polar draw options "POLF" and "POLN" for `TH2`
+6. Implement tooltips handling for `TScatter`
+7. Adjust automatic colors handling in `THStack` and `TMultiGraph`
+8. Let copy and paste histogram title, `TLatex` text and `TPave` label via context menu
+9. Use "JSROOT" label for main pad button, hide it after 5 seconds from the drawing
+10. Let preserve `BigInt` values when calling `rntupleProcess()` function #418 (@undefined-panda)
+11. Let use primitive "player" for `RNTuple` to allow edititing draw expressions
+12. Use `8.6g`/`10.8g` format for float/double histogram content-to-text conversion in tooltips
+13. Add `@vite-ignore` comment to dynamic imports to suppress Vite/Rollup analysis warnings #409 (@prawnsgupta)
+14. Upgrade three.js r183 -> r186 #424
+15. Upgrade openui5 1.135.0 -> 1.152.0
+16. Upgrade svg2pdf.js 2.6.0 -> 2.8.1
+17. Upgrade jsPDF 3.0.3 -> 4.2.1
+18. Upgrade lil-gui 0.20.0 -> 0.21.0
+19. Fix - read all cluster groups from ntuples #415 (@undefined-panda)
+20. Fix - correctly handle empty clusters in ntuples #420 (@undefined-panda)
+21. Fix - reading of RNTuple std::bitset of 32 to 48 bits #430 (@sebxt)
+22. Fix - decoding large LZMA buffers #431 (@Prafyl)
 
 
 ## Changes in 7.11.4
