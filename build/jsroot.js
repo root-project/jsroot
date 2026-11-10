@@ -1,4 +1,4 @@
-// https://root.cern/js/ v7.12.0
+// https://root.cern/js/ v7.12.99
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -10,11 +10,11 @@ var _documentCurrentScript = typeof document !== 'undefined' ? document.currentS
 
 /** @summary version id
   * @desc For the JSROOT release the string in format 'major.minor.patch' like '7.0.0' */
-const version_id = '7.12.0',
+const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '28/10/2026',
+version_date = '10/11/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -81872,7 +81872,7 @@ async function loadOpenui5(args) {
    }
 
    const openui5_sources = [];
-   let openui5_dflt = 'https://openui5.hana.ondemand.com/1.152.0/',
+   let openui5_dflt = 'https://sdk.openui5.org/1.152.0/',
        openui5_root = rootui5sys ? rootui5sys + 'distribution/' : '';
 
    if (isStr(args.openui5src)) {
@@ -93526,7 +93526,7 @@ class TPadPainter extends ObjectPainter {
          let url = exports.source_dir;
          if (url.indexOf('http://localhost') === 0) {
             url = 'https://root.cern/js/';
-            url += /^\d+\.\d+\.\d+$/.test(version_id) ? version_id : 'latest';
+            url += version_id ;
          }
          return '<!DOCTYPE html>\n' +
                 '<html lang="en">\n' +
