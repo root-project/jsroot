@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Move 'canvas' to optionalDependencies #434 (@mvala)
+
+
 ## Changes in 7.12.0
 1. Add textendash and textemdash `TLatex` symbols #407 (@ferdymercury)
 2. Let store canvas as HTML file via context menu
