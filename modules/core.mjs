@@ -6,7 +6,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '10/11/2026',
+version_date = '12/11/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -272,7 +272,7 @@ settings = {
    /** @summary Zooming on touch devices */
    ZoomTouch: !nodejs,
    /** @summary Enables move and resize of elements like statistic box, title, pave, colz  */
-   MoveResize: !browser.touches && !nodejs,
+   MoveResize: !nodejs,
    /** @summary Configures keyboard key press handling
      * @desc Can be disabled to prevent keys handling in complex HTML layouts
      * @default true */
