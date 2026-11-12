@@ -1688,7 +1688,7 @@ class FrameInteractive extends TooltipHandler {
       main_svg.attr('viewBox', `${dx} ${dy} ${w} ${h}`);
    }
 
-   /** @summary Process end-touch event, which can cause content menu to appear
+   /** @summary Process end-touch event, which can cause context menu to appear
     * @private */
    endSingleTouchHandling(evnt, kind, pos, tm) {
       evnt?.preventDefault();
