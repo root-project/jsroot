@@ -367,22 +367,24 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
    if (!settings.MoveResize || painter.isBatchMode() || !painter.getG())
       return;
 
+   const kProp = 'assigned_move';
+
    if (painter.getPadPainter()?.isEditable() === false)
       enabled = false;
 
    if (!enabled) {
-      if (painter.getG().property('assigned_move')) {
+      if (painter.getG().property(kProp)) {
          const drag_move = d3_drag().subject(Object);
          drag_move.on('start', null).on('drag', null).on('end', null);
          painter.getG()
                .style('cursor', null)
-               .property('assigned_move', null)
+               .property(kProp, null)
                .call(drag_move);
       }
       return;
    }
 
-   if (painter.getG().property('assigned_move'))
+   if (painter.getG().property(kProp))
       return;
 
    const drag_move = d3_drag().subject(Object);
@@ -426,7 +428,7 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
 
    painter.getG()
           .style('cursor', hover_handler ? 'pointer' : 'move')
-          .property('assigned_move', true)
+          .property(kProp, true)
           .call(drag_move);
 
    if (hover_handler) {
