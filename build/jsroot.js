@@ -82118,10 +82118,10 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
             return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
-         const pos = pointer(evnt, this.getG().node());
+         const arr = pointers(evnt, this.getG().node());
          not_changed = true;
          if (this.moveStart)
-            this.moveStart(pos[0], pos[1], evnt.sourceEvent);
+            this.moveStart(arr[0][0], arr[0][1], evnt.sourceEvent);
       }.bind(painter)).on('drag', function(evnt) {
          if (move_disabled)
             return;
@@ -82141,8 +82141,8 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
          let arg = null;
          if (not_changed) {
             // if not changed - provide click position
-            const pos = pointer(evnt, this.getG().node());
-            arg = { x: pos[0], y: pos[1], dbl: false };
+            const pos = pointers(evnt, this.getG().node());
+            arg = { x: pos[0][0], y: pos[0][1], dbl: false };
          }
          this.getPadPainter()?.selectObjectPainter(this, arg);
       }.bind(painter));
@@ -110577,14 +110577,14 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
          }
       } else if (not_changed) {
          const fp = this.getFramePainter(),
-               m = pointer(evnt, fp.getFrameSvg().node()),
+               m = pointers(evnt, fp.getFrameSvg().node()),
                fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
-               valid_x = (m[0] >= 0) && (m[0] <= fw),
-               valid_y = (m[1] >= 0) && (m[1] <= fh);
+               valid_x = (m[0][0] >= 0) && (m[0][0] <= fw),
+               valid_y = (m[0][1] >= 0) && (m[0][1] <= fh);
          if (valid_x && valid_y) {
             evnt.preventDefault();
             evnt.stopPropagation();
-            fp.processFrameClick({ x: m[0], y: m[1] });
+            fp.processFrameClick({ x: m[0][0], y: m[0][1] });
          }
       } else {
          changeBin(this.#move_bin);
