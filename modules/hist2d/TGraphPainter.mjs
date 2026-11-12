@@ -1,6 +1,6 @@
 import { gStyle, BIT, settings, create, createHistogram, setHistogramTitle, isFunc, isStr,
          clTPaveStats, clTCutG, clTH1F, clTH2F, clTF1, clTF2, clTPad, kNoZoom, kNoStats } from '../core.mjs';
-import { select as d3_select, pointer as d3_pointer } from '../d3.mjs';
+import { select as d3_select, pointers as d3_pointers } from '../d3.mjs';
 import { DrawOptions, buildSvgCurve, makeTranslate, addHighlightStyle } from '../base/BasePainter.mjs';
 import { ObjectPainter, kAxisNormal } from '../base/ObjectPainter.mjs';
 import { FunctionsHandler } from './THistPainter.mjs';
@@ -1549,14 +1549,14 @@ class TGraphPainter extends ObjectPainter {
          }
       } else if (not_changed) {
          const fp = this.getFramePainter(),
-               m = d3_pointer(evnt, fp.getFrameSvg().node()),
+               m = d3_pointers(evnt, fp.getFrameSvg().node()),
                fw = fp.getFrameWidth(), fh = fp.getFrameHeight(),
-               valid_x = (m[0] >= 0) && (m[0] <= fw),
-               valid_y = (m[1] >= 0) && (m[1] <= fh);
+               valid_x = (m[0][0] >= 0) && (m[0][0] <= fw),
+               valid_y = (m[0][1] >= 0) && (m[0][1] <= fh);
          if (valid_x && valid_y) {
             evnt.preventDefault();
             evnt.stopPropagation();
-            fp.processFrameClick({ x: m[0], y: m[1] });
+            fp.processFrameClick({ x: m[0][0], y: m[0][1] });
          }
       } else {
          changeBin(this.#move_bin);
