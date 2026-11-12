@@ -1,5 +1,5 @@
 import { settings, internals, browser, gStyle, isBatchMode, isNodeJs, isObject, isFunc, isStr, source_dir, atob_func, btoa_func } from '../core.mjs';
-import { select as d3_select, pointer as d3_pointer, drag as d3_drag, color as d3_color } from '../d3.mjs';
+import { select as d3_select, pointers as d3_pointers, drag as d3_drag, color as d3_color } from '../d3.mjs';
 import { prSVG, prJSON, BasePainter } from '../base/BasePainter.mjs';
 import { resize } from '../base/ObjectPainter.mjs';
 import { getRootColors } from '../base/colors.mjs';
@@ -397,10 +397,10 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
             return;
          evnt.sourceEvent.preventDefault();
          evnt.sourceEvent.stopPropagation();
-         const pos = d3_pointer(evnt, this.getG().node());
+         const arr = d3_pointers(evnt, this.getG().node());
          not_changed = true;
          if (this.moveStart)
-            this.moveStart(pos[0], pos[1], evnt.sourceEvent);
+            this.moveStart(arr[0][0], arr[0][1], evnt.sourceEvent);
       }.bind(painter)).on('drag', function(evnt) {
          if (move_disabled)
             return;
@@ -420,8 +420,8 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
          let arg = null;
          if (not_changed) {
             // if not changed - provide click position
-            const pos = d3_pointer(evnt, this.getG().node());
-            arg = { x: pos[0], y: pos[1], dbl: false };
+            const pos = d3_pointers(evnt, this.getG().node());
+            arg = { x: pos[0][0], y: pos[0][1], dbl: false };
          }
          this.getPadPainter()?.selectObjectPainter(this, arg);
       }.bind(painter));
