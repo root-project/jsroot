@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Move 'canvas' to optionalDependencies #434 (@mvala)
+1. Improve move/resize handling on touch devices
 
 
 ## Changes in 7.12.0

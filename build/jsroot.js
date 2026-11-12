@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '10/11/2026',
+version_date = '12/11/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -280,7 +280,7 @@ settings = {
    /** @summary Zooming on touch devices */
    ZoomTouch: !nodejs,
    /** @summary Enables move and resize of elements like statistic box, title, pave, colz  */
-   MoveResize: !browser.touches && !nodejs,
+   MoveResize: !nodejs,
    /** @summary Configures keyboard key press handling
      * @desc Can be disabled to prevent keys handling in complex HTML layouts
      * @default true */
@@ -82088,22 +82088,24 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
    if (!settings.MoveResize || painter.isBatchMode() || !painter.getG())
       return;
 
+   const kProp = 'assigned_move';
+
    if (painter.getPadPainter()?.isEditable() === false)
       enabled = false;
 
    if (!enabled) {
-      if (painter.getG().property('assigned_move')) {
+      if (painter.getG().property(kProp)) {
          const drag_move = drag().subject(Object);
          drag_move.on('start', null).on('drag', null).on('end', null);
          painter.getG()
                .style('cursor', null)
-               .property('assigned_move', null)
+               .property(kProp, null)
                .call(drag_move);
       }
       return;
    }
 
-   if (painter.getG().property('assigned_move'))
+   if (painter.getG().property(kProp))
       return;
 
    const drag_move = drag().subject(Object);
@@ -82147,7 +82149,7 @@ function addMoveHandler(painter, enabled = true, hover_handler = false) {
 
    painter.getG()
           .style('cursor', hover_handler ? 'pointer' : 'move')
-          .property('assigned_move', true)
+          .property(kProp, true)
           .call(drag_move);
 
    if (hover_handler) {
@@ -87467,7 +87469,7 @@ class FrameInteractive extends TooltipHandler {
       main_svg.attr('viewBox', `${dx} ${dy} ${w} ${h}`);
    }
 
-   /** @summary Process end-touch event, which can cause content menu to appear
+   /** @summary Process end-touch event, which can cause context menu to appear
     * @private */
    endSingleTouchHandling(evnt, kind, pos, tm) {
       evnt?.preventDefault();
@@ -91813,8 +91815,11 @@ class TPadPainter extends ObjectPainter {
          else if (!this.online_canvas)
             svg.append('svg:title').text('ROOT canvas');
 
-         if (!is_batch)
+         if (!is_batch) {
             svg.style('user-select', settings.UserSelect || null);
+            if (browser.touches)
+               svg.style('touch-action', 'none');
+         }
 
          if (!is_batch || (this.#pad.fFillStyle > 0))
             frect = svg.append('svg:path').attr('class', 'canvas_fillrect');
