@@ -754,12 +754,16 @@ function createStreamerElement(name, typename, file) {
    const pos = typename.indexOf('<');
    let stltype = kNotSTL;
    if ((pos > 0) && (typename.indexOf('>') > pos + 2)) {
+      const prefix = typename.slice(0, pos);
       for (let stl = 1; stl < StlNames.length; ++stl) {
-         if (typename.slice(0, pos) === StlNames[stl]) {
+         if (prefix === StlNames[stl]) {
             stltype = stl;
             break;
          }
       }
+      // RVec, written by RDataFrame::Snapshot, stored same way as std::vector
+      if (prefix === 'ROOT::VecOps::RVec')
+         stltype = 1;
    }
 
    if (stltype !== kNotSTL) {
