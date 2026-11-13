@@ -1000,6 +1000,14 @@ class TGraphPainter extends ObjectPainter {
                       .style('pointer-events', 'visibleFill');
          }
       }
+
+      // in case of interactive move also apply transformation
+      if (interactive_redraw) {
+         const ttbin = draw_g.selectChild('.tooltip_bin'),
+               bin = ttbin.empty() ? null : ttbin.property('current_bin');
+         if (bin)
+            makeTranslate(ttbin, Math.round(bin.grx), Math.round(bin.gry));
+      }
    }
 
    /** @summary append TGraphQQ part */
@@ -1459,25 +1467,26 @@ class TGraphPainter extends ObjectPainter {
       if (hint.changed) {
          ttbin.selectAll('*').remove(); // first delete all children
          ttbin.property('current_bin', hint.bin);
+         makeTranslate(ttbin, Math.round(hint.x), Math.round(hint.y));
 
          if (hint.ismark) {
             ttbin.append('svg:rect')
                  .style('pointer-events', 'none')
                  .call(addHighlightStyle)
                  .style('opacity', '0.3')
-                 .attr('x', Math.round(hint.x - hint.radius))
-                 .attr('y', Math.round(hint.y - hint.radius))
+                 .attr('x', -hint.radius)
+                 .attr('y', -hint.radius)
                  .attr('width', 2 * hint.radius)
                  .attr('height', 2 * hint.radius);
          } else {
-            ttbin.append('svg:circle').attr('cy', Math.round(hint.gry1));
+            ttbin.append('svg:circle').attr('cy', Math.round(hint.gry1 - hint.y));
             if (Math.abs(hint.gry1 - hint.gry2) > 1)
-               ttbin.append('svg:circle').attr('cy', Math.round(hint.gry2));
+               ttbin.append('svg:circle').attr('cy', Math.round(hint.gry2 - hint.y));
 
             const o = this.getOptions(),
                   elem = ttbin.selectAll('circle')
                             .attr('r', hint.radius)
-                            .attr('cx', Math.round(hint.x));
+                            .attr('cx', 0);
 
             if (!hint.islines)
                elem.style('stroke', hint.color1 === 'black' ? 'green' : 'black').style('fill', 'none');
