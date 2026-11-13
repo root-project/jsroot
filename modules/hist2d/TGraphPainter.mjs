@@ -1382,7 +1382,7 @@ class TGraphPainter extends ObjectPainter {
       const obj = this.getGraph();
       if (!isFunc(obj?.TestBit))
          return false;
-      if ((arg === 'toggle') || (arg !== undefined))
+      if (arg !== undefined)
          obj.SetBit(kNotEditable, !arg);
       return !obj.TestBit(kNotEditable);
    }
@@ -1604,8 +1604,8 @@ class TGraphPainter extends ObjectPainter {
    /** @summary Fill context menu */
    fillContextMenuItems(menu) {
       if (!this.hasSnapId()) {
-         menu.addchk(this.testEditable(), 'Editable', () => {
-            this.testEditable('toggle');
+         menu.addchk(this.testEditable(), 'Editable', flag => {
+            this.testEditable(flag);
             this.drawGraph();
          });
          if (this.axes_draw) {
