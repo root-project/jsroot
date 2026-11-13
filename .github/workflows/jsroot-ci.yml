@@ -71,6 +71,7 @@ jobs:
           node demo/node/tree_int64_test.js demo/node/tree_int64_test.root
           node demo/node/tree_lzma_test.js demo/node/tree_lzma_test.root
           node demo/node/tree_tobject_test.js demo/node/tree_tobject_test.root
+          node demo/node/tree_rvec_test.js demo/node/tree_rvec_test.root
           node demo/node/tree_draw_range.js demo/node/rntuple_test.root
           node demo/node/rntuple_test32.js demo/node/rntuple_test32.root demo/node/rntuple_test32.json
 
@@ -194,6 +195,7 @@ jobs:
           node demo/node/tree_int64_test.js demo/node/tree_int64_test.root
           node demo/node/tree_lzma_test.js demo/node/tree_lzma_test.root
           node demo/node/tree_tobject_test.js demo/node/tree_tobject_test.root
+          node demo/node/tree_rvec_test.js demo/node/tree_rvec_test.root
           node demo/node/tree_draw_range.js demo/node/rntuple_test.root
           node demo/node/rntuple_test32.js demo/node/rntuple_test32.root demo/node/rntuple_test32.json
 
@@ -252,6 +254,7 @@ jobs:
           node demo/node/tree_int64_test.js demo/node/tree_int64_test.root
           node demo/node/tree_lzma_test.js demo/node/tree_lzma_test.root
           node demo/node/tree_tobject_test.js demo/node/tree_tobject_test.root
+          node demo/node/tree_rvec_test.js demo/node/tree_rvec_test.root
           node demo/node/tree_draw_range.js demo/node/rntuple_test.root
           node demo/node/rntuple_test32.js demo/node/rntuple_test32.root demo/node/rntuple_test32.json
 
