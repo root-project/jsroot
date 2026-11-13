@@ -1546,7 +1546,7 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
    else if (arg.align[1] === 'bottom-base')
       arg[ny] += sign.y * (arg.height - mh - arg.valign);
 
-   let trans = makeTranslate(arg.x, arg.y) || '';
+   let trans = makeTranslate(Math.round(arg.x), Math.round(arg.y)) || '';
    if (arg.rotate)
       trans += `${trans ? ' ' : ''}rotate(${arg.rotate})`;
 
