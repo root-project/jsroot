@@ -3,6 +3,7 @@
 ## Changes in dev
 1. Move 'canvas' to optionalDependencies #434 (@mvala)
 1. Improve move/resize handling on touch devices
+1. Upgrade mathjax 3.2.2 -> 4.1.3
 
 
 ## Changes in 7.12.0

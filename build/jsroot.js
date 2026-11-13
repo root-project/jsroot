@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '12/11/2026',
+version_date = '13/11/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11166,9 +11166,7 @@ async function loadMathjax() {
       displayAlign: 'center',        // default for indentalign when set to 'auto'
       displayIndent: '0',            // default for indentshift when set to 'auto'
       fontCache: 'local',            // or 'global' or 'none'
-      localID: null,                 // ID to use for local font cache (for single equation processing)
-      internalSpeechTitles: true,    // insert <title> tags with speech content
-      titleID: 0                     // initial id number to use for aria-labeledby titles
+      localID: null                  // ID to use for local font cache (for single equation processing)
    };
 
    if (!isNodeJs()) {
@@ -11193,12 +11191,12 @@ async function loadMathjax() {
          }
       };
 
-      let mj_dir = '../mathjax/3.2.0';
+      let mj_dir = '../mathjax/4.1.3';
       if (browser.webwindow && exports.source_dir.indexOf('https://root.cern/js') < 0 && exports.source_dir.indexOf('https://jsroot.gsi.de') < 0)
          mj_dir = 'mathjax';
 
-      return loadScript(exports.source_dir + mj_dir + '/es5/tex-svg.js')
-               .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js'))
+      return loadScript(exports.source_dir + mj_dir + '/tex-svg.js')
+               .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-svg.js'))
                .then(() => promise);
    }
 
@@ -11206,39 +11204,30 @@ async function loadMathjax() {
 
    return _loadJSDOM().then(handle => {
       JSDOM = handle.JSDOM;
-      return import('mathjax');
+      return import('@mathjax/src');
    }).then(mj0 => {
-      // return Promise with mathjax loading
-      mj0.init({
+      return mj0.init({
+         paths: { mathjax: '@mathjax/src/bundle' },
+         require: (file) => import(file),
          loader: {
-            load: ['input/tex', 'output/svg', '[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
+            load: ['adaptors/jsdom', 'input/tex', 'output/svg', '[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
          },
          tex: {
             packages: { '[+]': ['color', 'upgreek', 'mathtools', 'physics'] }
          },
          svg,
-         config: {
-            JSDOM
-         },
+         JSDOM,
          startup: {
             typeset: false,
             ready() {
-               const mj = MathJax;
-
-               mj.startup.registerConstructor('jsdomAdaptor', () => {
-                  return new mj._.adaptors.HTMLAdaptor.HTMLAdaptor(new mj.config.config.JSDOM().window);
-               });
-               mj.startup.useAdaptor('jsdomAdaptor', true);
-               mj.startup.defaultReady();
+               MathJax.startup.defaultReady();
                const arr = _mj_loading;
                _mj_loading = undefined;
-               arr.forEach(func => func(mj));
+               arr.forEach(func => func(MathJax));
             }
          }
       });
-
-      return promise;
-   });
+   }).then(() => promise);
 }
 
 const math_symbols_map = {
@@ -11629,7 +11618,7 @@ function applyAttributesToMathJax(painter, mj_node, svg, arg, font_size, svg_fac
   * @private */
 async function produceMathjax(painter, mj_node, arg) {
    const mtext = translateMath(arg.text, arg.latex, arg.color, painter),
-         options = { em: arg.font.size, ex: arg.font.size / 2, family: arg.font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
+         options = { em: arg.font.size, ex: arg.font.size / 2, family: arg.font.name, scale: 1, containerWidth: -1 };
 
    return loadMathjax()
           .then(mj => mj.tex2svgPromise(mtext, options))
