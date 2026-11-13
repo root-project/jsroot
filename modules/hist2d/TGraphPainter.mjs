@@ -663,15 +663,24 @@ class TGraphPainter extends ObjectPainter {
 
    /** @summary draw TGraph bins with specified options
      * @desc Can be called several times */
-   drawBins(funcs, options, draw_g, w, h, lineatt, fillatt, main_block) {
+   drawBins(funcs, options, draw_g, w, h, lineatt, fillatt, main_block, interactive_redraw) {
       const graph = this.getGraph();
       if (!graph?.fNpoints)
          return;
 
-      let excl_width = 0, drawbins = null;
       // if markers or errors drawn - no need handle events for line drawing
       // this improves interactivity like zooming around graph points
       const line_events_handling = !this.isBatchMode() && (options.Line || options.Errors) ? 'none' : null;
+      let excl_width = 0, drawbins = null, npath = 0;
+      const new_path = () => {
+         npath++;
+         if (!interactive_redraw)
+            return draw_g.append('svg:path');
+         else if (npath === 1)
+            return draw_g.select('path');
+
+         return draw_g.select(`path:nth-of-type(${npath})`);
+      };
 
       if (main_block && lineatt.excl_side) {
          excl_width = lineatt.excl_width * lineatt.excl_side;
@@ -738,9 +747,9 @@ class TGraphPainter extends ObjectPainter {
          if (excl_width)
             this.appendExclusion(false, path, drawbins, excl_width);
 
-         const elem = draw_g.append('svg:path')
-                            .attr('d', path + close_symbol)
-                            .style('pointer-events', line_events_handling);
+         const elem = new_path();
+         elem.attr('d', path + close_symbol)
+             .style('pointer-events', line_events_handling);
          if (options.Line)
             elem.call(lineatt.func);
 
@@ -768,11 +777,10 @@ class TGraphPainter extends ObjectPainter {
          if (excl_width)
             this.appendExclusion(true, path, curvebins, excl_width);
 
-         draw_g.append('svg:path')
-               .attr('d', path)
-               .call(lineatt.func)
-               .style('fill', 'none')
-               .style('pointer-events', line_events_handling);
+         new_path().attr('d', path)
+                   .call(lineatt.func)
+                   .style('fill', 'none')
+                   .style('pointer-events', line_events_handling);
          if (main_block)
             this.#draw_kind = 'lines'; // handled same way as lines
       }
@@ -981,18 +989,15 @@ class TGraphPainter extends ObjectPainter {
             }
          }
 
-         if (path) {
-            draw_g.append('svg:path')
-                  .attr('d', path)
-                  .call(this.markeratt.func);
-            if ((nodes === null) && (this.#draw_kind === 'none') && main_block)
-               this.#draw_kind = (options.Mark === 101) ? 'path' : 'mark';
-         }
-         if (want_tooltip && hints_marker) {
-            draw_g.append('svg:path')
-                  .attr('d', hints_marker)
-                  .style('fill', 'none')
-                  .style('pointer-events', 'visibleFill');
+         new_path().attr('d', path)
+                   .call(this.markeratt.func);
+         if ((nodes === null) && (this.#draw_kind === 'none') && main_block)
+            this.#draw_kind = (options.Mark === 101) ? 'path' : 'mark';
+
+         if (want_tooltip) {
+            new_path().attr('d', hints_marker)
+                      .style('fill', 'none')
+                      .style('pointer-events', 'visibleFill');
          }
       }
    }
@@ -1074,7 +1079,7 @@ class TGraphPainter extends ObjectPainter {
    }
 
    /** @summary draw TGraph */
-   drawGraph() {
+   drawGraph(interactive_redraw = false) {
       const fp = this.get_fp(),
             graph = this.getGraph(),
             o = this.getOptions();
@@ -1086,10 +1091,18 @@ class TGraphPainter extends ObjectPainter {
          return this.drawBins3D(fp, graph);
 
       const is_gme = Boolean(this.get_gme()),
+            is_qq = graph._typename === 'TGraphQQ',
             funcs = fp.getGrFuncs(o.second_x, o.second_y),
             w = funcs.getFrameWidth(),
-            h = funcs.getFrameHeight(),
-            g = this.createG(fp.pad_layer ? false : this.#frame_layer);
+            h = funcs.getFrameHeight();
+
+      // interactive redraw means keep all elements and just change path attributes
+      // while such change can be complex - use it only in special cases
+
+      if (is_gme || is_qq || o.EF || o.Errors || o.Rect || o.Bar)
+         interactive_redraw = false;
+
+      const g = interactive_redraw ? this.getG() : this.createG(fp.pad_layer ? false : this.#frame_layer);
 
       this.createGraphDrawAttributes();
 
@@ -1099,9 +1112,9 @@ class TGraphPainter extends ObjectPainter {
       this.#marker_size = 0; // indicate if markers are drawn
       const draw_g = is_gme ? g.append('svg:g') : g;
 
-      this.drawBins(funcs, o, draw_g, w, h, this.lineatt, this.fillatt, true);
+      this.drawBins(funcs, o, draw_g, w, h, this.lineatt, this.fillatt, true, interactive_redraw);
 
-      if (graph._typename === 'TGraphQQ')
+      if (is_qq)
          this.appendQQ(funcs, graph);
 
       if (is_gme) {
@@ -1512,7 +1525,7 @@ class TGraphPainter extends ObjectPainter {
       else if (this.#move_funcs && this.#move_bin) {
          this.#move_bin.x = this.#move_funcs.revertAxis('x', this.#move_x0 + this.#pos_dx);
          this.#move_bin.y = this.#move_funcs.revertAxis('y', this.#move_y0 + this.#pos_dy);
-         this.drawGraph();
+         this.drawGraph(true);
       }
    }
 
