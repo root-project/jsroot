@@ -1135,7 +1135,7 @@ async function loadMathjax() {
          mj_dir = 'mathjax';
 
       return loadScript(source_dir + mj_dir + '/tex-svg.js')
-               .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-svg.js'))
+               .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-svg.js'))
                .then(() => promise);
    }
 
