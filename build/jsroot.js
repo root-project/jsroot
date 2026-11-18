@@ -14,7 +14,7 @@ const version_id = 'dev',
 
 /** @summary version date
   * @desc Release date in format day/month/year like '14/04/2022' */
-version_date = '13/11/2026',
+version_date = '18/11/2026',
 
 /** @summary version id and date
   * @desc Produced by concatenation of {@link version_id} and {@link version_date}
@@ -11172,7 +11172,14 @@ async function loadMathjax() {
    if (!isNodeJs()) {
       window.MathJax = {
          options: {
-            enableMenu: false
+            enableMenu: false,
+            menuOptions: {
+               settings: {
+                  speech: false,
+                  braille: false,
+                  enrich: false
+               }
+            }
          },
          loader: {
             load: ['[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
@@ -11196,7 +11203,7 @@ async function loadMathjax() {
          mj_dir = 'mathjax';
 
       return loadScript(exports.source_dir + mj_dir + '/tex-svg.js')
-               .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-svg.js'))
+               .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-svg.js'))
                .then(() => promise);
    }
 
@@ -110399,7 +110406,7 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
       const obj = this.getGraph();
       if (!isFunc(obj?.TestBit))
          return false;
-      if ((arg === 'toggle') || (arg !== undefined))
+      if (arg !== undefined)
          obj.SetBit(kNotEditable, !arg);
       return !obj.TestBit(kNotEditable);
    }
@@ -110621,8 +110628,8 @@ let TGraphPainter$1 = class TGraphPainter extends ObjectPainter {
    /** @summary Fill context menu */
    fillContextMenuItems(menu) {
       if (!this.hasSnapId()) {
-         menu.addchk(this.testEditable(), 'Editable', () => {
-            this.testEditable('toggle');
+         menu.addchk(this.testEditable(), 'Editable', flag => {
+            this.testEditable(flag);
             this.drawGraph();
          });
          if (this.axes_draw) {
