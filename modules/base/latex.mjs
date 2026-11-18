@@ -1111,7 +1111,14 @@ async function loadMathjax() {
    if (!isNodeJs()) {
       window.MathJax = {
          options: {
-            enableMenu: false
+            enableMenu: false,
+            menuOptions: {
+               settings: {
+                  speech: false,
+                  braille: false,
+                  enrich: false
+               }
+            }
          },
          loader: {
             load: ['[tex]/color', '[tex]/upgreek', '[tex]/mathtools', '[tex]/physics']
