@@ -9,6 +9,7 @@ docs/jsdocfull/
 *.html
 *.svg
 *.png
+mathjax
 demo/node/node_modules
 demo/node/*.svg
 demo/node/*.png
