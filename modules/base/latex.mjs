@@ -1,4 +1,4 @@
-import { loadScript, settings, isNodeJs, isStr, source_dir, browser, isBatchMode } from '../core.mjs';
+import { loadScript, settings, isNodeJs, isStr, source_dir, isBatchMode } from '../core.mjs';
 import { getElementRect, _loadJSDOM, makeTranslate } from './BasePainter.mjs';
 import { FontHandler, kSymbol, kWingdings, kTimes } from './FontHandler.mjs';
 
