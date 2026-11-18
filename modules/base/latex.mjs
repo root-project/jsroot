@@ -1137,12 +1137,9 @@ async function loadMathjax() {
          }
       };
 
-      // by default try to load from mathjax subfolder as in ROOT installation
-      let mj_dir = 'mathjax';
-      if ((source_dir.indexOf('https://root.cern/js') === 0) || (source_dir.indexOf('https://jsroot.gsi.de') === 0))
-         mj_dir = '../mathjax/4.1.3';
-
-      return loadScript(source_dir + mj_dir + '/tex-svg.js')
+      // by default try to load from ../mathjax/4.1.3 subfolder
+      // it is how ROOT install and how root.cern/js/ website is organized
+      return loadScript(source_dir + '../mathjax/4.1.3/tex-svg.js')
                .catch(() => loadScript('https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-svg.js'))
                .then(() => promise);
    }
