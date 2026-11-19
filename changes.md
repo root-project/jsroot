@@ -4,6 +4,7 @@
 1. Move 'canvas' to optionalDependencies #434 (@mvala)
 1. Improve move/resize handling on touch devices, especially for TGraph #437
 1. Upgrade mathjax 3.2.2 -> 4.1.3
+1. Support reasing of `ROOT::VecOps::RVec<T>` #438 (@Prafyl)
 
 
 ## Changes in 7.12.0

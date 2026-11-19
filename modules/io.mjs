@@ -763,7 +763,7 @@ function createStreamerElement(name, typename, file) {
       }
       // RVec, written by RDataFrame::Snapshot, stored same way as std::vector
       if (prefix === 'ROOT::VecOps::RVec')
-         stltype = 1;
+         stltype = kSTLvector;
    }
 
    if (stltype !== kNotSTL) {
